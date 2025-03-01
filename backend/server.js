@@ -12,19 +12,20 @@ connectDB();
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors({ origin: '*' }));
 
 // Routes
 app.use('/api/auth', authRoutes);
 //connectDataase
-connectDB()
 
 // ✅ สร้าง Route (หน้าหลัก)
 app.get('/', (req, res) => {
     res.send('Hello Express.js 🚀');
 });
 
+
 // ✅ เริ่มต้น Server
 app.listen(PORT, () => {
-    console.log(`🚀 Server is running at http://localhost:${PORT}`);
+    const currentTime = new Date().toLocaleString(); // ใช้เพื่อแสดงเวลาในรูปแบบที่อ่านง่าย
+    console.log(`🚀 Server is running at http://localhost:${PORT} time: ${currentTime}`);
 });
