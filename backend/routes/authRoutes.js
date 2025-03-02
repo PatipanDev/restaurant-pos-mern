@@ -15,6 +15,9 @@ router.post('/register', [
 
 
 //  ล็อกอิน
-router.post('/login', login);
+router.post('/login',[
+    body('customer_Email').isEmail().withMessage('กรุณากรอกอีเมลที่ถูกต้อง'),
+    body('customer_Password').not().isEmpty().withMessage('กรุณากรอกรหัสผ่าน')
+], login);
 
 module.exports = router;

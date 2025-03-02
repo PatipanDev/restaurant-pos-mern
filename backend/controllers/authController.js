@@ -3,9 +3,11 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
+
+
 // สมัครสมาชิก
 exports.register = async (req, res) => {
-    const { customer_Name, customer_Email, customer_Password, customer_Telnum } = req.body;
+    const { customer_Name, customer_Email, customer_Password, customer_Telnum} = req.body;
 
     try {
         // หาว่ามีอีเมลเดิมหรือป่าว
@@ -14,7 +16,7 @@ exports.register = async (req, res) => {
 
         // เข้ารหัสรหัสผ่าน
         const hashedPassword = await bcrypt.hash(customer_Password, 10);
-        customer = new Customer({ customer_Name, customer_Email, customer_Password: hashedPassword, customer_Telnum });
+        customer = new Customer({ customer_Name, customer_Email, customer_Password: hashedPassword, customer_Telnum});
 
         await customer.save();
 
@@ -39,6 +41,6 @@ exports.login = async (req, res) => {
 
         res.json({ token, customer: { customer_Id: customer.customer_Id, customer_Name: customer.customer_Name, customer_Email: customer.customer_Email } });
     } catch (error) {
-        res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
+        res.status(500).json({ message: 'เกิดข้อผิดพลาด',error: error.message });
     }
 };

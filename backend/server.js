@@ -26,6 +26,7 @@ app.get('/', (req, res) => {
 
 // ✅ เริ่มต้น Server
 app.listen(PORT, () => {
+    console.log("🔍 JWT_SECRET:", process.env.JWT_SECRET); 
     const currentTime = new Date().toLocaleString(); // ใช้เพื่อแสดงเวลาในรูปแบบที่อ่านง่าย
     console.log(`🚀 Server is running at http://localhost:${PORT} time: ${currentTime}`);
 });
