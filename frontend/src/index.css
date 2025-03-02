@@ -1,5 +1,10 @@
 html, body {
+  width: 100%;
   margin: 0;
   padding: 0;
   height: 100%;   /* กำหนดความสูงของ html และ body เป็น 100% */
+  font-family: 'Sarabun', 'Noto Sans', sans-serif; /* ฟอนต์ภาษาไทยและอังกฤษ */
 }
+
+@import url('https://fonts.googleapis.com/css2?family=Sarabun&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap');

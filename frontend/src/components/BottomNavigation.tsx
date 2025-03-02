@@ -9,6 +9,7 @@ const BottomNavigationComponent: React.FC = () => {
   const [value, setValue] = React.useState(0);
 
   return (
+    // ส่วนของเมนูข้างล่าง
     <BottomNavigation
       showLabels
       value={value}
@@ -19,7 +20,7 @@ const BottomNavigationComponent: React.FC = () => {
     >
       <BottomNavigationAction label="Home"  icon={<Home/>} component={Link} to="/home"/>
       <BottomNavigationAction label="Food" icon={<RamenDining /> }component={Link} to="/listfood" />
-      <BottomNavigationAction label="Order" icon={<ListAlt />} component={Link} to="order" />
+      <BottomNavigationAction label="Order" icon={<ListAlt />} component={Link} to="order"/> 
       <BottomNavigationAction label="profile" icon={<ManageAccounts/> } component={Link} to="profile"/>
     </BottomNavigation>
   );

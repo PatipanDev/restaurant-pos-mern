@@ -7,7 +7,7 @@ require('dotenv').config();
 
 // สมัครสมาชิก
 exports.register = async (req, res) => {
-    const { customer_Name, customer_Email, customer_Password, customer_Telnum} = req.body;
+    const { customer_Name, customer_Email, customer_Password, customer_Telnum } = req.body;
 
     try {
         // หาว่ามีอีเมลเดิมหรือป่าว
@@ -16,15 +16,20 @@ exports.register = async (req, res) => {
 
         // เข้ารหัสรหัสผ่าน
         const hashedPassword = await bcrypt.hash(customer_Password, 10);
-        customer = new Customer({ customer_Name, customer_Email, customer_Password: hashedPassword, customer_Telnum});
+        customer = new Customer({ customer_Name, customer_Email, customer_Password: hashedPassword, customer_Telnum });
 
         await customer.save();
 
         res.status(201).json({ message: 'สมัครสมาชิกสำเร็จ' });
     } catch (error) {
-        res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
+        console.error("Error during registration:", error); // log ข้อความ error ลงใน console
+        res.status(500).json({ 
+            message: error.message,
+            error: error.message || error // ส่งข้อมูลข้อผิดพลาดกลับไป
+        });
     }
 };
+
 
 // ล็อกอิน
 exports.login = async (req, res) => {

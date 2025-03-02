@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SyncLoader } from 'react-spinners';
 
 const LoadingPage = () => {
   const navigate = useNavigate();
@@ -15,18 +16,20 @@ const LoadingPage = () => {
 
   return (
     <div style={styles.container}>
-        <h1>กำลังทำอาหาร...</h1>
+        <SyncLoader size={14} color='gray'/>
     </div>
   );
 };
 
+
+//กำหนดสไตล์
 const styles = {
   container: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     height: '100vh',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: 'pink',
   },
   message: {
     fontSize: '2rem',
