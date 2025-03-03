@@ -30,7 +30,7 @@ app.use((req, res, next) => {
 })
 
 // Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes); 
 //connectDataase
 
 // ✅ สร้าง Route (หน้าหลัก)

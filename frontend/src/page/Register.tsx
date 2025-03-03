@@ -4,6 +4,7 @@ import { Box, Container, CssBaseline, TextField, Button, Typography } from "@mui
 import { Link , useNavigate }from "react-router-dom";
 import axios from "axios";
 import WarningAlert from "../components/AlertDivWarn";
+import SuccessAlert from "../components/AlertSuccess";
 
 // 🟢 ประเภทข้อมูลที่ฟอร์มจะส่ง
 interface RegisterFormInputs {
@@ -17,7 +18,7 @@ const Register = () => {
   const navigate = useNavigate(); 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<RegisterFormInputs>(); // 🎯 ใช้ react-hook-form
   const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
-
+ const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
   // 🟢 ฟังก์ชันส่งข้อมูล
   const onSubmit: SubmitHandler<RegisterFormInputs> = async (data) => {
     try {
@@ -30,7 +31,8 @@ const Register = () => {
       });
 
       console.log("Registration Successful", response.data);
-      setAlertMessage(<div>✅ ลงทะเบียนสำเร็จ!</div>);
+     
+      setAlertSuccess(<div>✅ ลงทะเบียนสำเร็จ!</div>);
 
       setTimeout(() => {
         navigate("/login"); 
@@ -125,6 +127,7 @@ const Register = () => {
 
         {/* ✅ แสดงแจ้งเตือนเฉพาะเมื่อเกิดข้อผิดพลาดหรือสมัครสำเร็จ */}
         <WarningAlert messagealert={alertMessage} />
+        <SuccessAlert successalert={alertSuccess}/>
       </Container>
     </React.Fragment>
   );

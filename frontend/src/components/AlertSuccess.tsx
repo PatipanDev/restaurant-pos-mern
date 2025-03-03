@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, ReactNode } from "react";
 import Alert from "@mui/material/Alert";
-import beepSound from "../assets/sound/beep-warning.mp3";
+import goodresult from "../assets/sound/goodresult.mp3";
 
 interface WarningAlertProps {
   successalert?: ReactNode; // เปลี่ยนเป็น ReactNode เพื่อรองรับ JSX เช่น <div>...</div>
@@ -18,7 +18,7 @@ const SuccessAlert: React.FC<WarningAlertProps> = ({ successalert, duration = 30
 
       // เล่นเสียงแจ้งเตือน
       if (!audioRef.current) {
-        audioRef.current = new Audio(beepSound);
+        audioRef.current = new Audio(goodresult);
       }
       audioRef.current.play();
 

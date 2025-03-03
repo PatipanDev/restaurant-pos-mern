@@ -25,6 +25,7 @@ const LoginEmployee = () => {
   // 🟢 ฟังก์ชันส่งข้อมูล
   const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
     const { name, password, role } = data;
+    console.log(data)
 
     try {
       const response = await axios.post('http://localhost:3000/api/auth/loginemployee', {
@@ -32,6 +33,8 @@ const LoginEmployee = () => {
         employee_Password: password,
         employee_Role: role,  // ส่งค่าตำแหน่งไปด้วย
       });
+
+      
 
       // ตรวจสอบว่ามี token จริงหรือไม่
       if (response.data && response.data.token) {
