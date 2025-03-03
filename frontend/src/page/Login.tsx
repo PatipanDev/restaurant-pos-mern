@@ -1,77 +1,107 @@
-import React, { useState } from 'react';
-import { Box, Container, CssBaseline, TextField, Button, Typography } from '@mui/material';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { Box, Container, CssBaseline, TextField, Button, Typography } from "@mui/material";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import WarningAlert from "../components/AlertDivWarn";
+
+// 🟢 ประเภทข้อมูลที่ฟอร์มจะส่ง
+interface LoginFormInputs {
+  email: string;
+  password: string;
+}
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<LoginFormInputs>(); // 🎯 ใช้ react-hook-form
+  const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
 
-  // ฟังก์ชันในการจัดการการส่งฟอร์ม
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Email:', email);
-    console.log('Password:', password);
-    // ใส่ฟังก์ชันสำหรับการเข้าสู่ระบบที่นี่
-  };
+  // 🟢 ฟังก์ชันส่งข้อมูล
+const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
+  const { email, password } = data;
 
+  try {
+    const response = await axios.post('http://localhost:3000/api/auth/login', {
+      customer_Email: email,
+      customer_Password: password,
+    });
+
+    // ถ้าการตอบกลับสำเร็จ
+    console.log(response.data);
+    setAlertMessage("เข้าสู่ระบบสำเร็จ!");
+    navigate("/dashboard"); // ย้ายไปยังหน้าหลังจากล็อกอินสำเร็จ
+
+  } catch (error: any) {
+    console.error('Error:', error);
+    if (error.response) {
+      // กรณีเซิร์ฟเวอร์ตอบกลับแต่มี error (เช่น 400, 500)
+      setAlertMessage(error.response.data.message || 'เกิดข้อผิดพลาด');
+      // setAlertMessage(<div>{String(error.response.data)}</div>);
+  } else if (error.request) {
+      // กรณี request ถูกส่งไปแต่ไม่ได้รับ response (เช่น server ล่ม หรือ network error)
+      console.error('Request error:', error.request);
+      setAlertMessage(<div>Server did not respond. Please try again later.</div>);
+  } else {
+      // กรณีเกิดข้อผิดพลาดใน axios เอง (เช่นตั้งค่า request ผิด)
+      console.error('Error message:', error.message);
+      setAlertMessage(<div>{String(error.message)}</div>);
+  }
+  }
+};
   return (
     <React.Fragment>
       <CssBaseline />
-      <Container fixed sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+      <Container fixed style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh" }}>
         <Box
           component="form"
           sx={{
-            '& .MuiTextField-root': { m: 2, width: '28ch' },
-            padding: 4,                  // เพิ่ม padding เพื่อให้ฟอร์มมีพื้นที่รอบๆ
-            borderRadius: 2,             // มุมโค้งมน
-            boxShadow: 3,                // กำหนดเงา
-            maxWidth: 300,               // กำหนดความกว้างสูงสุด
-            margin: '0 auto',            // จัดให้ฟอร์มอยู่กลาง
+            "& .MuiTextField-root": { m: 2, width: "28ch" },
+            padding: 4,
+            borderRadius: 2,
+            boxShadow: 3,
+            maxWidth: 300,
+            margin: "0 auto",
           }}
           noValidate
           autoComplete="off"
-          onSubmit={handleSubmit} // เมื่อส่งฟอร์ม
+          onSubmit={handleSubmit(onSubmit)}
         >
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', m: 2 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", m: 2 }}>
             <Typography variant="h5" gutterBottom fontWeight={800}>
               เข้าสู่ระบบ
             </Typography>
-            {/* ฟิลด์อีเมล */}
+
             <TextField
-              id="outlined-email"
               label="อีเมล"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              required
+              {...register("email", { required: "กรุณากรอกอีเมล", pattern: { value: /^\S+@\S+\.\S+$/, message: "รูปแบบอีเมลไม่ถูกต้อง" } })}
+              error={!!errors.email}
+              helperText={errors.email?.message}
             />
-            {/* ฟิลด์รหัสผ่าน */}
             <TextField
-              id="outlined-password-input"
               label="รหัสผ่าน"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              required
+              {...register("password", { required: "กรุณากรอกรหัสผ่าน" })}
+              error={!!errors.password}
+              helperText={errors.password?.message}
             />
           </Box>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', m: 2 }}>
-            {/* ปุ่มเข้าสู่ระบบ */}
-            <Button variant="contained" type="submit" color="primary" sx={{ width: '25ch' }}>
+          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", m: 2 }}>
+            <Button variant="contained" type="submit" color="primary" sx={{ width: "25ch" }}>
               เข้าสู่ระบบ
             </Button>
 
-            {/* ลิงก์ไปหน้าสมัครสมาชิก */}
-            <Link to="/register" style={{ textDecoration: 'none', marginTop: '10px' }}>
+            <Link to="/register" style={{ textDecoration: "none", marginTop: "10px" }}>
               <Button variant="text" color="secondary">
                 สมัครสมาชิก
               </Button>
             </Link>
           </Box>
         </Box>
+
+        {/* ✅ แสดงแจ้งเตือนเฉพาะเมื่อเกิดข้อผิดพลาดหรือสมัครสำเร็จ */}
+        <WarningAlert messagealert={alertMessage} />
       </Container>
     </React.Fragment>
   );
