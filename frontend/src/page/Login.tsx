@@ -13,7 +13,7 @@ interface LoginFormInputs {
 
 const Login = () => {
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<LoginFormInputs>(); // 🎯 ใช้ react-hook-form
+  const { register, handleSubmit, formState: { errors }} = useForm<LoginFormInputs>(); // 🎯 ใช้ react-hook-form
   const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
 
   // 🟢 ฟังก์ชันส่งข้อมูล
@@ -26,10 +26,22 @@ const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
       customer_Password: password,
     });
 
-    // ถ้าการตอบกลับสำเร็จ
-    console.log(response.data);
-    setAlertMessage("เข้าสู่ระบบสำเร็จ!");
-    navigate("/dashboard"); // ย้ายไปยังหน้าหลังจากล็อกอินสำเร็จ
+    // ตรวจสอบว่ามี token จริงหรือไม่
+    if (response.data && response.data.token) {
+      const token = response.data.token;
+      sessionStorage.setItem("token", token); // ✅ เก็บ token ใน sessionStorage
+      // localStorage.setItem("user", JSON.stringify(response.data.user));
+      localStorage.setItem('user', JSON.stringify({ username: response.data.user})); // ✅ เก็บข้อมูลผู้ใช้
+      console.log("Token:", token);
+
+      setTimeout(() => {
+        navigate("/home"); 
+      }, 2000);
+    } else {
+      console.warn("ไม่มี Token ที่ได้รับจากเซิร์ฟเวอร์");
+    }
+
+    
 
   } catch (error: any) {
     console.error('Error:', error);
@@ -50,7 +62,7 @@ const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
 };
   return (
     <React.Fragment>
-      <CssBaseline />
+      <CssBaseline/>
       <Container fixed style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh" }}>
         <Box
           component="form"

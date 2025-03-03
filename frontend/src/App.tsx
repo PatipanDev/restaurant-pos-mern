@@ -18,26 +18,63 @@ const Register = React.lazy(() => import('./page/Register'));
 const App: React.FC = () => {
   const navigate = useNavigate();
   
+  // useEffect(() => {
+  //   // เริ่มการตรวจสอบสถานะการล็อกอินทุก 5 วินาที
+  //   const interval = setInterval(() => {
+  //     const isLoggedIn = localStorage.getItem('user'); // ตรวจสอบสถานะการล็อกอิน
+  //     const currentPath = window.location.pathname; // เก็บเส้นทางปัจจุบัน
+
+  //     // ถ้าผู้ใช้ไม่ได้ล็อกอินและไม่อยู่ในหน้าล็อกอินแลหน้าสมัคร ให้ไปที่หน้าล็อกอิน
+  //     if (!isLoggedIn && currentPath !== '/login' && currentPath !== '/register') {
+  //       navigate('/login');
+  //     }
+
+  //     // ถ้าผู้ใช้ล็อกอินแล้วและไม่อยู่ในหน้า Home ให้ไปหน้า Home
+  //     if (isLoggedIn && currentPath !== '/home') {
+  //       navigate('/home');
+  //     }
+  //   }, 5000); // ทุกๆ 5 วินาที
+
+  //   // เคลียร์ interval เมื่อ component ถูก unmount
+  //   return () => clearInterval(interval);
+  // }, [navigate]);
+
+  // import { useNavigate } from 'react-router-dom';
+
   useEffect(() => {
-    // เริ่มการตรวจสอบสถานะการล็อกอินทุก 5 วินาที
-    const interval = setInterval(() => {
-      const isLoggedIn = localStorage.getItem('user'); // ตรวจสอบสถานะการล็อกอิน
-      const currentPath = window.location.pathname; // เก็บเส้นทางปัจจุบัน
-
-      // ถ้าผู้ใช้ไม่ได้ล็อกอินและไม่อยู่ในหน้าล็อกอินแลหน้าสมัคร ให้ไปที่หน้าล็อกอิน
-      if (!isLoggedIn && currentPath !== '/login' && currentPath !== '/register') {
-        navigate('/login');
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'user') {
+        const isLoggedIn = localStorage.getItem('user');
+        if (isLoggedIn) {
+          console.log('User logged in');
+        } else {
+          console.log('User logged out');
+          navigate('/login'); // ใช้ navigate ที่นี่
+        }
       }
-
-      // ถ้าผู้ใช้ล็อกอินแล้วและไม่อยู่ในหน้า Home ให้ไปหน้า Home
-      if (isLoggedIn && currentPath !== '/home') {
-        navigate('/home');
-      }
-    }, 5000); // ทุกๆ 5 วินาที
-
-    // เคลียร์ interval เมื่อ component ถูก unmount
-    return () => clearInterval(interval);
+    };
+  
+    // หน่วงเวลา 5 วินาที ก่อนเริ่มเพิ่ม event listener
+    const timeout = setTimeout(() => {
+      window.addEventListener('storage', handleStorageChange);
+    }, 10000); // กำหนดเวลา 5 วินาที
+  
+    // ตรวจสอบสถานะการล็อกอินในทันที
+    const isLoggedIn = localStorage.getItem('user');
+    if (isLoggedIn) {
+      console.log('User logged in');
+    } else {
+      console.log('User logged out');
+      navigate('/login'); // หรือ navigate('/register') หากไม่มีการล็อกอิน
+    }
+  
+    return () => {
+      clearTimeout(timeout); // ลบ timeout เมื่อ component ถูก unmount
+      window.removeEventListener('storage', handleStorageChange); // ลบ event listener
+    };
   }, [navigate]);
+  
+
   
   return (
     // ใช้ Suspense สำหรับการแสดงหน้าจอโหลดระหว่างการโหลดคอมโพเนนต์
@@ -65,7 +102,7 @@ const App: React.FC = () => {
       <Routes>
         {/* <Route path="/" element={<LoadingPage />} /> */}
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/listfood" element={<Listfood />} />
         <Route path="/order" element={<Order />} />
         <Route path="/profile" element={<Profile />} />
