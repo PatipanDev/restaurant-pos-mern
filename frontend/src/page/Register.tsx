@@ -38,30 +38,23 @@ const Register = () => {
 
       // รีเซ็ตค่าในฟอร์ม
       reset();
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        const errorMessages: string[] =
-          error.response?.data.errors.map((err: { msg: string }) => err.msg) || [];
-        setAlertMessage(
-          <div>
-            <strong>❌ แจ้งเตือนข้อผิดพลาด:</strong>
-            <ul>
-              {errorMessages.map((msg, index) => (
-                <li key={index}>{msg}</li>
-              ))}
-            </ul>
-          </div>
-        );
-      } else {
-        console.error("Unexpected error", error);
-        setAlertMessage(<div>❌ เกิดข้อผิดพลาด กรุณาลองใหม่!</div>);
-      }
+    } catch (error: any) {
+      console.error('Error:', error);
+      if (error.response) {
+        // กรณีเซิร์ฟเวอร์ตอบกลับแต่มี error (เช่น 400, 500)
+        setAlertMessage(<div>{error.response.data.message}</div>);
+        // setAlertMessage(<div>{String(error.response.data)}</div>);
+    } else if (error.request) {
+        // กรณี request ถูกส่งไปแต่ไม่ได้รับ response (เช่น server ล่ม หรือ network error)
+        console.error('Request error:', error.request);
+        setAlertMessage(<div>Server did not respond. Please try again later.</div>);
+    } else {
+        // กรณีเกิดข้อผิดพลาดใน axios เอง (เช่นตั้งค่า request ผิด)
+        console.error('Error message:', error.message);
+        setAlertMessage(<div>{error.message}</div>);
+    }
     }
 
-    // ล้างข้อความแจ้งเตือนหลัง 3 วินาที
-    setTimeout(() => {
-      setAlertMessage(null);
-    }, 3000);
   };
 
   return (
@@ -84,7 +77,7 @@ const Register = () => {
         >
           <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", m: 2 }}>
             <Typography variant="h5" gutterBottom fontWeight={800}>
-              สมัครสมาชิก
+              สมัครสมาชิก1
             </Typography>
 
             <TextField

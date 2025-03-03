@@ -4,6 +4,7 @@ import { Box, Container, CssBaseline, TextField, Button, Typography } from "@mui
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import WarningAlert from "../components/AlertDivWarn";
+import SuccessAlert from "../components/AlertSuccess";
 
 // 🟢 ประเภทข้อมูลที่ฟอร์มจะส่ง
 interface LoginFormInputs {
@@ -15,6 +16,7 @@ const Login = () => {
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors }} = useForm<LoginFormInputs>(); // 🎯 ใช้ react-hook-form
   const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
+  const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
 
   // 🟢 ฟังก์ชันส่งข้อมูล
 const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
@@ -33,6 +35,8 @@ const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
       // localStorage.setItem("user", JSON.stringify(response.data.user));
       localStorage.setItem('user', JSON.stringify({ username: response.data.user})); // ✅ เก็บข้อมูลผู้ใช้
       console.log("Token:", token);
+      setAlertSuccess(<div>เข้าสู่ระบบเรียบร้อย</div>)
+
 
       setTimeout(() => {
         navigate("/home"); 
@@ -47,7 +51,7 @@ const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
     console.error('Error:', error);
     if (error.response) {
       // กรณีเซิร์ฟเวอร์ตอบกลับแต่มี error (เช่น 400, 500)
-      setAlertMessage(error.response.data.message || 'เกิดข้อผิดพลาด');
+      setAlertMessage(<div>{error.response.data.message}</div>);
       // setAlertMessage(<div>{String(error.response.data)}</div>);
   } else if (error.request) {
       // กรณี request ถูกส่งไปแต่ไม่ได้รับ response (เช่น server ล่ม หรือ network error)
@@ -56,7 +60,7 @@ const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
   } else {
       // กรณีเกิดข้อผิดพลาดใน axios เอง (เช่นตั้งค่า request ผิด)
       console.error('Error message:', error.message);
-      setAlertMessage(<div>{String(error.message)}</div>);
+      setAlertMessage(<div>{error.message}</div>);
   }
   }
 };
@@ -80,7 +84,7 @@ const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
         >
           <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", m: 2 }}>
             <Typography variant="h5" gutterBottom fontWeight={800}>
-              เข้าสู่ระบบ
+              เข้าสู่ระบบลูกค้า
             </Typography>
 
             <TextField
@@ -103,7 +107,11 @@ const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
             <Button variant="contained" type="submit" color="primary" sx={{ width: "25ch" }}>
               เข้าสู่ระบบ
             </Button>
-
+            <Link to="/loginemployee" style={{ textDecoration: "none", marginTop: "10px" }}>
+              <Button variant="text" color="secondary">
+                เข้าสู่ระบบพนักงาน
+              </Button>
+            </Link>
             <Link to="/register" style={{ textDecoration: "none", marginTop: "10px" }}>
               <Button variant="text" color="secondary">
                 สมัครสมาชิก
@@ -114,6 +122,7 @@ const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
 
         {/* ✅ แสดงแจ้งเตือนเฉพาะเมื่อเกิดข้อผิดพลาดหรือสมัครสำเร็จ */}
         <WarningAlert messagealert={alertMessage} />
+        <SuccessAlert successalert={alertSuccess}/>
       </Container>
     </React.Fragment>
   );

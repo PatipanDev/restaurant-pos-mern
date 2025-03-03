@@ -4,6 +4,7 @@ const PORT = process.env.PORT
 const connectDB = require('./config/db')
 const authRoutes = require('./routes/authRoutes');
 const cors = require('cors');
+const ShopOwner = require('./models/ShopOwner');
 
 const app = express();
 
@@ -44,3 +45,5 @@ app.listen(PORT, () => {
     const currentTime = new Date().toLocaleString(); // ใช้เพื่อแสดงเวลาในรูปแบบที่อ่านง่าย
     console.log(`🚀 Server is running at http://localhost:${PORT} time: ${currentTime}`);
 });
+
+app.use(ShopOwner)

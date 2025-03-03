@@ -68,3 +68,26 @@ router.post("/login", [
 }, login);
 
 module.exports = router;
+
+
+// // ล็อคอินส่วนพนักงาน
+// router.post("/loginemployee", [
+//     body("employee_Name").notEmpty().withMessage("กรุณากรอกชื่อ"),
+//     body("employee_Password").notEmpty().withMessage("กรุณากรอกรหัสผ่าน"),
+//     body("employee_Role").notEmpty().withMessage("กรุณาเลือกตำแหน่ง")  // เพิ่มการตรวจสอบตำแหน่ง
+// ], (req, res, next) => {
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//         const errorMessages = errors.array().map(error => ({
+//             msg: error.msg
+//         }));
+
+//         // ส่งข้อความ error ไปยัง client
+//         return res.status(400).json({ errors: errorMessages });
+//     }
+
+//     next();  // ถ้าไม่มีข้อผิดพลาดให้ไปยังฟังก์ชัน login
+// }, loginemployee);
+
+// module.exports = router;
+
