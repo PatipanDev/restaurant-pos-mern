@@ -8,6 +8,7 @@ import { SyncLoader } from 'react-spinners';
 import Dashboard from './page/admin/Dashboard';
 import ProfileAdmin from './page/admin/Profileadmin';
 import AddEmployee from './page/admin/AddEmployee';
+import ManageCashier from './page/admin/ManageCashier';
 
 
 const Home = React.lazy(() => import('./page/Home'));
@@ -56,6 +57,7 @@ const App = () => {
               <Route path="/loginemployee" element={<LoginEmployee />} />
               <Route path="/admin/Dashboard" element={<Dashboard/>} />
               <Route path="/addemployee" element={<AddEmployee/>} />
+              <Route path="/manageCashier" element={<ManageCashier/>}/>
             </Routes>
           </Suspense>
         </Router>

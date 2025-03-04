@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId } from '@mui/x-data-grid';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ModeEditIcon from '@mui/icons-material/ModeEdit';
 
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -11,6 +12,8 @@ import moment from 'moment'; // เพิ่ม import moment
 import SuccessAlert from '../../components/AlertSuccess';
 import WarningAlert from '../../components/AlertDivWarn';
 import ErrorBoundary from '../ErrorBoundary';
+import Skeleton from '@mui/material/Skeleton';
+import LoadingSpinner from './component/LoadingSpinner';
 
 
 interface Employee {
@@ -48,6 +51,7 @@ const schema = yup.object({
 }).required();
 
 const DataGridEdit: React.FC = () => {
+  // const [loading, setLoading] = useState(true);  // กำหนดสถานะการโหลด
   const [rows, setRows] = useState<GridRowsProp<Employee>>([]);
   const [open, setOpen] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<GridRowId | null>(null);
@@ -67,7 +71,7 @@ const DataGridEdit: React.FC = () => {
         console.log(response.data)
       } catch (error) {
         console.error('Error fetching data:', error);
-      }
+      } 
     };
 
     fetchData();
@@ -107,7 +111,7 @@ const DataGridEdit: React.FC = () => {
       headerName: 'แก้ไขข้อมูล',
       width: 100, // คอลัมน์นี้ยังคงความกว้างคงที่
       renderCell: (params) => (
-        <Button variant="outlined" onClick={() => handleEditClick(params.id)}>แก้ไข</Button>
+        <Button variant="outlined" startIcon={<ModeEditIcon />} onClick={() => handleEditClick(params.id)}>แก้ไข</Button>
       ),
     },
     {
@@ -115,7 +119,7 @@ const DataGridEdit: React.FC = () => {
       headerName: 'ลบข้อมูล',
       width: 100,
       renderCell: (params) => (
-        <Button variant="outlined" color="error" onClick={() => handleDeleteClick(params.id)}>ลบ</Button>
+        <Button variant="outlined" startIcon={<DeleteIcon />}color="error" onClick={() => handleDeleteClick(params.id)}>ลบ</Button>
       ),
     },
     
@@ -276,8 +280,8 @@ const DataGridEdit: React.FC = () => {
           </form>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="secondary">ยกเลิก</Button>
-          <Button onClick={handleSubmit(onSubmit)} color="primary">{selectedRowId ? 'อัปเดต' : 'เพิ่ม'}</Button>
+          <Button variant="contained" onClick={handleClose} color="error">ยกเลิก</Button>
+          <Button variant="contained" onClick={handleSubmit(onSubmit)} color="success">{selectedRowId ? 'อัปเดต' : 'เพิ่ม'}</Button>
         </DialogActions>
       </Dialog>
 
