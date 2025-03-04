@@ -43,7 +43,18 @@ exports.registeremployee = async (req, res) => {
         // บันทึกข้อมูล Employee ลงฐานข้อมูล
         await employee.save();
 
-        res.status(201).json({ message: 'สมัครสมาชิก Employee สำเร็จ' });
+        res.status(201).json({ 
+            _id: employee._id,
+            employee_Name: employee.employee_Name,
+            employee_Citizen_id: employee.employee_Citizen_id,
+            employee_Weight: employee.employee_Weight,
+            employee_Height: employee.employee_Height,
+            employee_Address: employee.employee_Address,
+            employee_Details: employee.employee_Details,
+            employee_Birthday: employee.employee_Birthday,
+            message: 'สมัครสมาชิก Employee สำเร็จ'  // ถ้าต้องการเพิ่มข้อความ
+            
+        });
     } catch (error) {
         console.error("Error during Employee registration:", error);
         res.status(500).json({
@@ -90,5 +101,26 @@ exports.updateemployee = async (req, res) => {
         res.status(500).json({ message: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล' });
     }
 };
+
+
+exports.deleteemployee = async (req, res) => {
+    const { id } = req.params;  // รับ id จาก params
+
+    try {
+        // ลบพนักงานโดยใช้ findByIdAndDelete
+        const employee = await Employee.findByIdAndDelete(id);
+        
+        if (!employee) {
+            return res.status(404).json({ message: 'ไม่พบพนักงาน' });
+        }
+
+        res.status(200).json({ message: 'ลบข้อมูลพนักงานสำเร็จ' });
+    } catch (error) {
+        console.error('Error deleting employee:', error);
+        res.status(500).json({ message: 'เกิดข้อผิดพลาดในการลบข้อมูล' });
+    }
+};
+
+
 
 

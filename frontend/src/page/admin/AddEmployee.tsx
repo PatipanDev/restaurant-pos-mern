@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId } from '@mui/x-data-grid';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import axios from 'axios';
 import moment from 'moment'; // เพิ่ม import moment
+import SuccessAlert from '../../components/AlertSuccess';
+import WarningAlert from '../../components/AlertDivWarn';
+import ErrorBoundary from '../ErrorBoundary';
 
 
 interface Employee {
@@ -46,6 +51,9 @@ const DataGridEdit: React.FC = () => {
   const [rows, setRows] = useState<GridRowsProp<Employee>>([]);
   const [open, setOpen] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<GridRowId | null>(null);
+  //ส่วนของการแจ้งเตือน
+    const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
+    const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
 
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
     resolver: yupResolver(schema),
@@ -68,9 +76,6 @@ const DataGridEdit: React.FC = () => {
   useEffect(() => {
     if (selectedRowId !== null) {
       const selectedRow = rows.find((row) => row._id === selectedRowId) as Employee
-      const formattedBirthday = selectedRow.employee_Birthday
-        ? new Date(selectedRow.employee_Birthday).toISOString().split('T')[0]  // แปลงเป็น "yyyy-MM-dd"
-        : '';
       setValue('employee_Name', selectedRow.employee_Name);
       setValue('employee_Password', selectedRow.employee_Password);
       setValue('employee_Citizen_id', selectedRow.employee_Citizen_id);
@@ -83,8 +88,14 @@ const DataGridEdit: React.FC = () => {
   }, [selectedRowId, rows, setValue]);
 
   const columns: GridColDef<Employee>[] = [
-    { field: '_id', headerName: 'ID', flex: 1, minWidth: 100 }, // ใช้ flex เพื่อขยายเต็มพื้นที่
-    { field: 'employee_Name', headerName: 'ชื่อ', flex: 1, minWidth: 150 },
+    {
+      field: 'index',
+      headerName: 'ลำดับ',
+      flex: 0.9,
+      width: 30,
+      renderCell: (params) => rows.indexOf(params.row) + 1,
+    },
+    { field: 'employee_Name', headerName: 'ชื่อ', flex: 1, minWidth: 180 },
     { field: 'employee_Citizen_id', headerName: 'เลขบัตรประชาชน', flex: 1, minWidth: 200 },
     { field: 'employee_Weight', headerName: 'น้ำหนัก', flex: 1, minWidth: 100 },
     { field: 'employee_Height', headerName: 'ส่วนสูง', flex: 1, minWidth: 100 },
@@ -93,13 +104,53 @@ const DataGridEdit: React.FC = () => {
     { field: 'employee_Birthday', headerName: 'วันเกิด', flex: 1, minWidth: 150 },
     {
       field: 'actions',
-      headerName: 'การกระทำ',
-      width: 150, // คอลัมน์นี้ยังคงความกว้างคงที่
+      headerName: 'แก้ไขข้อมูล',
+      width: 100, // คอลัมน์นี้ยังคงความกว้างคงที่
       renderCell: (params) => (
-        <Button onClick={() => handleEditClick(params.id)}>แก้ไข</Button>
+        <Button variant="outlined" onClick={() => handleEditClick(params.id)}>แก้ไข</Button>
       ),
     },
+    {
+      field: 'delete',
+      headerName: 'ลบข้อมูล',
+      width: 100,
+      renderCell: (params) => (
+        <Button variant="outlined" color="error" onClick={() => handleDeleteClick(params.id)}>ลบ</Button>
+      ),
+    },
+    
   ];
+
+
+  const handleDeleteClick = async (id: GridRowId) => {
+    // console.log(id)
+    const confirmDelete = window.confirm('คุณแน่ใจหรือไม่ว่าจะลบข้อมูลนี้?');
+    if (confirmDelete) {
+        try {
+            // ใช้ params.row._id แทน params.id ถ้าต้องการใช้ _id ใน MongoDB
+            const employeeId = rows.find((row) => row._id === id)?._id;
+            if (employeeId) {
+                // ส่งคำขอ DELETE ไปยัง API โดยใช้ 'employeeId' ที่ตรงกับ _id ของข้อมูล
+                await axios.delete(`http://localhost:3000/api/auth/deleteemployee/${employeeId}`);
+                // console.log(employeeId)
+
+                // อัพเดต state ของแถวใน local หลังจากลบสำเร็จ
+                const updatedRows = rows.filter((row) => row._id !== employeeId);
+                setRows(updatedRows);
+
+                setAlertSuccess(<div>ลบข้อมูลสำเร็จ</div>)
+            } else {
+                alert('ไม่พบข้อมูลที่จะลบ');
+            }
+        } catch (error) {
+            console.error('เกิดข้อผิดพลาดในการลบข้อมูล:', error);
+            // alert('ไม่สามารถลบข้อมูลได้');
+        }
+    } else {
+        // ผู้ใช้ยกเลิกการลบ
+    }
+};
+
 
 
   const handleEditClick = (id: GridRowId) => {
@@ -136,17 +187,22 @@ const DataGridEdit: React.FC = () => {
         await axios.put(
           `http://localhost:3000/api/auth/updateemployee/${selectedRowId}`,
           updatedData
-        );
+        )
+        .then(response => {
+          console.log('Update successful', response.data);
+        setAlertSuccess(<div>อัตเดตข้อมูลสำเร็จ</div>)
 
-        // อัปเดตตาราง UI
-        const updatedRows = rows.map((row) =>
-          row._id === selectedRowId ? { ...row, ...updatedData } : row
-        );
-        setRows(updatedRows);
+          // อัปเดตข้อมูลที่แสดงใน UI
+          const updatedRows = rows.map((row) =>
+            row._id === selectedRowId ? { ...row, ...updatedData } : row
+          );
+          setRows(updatedRows);
+        })
       } else {
         // เพิ่มข้อมูลใหม่
         const response = await axios.post('http://localhost:3000/api/auth/registeremployee', data); // แทนที่ด้วย endpoint ของคุณ
         setRows([...rows, response.data]);
+        setAlertSuccess(<div>เพิ่มข้อมูลสำเร็จ</div>)
       }
       handleClose();
     } catch (error) {
@@ -225,8 +281,10 @@ const DataGridEdit: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-
+      <ErrorBoundary>
       <DataGrid rows={rows} columns={columns} getRowId={(row) => row._id} />
+
+      </ErrorBoundary>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20 }}>
         <Button
           variant="contained"
@@ -234,6 +292,8 @@ const DataGridEdit: React.FC = () => {
         >
           เพิ่มข้อมูล
         </Button>
+        <WarningAlert messagealert={alertMessage} />
+        <SuccessAlert successalert={alertSuccess}/>
       </div>
       {/* ... (Dialog) */}
     </div>

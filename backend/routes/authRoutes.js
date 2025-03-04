@@ -19,5 +19,7 @@ router.get('/getemployees', authEmController.getEmployee);
 
 router.put('/updateemployee/:id', authEmController.updateemployee);
 
+router.delete('/deleteemployee/:id', authEmController.deleteemployee)
+
 
 module.exports = router
