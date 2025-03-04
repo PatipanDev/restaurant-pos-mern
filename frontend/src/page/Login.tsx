@@ -33,13 +33,13 @@ const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
       const token = response.data.token;
       sessionStorage.setItem("token", token); // ✅ เก็บ token ใน sessionStorage
       // localStorage.setItem("user", JSON.stringify(response.data.user));
-      localStorage.setItem('user', JSON.stringify({ username: response.data.user})); // ✅ เก็บข้อมูลผู้ใช้
+      localStorage.setItem('user', JSON.stringify({ username: response.data, role: 1})); // ✅ เก็บข้อมูลผู้ใช้
       console.log("Token:", token);
       setAlertSuccess(<div>เข้าสู่ระบบเรียบร้อย</div>)
 
 
       setTimeout(() => {
-        navigate("/home"); 
+        navigate("/"); 
       }, 2000);
     } else {
       console.warn("ไม่มี Token ที่ได้รับจากเซิร์ฟเวอร์");

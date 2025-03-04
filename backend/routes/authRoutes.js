@@ -9,4 +9,6 @@ router.post('/login', authController.login)
 router.post('/registershopowner', authController.registershopowner)
 
 router.post('/loginemployee',authController.loginemployee)
+
+router.post('/getemployees', authController.getemloyee)
 module.exports = router

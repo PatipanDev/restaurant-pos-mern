@@ -45,7 +45,7 @@ const LoginEmployee = () => {
         setAlertSuccess(<div>เข้าสู่ระบบเรียบร้อย</div>);
 
         setTimeout(() => {
-          navigate("/home"); 
+          navigate("/admin/Dashboard"); 
         }, 2000);
       } else {
         console.warn("ไม่มี Token ที่ได้รับจากเซิร์ฟเวอร์");

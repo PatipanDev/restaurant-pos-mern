@@ -183,3 +183,122 @@ exports.registershopowner = async (req, res) => {
 
 
 
+
+//******************************************************************************************************************************************/
+//เพิ่มข้อมูลพนักงาน
+
+//เพิ่มผู้ใช้
+exports.registerEmployee = async (req, res) => {
+    const { 
+        employee_Name, 
+        employee_Password, 
+        employee_Citizen_id, 
+        employee_Weight, 
+        employee_Height, 
+        employee_Address, 
+        employee_Details, 
+        employee_Birthday 
+    } = req.body;
+
+    try {
+        // ตรวจสอบว่า Citizen ID ซ้ำหรือไม่
+        let employee = await Employee.findOne({ employee_Citizen_id });
+        if (employee) {
+            return res.status(400).json({ message: 'รหัสประชาชนนี้ถูกใช้ไปแล้ว' });
+        }
+
+        // เข้ารหัสรหัสผ่าน
+        const hashedPassword = await bcrypt.hash(employee_Password, 10);
+
+        // สร้าง Employee ใหม่
+        employee = new Employee({
+            employee_Name,
+            employee_Password: hashedPassword,
+            employee_Citizen_id,
+            employee_Weight,
+            employee_Height,
+            employee_Address,
+            employee_Details,
+            employee_Birthday
+        });
+
+        // บันทึกข้อมูล Employee ลงฐานข้อมูล
+        await employee.save();
+
+        res.status(201).json({ message: 'สมัครสมาชิก Employee สำเร็จ' });
+    } catch (error) {
+        console.error("Error during Employee registration:", error);
+        res.status(500).json({
+            message: 'เกิดข้อผิดพลาดขณะสมัครสมาชิก',
+            error: error.message || error
+        });
+    }
+};
+
+
+router.getemloyee('/getemployees', async (req, res) => {
+    try {
+      const employees = await Employee.find(); // ดึงข้อมูลทั้งหมดจากฐานข้อมูล
+      res.json(employees);
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+      res.status(500).json({ message: 'Error fetching employees' });
+    }
+  });
+  
+  module.exports = router;
+
+
+//อัพเดต
+exports.updateEmployee = async (req, res) => {
+const { 
+    employee_Name, 
+    employee_Password, 
+    employee_Citizen_id, 
+    employee_Weight, 
+    employee_Height, 
+    employee_Address, 
+    employee_Details, 
+    employee_Birthday 
+} = req.body;
+
+try {
+    // ตรวจสอบว่ามี Employee อยู่ในระบบหรือไม่
+    let employee = await Employee.findOne({ employee_Citizen_id });
+    if (!employee) {
+        return res.status(404).json({ message: 'ไม่พบข้อมูลพนักงาน' });
+    }
+
+    // อัปเดตรหัสผ่านหากมีการเปลี่ยนแปลง
+    if (employee_Password) {
+        employee.employee_Password = await bcrypt.hash(employee_Password, 10);
+    }
+
+    // อัปเดตข้อมูลพนักงาน
+    employee.employee_Name = employee_Name;
+    employee.employee_Weight = employee_Weight;
+    employee.employee_Height = employee_Height;
+    employee.employee_Address = employee_Address;
+    employee.employee_Details = employee_Details;
+    employee.employee_Birthday = employee_Birthday;
+
+    // บันทึกการเปลี่ยนแปลงลงในฐานข้อมูล
+    await employee.save();
+
+    res.status(200).json({ message: 'อัปเดตข้อมูลพนักงานสำเร็จ', employee });
+} catch (error) {
+    console.error("Error updating Employee:", error);
+    res.status(500).json({
+        message: 'เกิดข้อผิดพลาดขณะอัปเดตข้อมูลพนักงาน',
+        error: error.message || error
+    });
+}
+};
+
+
+
+
+
+
+
+
