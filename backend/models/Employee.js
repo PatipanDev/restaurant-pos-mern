@@ -40,11 +40,13 @@ const employeeSchema = new mongoose.Schema({
   },
   employee_Birthday: {
     type: Date,
-    required: true
+    required: true,
   }
 }, {
   timestamps: true // เพิ่ม createdAt และ updatedAt อัตโนมัติ
 });
+
+
 
 module.exports = mongoose.model('Employee', employeeSchema);
 

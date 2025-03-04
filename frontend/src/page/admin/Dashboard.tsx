@@ -17,9 +17,8 @@ const Dashboard: React.FC = () => {
         }}
       >
         <AppBar position="static">
-          <Toolbar>
-            <Typography variant="h6">Dashboard</Typography>
-          </Toolbar>
+            {/* <Typography variant="h6">Dashboard</Typography> */}
+
         </AppBar>
 
         {/* ใช้ Outlet เพื่อแสดงเนื้อหาของหน้าใหม่ */}
