@@ -9,6 +9,9 @@ import Dashboard from './page/admin/Dashboard';
 import ProfileAdmin from './page/admin/Profileadmin';
 import AddEmployee from './page/admin/AddEmployee';
 import ManageCashier from './page/admin/ManageCashier';
+import ManageProducts from './page/admin/ManageProducts';
+import ManageProductCategories from './page/admin/ManageProductCategories';
+import ManageUnits from './page/admin/ManageUnit';
 
 
 const Home = React.lazy(() => import('./page/Home'));
@@ -58,6 +61,9 @@ const App = () => {
               <Route path="/admin/Dashboard" element={<Dashboard/>} />
               <Route path="/addemployee" element={<AddEmployee/>} />
               <Route path="/manageCashier" element={<ManageCashier/>}/>
+              <Route path="/manageproduct" element={<ManageProducts/>}/>
+              <Route path="/maageproductcategories" element={<ManageProductCategories/>}/>
+              <Route path="/manageunit" element={<ManageUnits/>}/>
             </Routes>
           </Suspense>
         </Router>

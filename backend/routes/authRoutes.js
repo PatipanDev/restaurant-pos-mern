@@ -32,7 +32,7 @@ router.get('/getcashiers', authCasController.getcashiers);
 
 router.put('/updatecashier/:id', authCasController.updatecashier);
 
-// router.delete('/deletecashier/:id', authCasController.deleteCashier)
+router.delete('/deletecashier/:id', authCasController.deletecashier)
 
 
 module.exports = router

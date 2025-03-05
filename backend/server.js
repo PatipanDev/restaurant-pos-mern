@@ -3,6 +3,8 @@ require('dotenv').config();
 const PORT = process.env.PORT
 const connectDB = require('./config/db')
 const authRoutes = require('./routes/authRoutes');
+const manageRoutes = require('./routes/manageRoutes');
+
 const cors = require('cors');
 const ShopOwner = require('./models/ShopOwner');
 
@@ -30,7 +32,9 @@ app.use((req, res, next) => {
 })
 
 // Routes
-app.use('/api/auth', authRoutes); 
+app.use('/api/auth', authRoutes);  // ถูกต้อง
+app.use('/api/data', manageRoutes); // เพิ่ม '/' ที่จุดเริ่มต้น
+
 //connectDataase
 
 // ✅ สร้าง Route (หน้าหลัก)

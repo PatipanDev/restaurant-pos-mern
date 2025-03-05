@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider } from '@mui/material';
-import { Home, People, Settings, MonetizationOn } from '@mui/icons-material';
+import { Home, People, Settings, MonetizationOn, ShoppingCart, Category } from '@mui/icons-material';
 import AddEmployee from './AddEmployee';
 import DataGridEdit from './AddEmployee';
 import ManageCashier from './ManageCashier';
+import ManageProducts from './ManageProducts';
+import ManageProductCategories from './ManageProductCategories';
+import ManageUnits from './ManageUnit';
 
 const Sidebar: React.FC = () => {
   const [selectedPage, setSelectedPage] = useState<string>('home');
@@ -63,6 +66,14 @@ const Sidebar: React.FC = () => {
         {selectedPage === 'settings' && <h1>การตั้งค่า</h1>}
         {selectedPage === 'addEmployee' && <DataGridEdit />}
         {selectedPage === 'manageCashier' && <ManageCashier />}
+        {selectedPage === 'manageProducts' && <ManageProducts />}
+        {selectedPage === 'manageProductCategories' && (
+  <div style={{ display: 'flex', flexDirection: 'row', gap: '20px' }}>
+    <ManageProductCategories key="firstInstance" />
+    <ManageUnits key="manageUnitsInstance" />
+  </div>
+)}
+
       </div>
     </div>
   );
@@ -73,8 +84,10 @@ const menuItems = [
   { page: 'home', label: 'หน้าหลัก', icon: <Home /> },
   { page: 'profile', label: 'ผู้ใช้งาน', icon: <People /> },
   { page: 'settings', label: 'การตั้งค่า', icon: <Settings /> },
-  { page: 'addEmployee', label: 'เพิ่มพนักงาน', icon: <Settings /> },
-  { page: 'manageCashier', label: 'ManageCashier', icon: <MonetizationOn /> },
+  { page: 'addEmployee', label: 'จัดการพนักงาน', icon: <Settings /> },
+  { page: 'manageCashier', label: 'จัดการแคชเชียร์', icon: <MonetizationOn /> },
+  { page: 'manageProducts', label: 'จัดการสินค้า', icon: <ShoppingCart /> },
+  { page: 'manageProductCategories', label: 'จัดการประเภทสินค้า', icon: <Category /> },
 ];
 
 export default Sidebar;
