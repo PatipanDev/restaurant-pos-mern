@@ -3,12 +3,14 @@ const ShopOwner = require('../models/ShopOwner');  // โหลด ShopOwner mod
 const Employee = require('../models/Employee');
 const Cashier = require('../models/Cashier');
 const Chef = require('../models/Chef');
-  // 
+// const Chef = require('../models/Chef')
+
  
 const express = require('express'); // เพิ่มบรรทัดนี้
 const router = express.Router();
 
 const bcrypt = require('bcryptjs');
+// const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
@@ -41,33 +43,52 @@ exports.register = async (req, res) => {
 };
 
 
+// ล็อกอินผู้ใช้
 exports.login = async (req, res) => {
     const { customer_Email, customer_Password } = req.body;
 
     try {
         const customer = await Customer.findOne({ customer_Email });
-        if (!customer) return res.status(400).json({ message: 'ไม่พบผู้ใช้' });
+        if (!customer) {
+            return res.status(400).json({ message: 'ไม่พบผู้ใช้' });
+        }
 
         const isMatch = await bcrypt.compare(customer_Password, customer.customer_Password);
-        if (!isMatch) return res.status(400).json({ message: 'รหัสผ่านไม่ถูกต้อง' });
+        if (!isMatch) {
+            return res.status(400).json({ message: 'รหัสผ่านไม่ถูกต้อง' });
+        }
 
-        const token = jwt.sign({ customer_Id: customer.customer_Id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        // 🔹 เก็บไอดี, ชื่อ, role ใน Token
+        const payload = {
+            customer_Id: customer.customer_Id,
+            customer_Name: customer.customer_Name,
+            role: "user",  // ใส่ role ที่ต้องการใน token
+        };
 
-        // ส่งข้อมูลและ token กลับไป
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        // ✅ ใช้ HTTP-only Cookie เก็บ Token
+        res.cookie('token', token, {
+            httpOnly: true, // ✅ ป้องกัน XSS
+            secure: process.env.NODE_ENV === 'production', // ✅ ใช้ HTTPS ใน production
+            sameSite: 'Strict', // ✅ ป้องกัน CSRF
+            maxAge: 3600000, // ✅ หมดอายุใน 1 ชั่วโมง
+        });
+
+        // ✅ ส่งข้อมูลผู้ใช้กลับ (แต่ไม่ส่ง Token ตรงๆ)
         res.status(200).json({
-            token,
-            customer: {
-                customer_Id: customer.customer_Id,
+            success: true,
+            message: "เข้าสู่ระบบสำเร็จ",
+            user: {
+                customer_Id: customer._id,
                 customer_Name: customer.customer_Name,
-                customer_Email: customer.employee_Name
+                role: "user"
             }
         });
+
     } catch (error) {
-        console.error("Error during login:", error); // log ข้อความ error ลงใน console
-        res.status(500).json({
-            message: error.message,
-            error: error.message || error // ส่งข้อมูลข้อผิดพลาดกลับไป
-        });
+        console.error("Error during login:", error);
+        res.status(500).json({ message: "เกิดข้อผิดพลาดในเซิร์ฟเวอร์", error: error.message });
     }
 };
 
@@ -75,30 +96,32 @@ exports.login = async (req, res) => {
 
 
 
-//*********************************************************************************************************************************** */
 
+
+//*********************************************************************************************************************************** */
+//ล็อกอินพนักงาน
 exports.loginemployee = async (req, res) => {
     const { employee_Name, employee_Password, employee_Role } = req.body;
 
     try {
         let user;
         let passwordField;
-        const role = Number(employee_Role); // แปลง role เป็นตัวเลข
+        const role = employee_Role; // ไม่ต้องแปลงเป็นตัวเลขแล้ว
 
         switch (role) {
-            case 1: // พนักงานทั่วไป
+            case "employee": // พนักงานทั่วไป
                 user = await Employee.findOne({ employee_Name });
                 passwordField = "employee_Password";
                 break;
-            case 2: // แคชเชียร์
+            case "cashier": // แคชเชียร์
                 user = await Cashier.findOne({ cashier_Name: employee_Name });
                 passwordField = "cashier_Password";
                 break;
-            case 3: // เชฟ
+            case "chef": // เชฟ
                 user = await Chef.findOne({ Chef_Name: employee_Name });
                 passwordField = "Chef_Password";
                 break;
-            case 4: // เจ้าของร้าน
+            case "owner": // เจ้าของร้าน
                 user = await ShopOwner.findOne({ owner_Name: employee_Name });
                 passwordField = "owner_Password";
                 break;
@@ -121,12 +144,21 @@ exports.loginemployee = async (req, res) => {
             { expiresIn: '8h' }
         );
 
+        // ✅ ใช้ HTTP-only Cookie เก็บ Token
+        res.cookie('token', token, {
+            httpOnly: true, // ✅ ป้องกัน XSS
+            secure: process.env.NODE_ENV === 'production', // ✅ ใช้ HTTPS ใน production
+            sameSite: 'Strict', // ✅ ป้องกัน CSRF
+            maxAge: 3600000, // ✅ หมดอายุใน 1 ชั่วโมง
+        });
+
         res.status(200).json({
-            token,
+            success: true,
+            message: "เข้าสู่ระบบสำเร็จ",
             user: {
                 id: user._id,
                 name: employee_Name,
-                role
+                role: role // ส่งเป็น string
             }
         });
 
@@ -138,6 +170,7 @@ exports.loginemployee = async (req, res) => {
         });
     }
 };
+
 
 
 

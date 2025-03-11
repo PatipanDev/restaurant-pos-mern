@@ -25,7 +25,10 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
-export default function NestedList() {
+import axios from 'axios';
+import Cookies from 'js-cookie';
+
+export default function Profile() {
   const [openCollapse, setOpenCollapse] = React.useState(true); // เปลี่ยนชื่อให้แตกต่างจาก Dialog
   const navigate = useNavigate();
   const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
@@ -53,14 +56,19 @@ export default function NestedList() {
     setOpenDialog(false);
   };
 
-  const handleConfirm = () => {
-   
-    localStorage.removeItem('user'); // ลบข้อมูลการล็อกอิน
-    setSuccAlertMessage(<div>ล็อกเอาท์ออกจากระบบเรียบร้อย</div>);
-    setOpenDialog(false);
-    setTimeout(() => {
-      navigate('/login');
-    }, 3000);
+  const handleConfirm = async () => {
+    try {
+      await axios.post('http://localhost:3000/api/logout', {}, { withCredentials: true });
+      localStorage.removeItem('user'); // ลบข้อมูลผู้ใช้
+      setSuccAlertMessage(<div>ล็อกเอาท์ออกจากระบบเรียบร้อย</div>);
+      setOpenDialog(false);
+      setTimeout(() => {
+        navigate('/login');
+      }, 3000);
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+    
   };
 
   return (

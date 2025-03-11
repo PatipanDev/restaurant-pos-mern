@@ -262,7 +262,8 @@ const ManageCashier: React.FC = () => {
                   margin="dense"
                   error={!!errors.cashier_Gender}
                   helperText={errors.cashier_Gender?.message}
-                  value={field.value}
+                  value={field.value || ''} // ✅ ป้องกัน undefined
+                  onChange={field.onChange}
                 >
                   <MenuItem value="Male">ชาย</MenuItem>
                   <MenuItem value="Female">หญิง</MenuItem>

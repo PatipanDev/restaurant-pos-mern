@@ -3,6 +3,8 @@ import { DataGrid, GridColDef, GridRowsProp, GridRowId, GridCellParams } from '@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
+import { ObjectId } from 'mongodb';
+
 
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -16,30 +18,28 @@ interface Product {
   _id: string;
   product_Name: string;
   product_Quantity: number;
-  product_Ramquantity: number;
+  product_Stock: number;
   product_Price: number;
-  category_Id: string; // เปลี่ยนเป็น String เพื่อเก็บ ObjectId
-}
-
-interface ProductCategory {
-  _id: string;
-  category_name: string;
+  unitId: string; // Reference to Unit Model
+  categoryId: string; // Reference to ProductCategory Model
 }
 
 interface FormData {
   product_Name: string;
   product_Quantity: number;
-  product_Ramquantity: number;
+  product_Stock: number;
   product_Price: number;
-  category_Id: string;
+  unitId: string;
+  categoryId: string;
 }
 
 const schema = yup.object({
-  product_Name: yup.string().required('กรุณาใส่ชื่อสินค้า').max(255, 'ชื่อสินค้าต้องไม่เกิน 255 ตัวอักษร'),
-  product_Quantity: yup.number().required('กรุณาใส่ปริมาณสินค้า').min(0, 'ปริมาณสินค้าต้องไม่น้อยกว่า 0'),
-  product_Ramquantity: yup.number().required('กรุณาใส่ปริมาณคงเหลือสินค้า').min(0, 'ปริมาณคงเหลือสินค้าต้องไม่น้อยกว่า 0'),
-  product_Price: yup.number().required('กรุณาใส่ราคา').min(0, 'ราคาต้องไม่น้อยกว่า 0'),
-  category_Id: yup.string().required('กรุณาเลือกประเภทสินค้า'),
+  product_Name: yup.string().required('กรุณาใส่ชื่อสินค้า').max(255, 'ชื่อต้องไม่เกิน 255 ตัวอักษร'),
+  product_Quantity: yup.number().required('กรุณาใส่ปริมาณสินค้า').min(0, 'ปริมาณสินค้าไม่สามารถน้อยกว่า 0 ได้'),
+  product_Stock: yup.number().required('กรุณาใส่ปริมาณคงเหลือ').min(0, 'ปริมาณคงเหลือไม่สามารถน้อยกว่า 0 ได้'),
+  product_Price: yup.number().required('กรุณาใส่ราคา').min(0, 'ราคาต้องไม่ต่ำกว่า 0'),
+  unitId: yup.string().required('กรุณาเลือกหน่วยสินค้า'),
+  categoryId: yup.string().required('กรุณาเลือกประเภทสินค้า'),
 }).required();
 
 const ManageProducts: React.FC = () => {
@@ -48,7 +48,10 @@ const ManageProducts: React.FC = () => {
   const [selectedRowId, setSelectedRowId] = useState<GridRowId | null>(null);
   const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
   const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
-  const [categories, setCategories] = useState<ProductCategory[]>([]); // เพิ่ม state สำหรับเก็บ categories
+
+  const [units, setUnits] = useState<any[]>([]); // To store units
+
+  const [categories, setCategories] = useState<any[]>([]); // To store categories
 
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
     resolver: yupResolver(schema),
@@ -57,15 +60,18 @@ const ManageProducts: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const categoryResponse = await axios.get('http://localhost:3000/api/data/getcategories');
-        setCategories(categoryResponse.data);
+        const productsResponse = await axios.get('http://localhost:3000/api/data/getproducts');
+        setRows(productsResponse.data);
 
-        const response = await axios.get('http://localhost:3000/api/data/getproducts');
-        setRows(response.data);
-        console.log(response.data);
+        const unitsResponse = await axios.get('http://localhost:3000/api/data/getunits');
+        setUnits(unitsResponse.data);
 
-        // ดึงข้อมูล categories มาเก็บไว้
+        const categoriesResponse = await axios.get('http://localhost:3000/api/data/getcategories');
+        setCategories(categoriesResponse.data);
 
+        console.log('Products:', productsResponse.data);
+        console.log('Units:', unitsResponse.data);
+        console.log('Categories:', categoriesResponse.data);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -73,48 +79,91 @@ const ManageProducts: React.FC = () => {
     fetchData();
   }, []);
 
+  const handleAddProduct = async (data: FormData) => {
+    try {
+      const response = await axios.post('http://localhost:3000/api/products', data);
+      setRows([...rows, response.data]);
+      setAlertSuccess('Product added successfully!');
+      setOpen(false);
+    } catch (error) {
+      setAlertMessage('Error adding product.');
+      console.error(error);
+    }
+  };
+
+  const handleDeleteProduct = async (id: string) => {
+    try {
+      await axios.delete(`http://localhost:3000/api/products/${id}`);
+      setRows(rows.filter((row) => row._id !== id));
+      setAlertSuccess('Product deleted successfully!');
+    } catch (error) {
+      setAlertMessage('Error deleting product.');
+      console.error(error);
+    }
+  };
+
+  const handleEditProduct = (id: string) => {
+    const product = rows.find((row) => row._id === id);
+    if (product) {
+      setValue('product_Name', product.product_Name);
+      setValue('product_Quantity', product.product_Quantity);
+      setValue('product_Stock', product.product_Stock);
+      setValue('product_Price', product.product_Price);
+      setValue('unitId', product.unitId);
+      setValue('categoryId', product.categoryId);
+      setSelectedRowId(id);
+      setOpen(true);
+    }
+  };
+
   useEffect(() => {
     if (selectedRowId !== null) {
-      const selectedRow = rows.find((row) => row._id === selectedRowId) as Product;
-      if (selectedRow) {
+      const selectedRow = rows.find((row) => row._id === selectedRowId);
+      if (selectedRow) { // Check if selectedRow has value
         setValue('product_Name', selectedRow.product_Name);
         setValue('product_Quantity', selectedRow.product_Quantity);
-        setValue('product_Ramquantity', selectedRow.product_Ramquantity);
+        setValue('product_Stock', selectedRow.product_Stock);
         setValue('product_Price', selectedRow.product_Price);
-        setValue('category_Id', selectedRow.category_Id);
+        setValue('categoryId', selectedRow.categoryId);
+        setValue('unitId', selectedRow.unitId);
       }
     }
   }, [selectedRowId, rows, setValue]);
 
-  const columns: GridColDef<Product>[] = [
+  const columns: GridColDef[] = [
     {
       field: 'index',
       headerName: 'ลำดับ',
       flex: 0.9,
       width: 30,
-      renderCell: (params) => rows && rows.length ? rows.indexOf(params.row) + 1 : '',
+      renderCell: (params) => rows.indexOf(params.row) + 1,
     },
     { field: 'product_Name', headerName: 'ชื่อสินค้า', flex: 1, minWidth: 180 },
-    { field: 'product_Quantity', headerName: 'ปริมาณสินค้า', flex: 1, minWidth: 100 },
-    { field: 'product_Ramquantity', headerName: 'ปริมาณคงเหลือสินค้า', flex: 1, minWidth: 100 },
-    { field: 'product_Price', headerName: 'ราคา', flex: 1, minWidth: 100 },
+    { field: 'product_Quantity', headerName: 'ปริมาณ', flex: 1, minWidth: 100 },
+    { field: 'product_Stock', headerName: 'จำนวนสินค้าคงเหลือ', flex: 1, minWidth: 150 },
+    { field: 'product_Price', headerName: 'ราคาสินค้า', flex: 1, minWidth: 120 },
     {
-      field: 'category_Id',
-      headerName: 'ประเภทสินค้า',
+      field: 'categoryId',
+      headerName: 'หมวดหมู่สินค้า',
       flex: 1,
       minWidth: 150,
-      valueGetter: (params: GridCellParams) => {  // ระบุประเภทของ params
-        const categoryId = params.row.category_Id;  // ใช้ params.row เพื่อเข้าถึง category_Id
-        const category = categories?.find((cat) => cat._id === categoryId);
-        return category?.category_name || '';
-      },
+      renderCell: (params) => params.row.categoryId?.category_name, // Render category name instead of ID
+    },
+    {
+      field: 'unitId',
+      headerName: 'หน่วยสินค้า',
+      flex: 1,
+      minWidth: 150,
+      renderCell: (params) => params.row.unitId?.unit_Name, // Render unit name instead of ID
     },
     {
       field: 'actions',
       headerName: 'แก้ไขข้อมูล',
       width: 100,
       renderCell: (params) => (
-        <Button variant="outlined" startIcon={<ModeEditIcon />} onClick={() => handleEditClick(params.id)}>แก้ไข</Button>
+        <Button variant="outlined" startIcon={<ModeEditIcon />} onClick={() => handleEditClick(params.id)}>
+          แก้ไข
+        </Button>
       ),
     },
     {
@@ -122,10 +171,14 @@ const ManageProducts: React.FC = () => {
       headerName: 'ลบข้อมูล',
       width: 100,
       renderCell: (params) => (
-        <Button variant="outlined" startIcon={<DeleteIcon />} color="error" onClick={() => handleDeleteClick(params.id)}>ลบ</Button>
+        <Button variant="outlined" startIcon={<DeleteIcon />} color="error" onClick={() => handleDeleteClick(params.id)}>
+          ลบ
+        </Button>
       ),
     },
   ];
+
+
 
   const handleDeleteClick = async (id: GridRowId) => {
     const confirmDelete = window.confirm('คุณแน่ใจหรือไม่ว่าจะลบข้อมูลนี้?');
@@ -133,8 +186,10 @@ const ManageProducts: React.FC = () => {
       try {
         const productId = rows.find((row) => row._id === id)?._id;
         if (productId) {
+          // Call the delete API with the productId
           await axios.delete(`http://localhost:3000/api/data/deleteproduct/${productId}`);
 
+          // Filter out the deleted row from the state
           const updatedRows = rows.filter((row) => row._id !== productId);
           setRows(updatedRows);
 
@@ -147,46 +202,53 @@ const ManageProducts: React.FC = () => {
         setAlertMessage(<div>เกิดข้อผิดพลาดในการลบข้อมูล</div>);
       }
     } else {
-      // ผู้ใช้ยกเลิกการลบ
+      // User cancelled deletion
     }
   };
 
   const handleEditClick = (id: GridRowId) => {
+    // Set the selected row and open the dialog for editing
     setSelectedRowId(id);
     setOpen(true);
   };
 
   const handleAddClick = () => {
+    // Reset and open the dialog for adding a new product
     setSelectedRowId(null);
-    reset();
+    reset(); // Reset the form values
     setOpen(true);
   };
 
   const handleClose = () => {
+    // Close the dialog and reset form
     setOpen(false);
     reset();
   };
-  // ... (ส่วนฟังก์ชันอื่นๆ)
 
+  // On form submission, either create a new product or update an existing one
   const onSubmit = async (data: FormData) => {
     console.log("Form Data:", data);
 
     try {
       if (selectedRowId !== null) {
+        // Update an existing product
         const updatedData = {
           product_Name: data.product_Name,
           product_Quantity: data.product_Quantity,
-          product_Ramquantity: data.product_Ramquantity,
+          product_Ramquantity: data.product_Stock,
           product_Price: data.product_Price,
-          category_Id: data.category_Id,
+          unit_Id: data.unitId,
+          category_Id: data.categoryId,
         };
 
+        // Correct the URL and data
         await axios
-          .put(`http://localhost:3000/api/data/products/${selectedRowId}`, updatedData) // เปลี่ยน URL
+          .put(`http://localhost:3000/api/data/updateproduct/${selectedRowId}`, updatedData) // Fixed URL format
           .then((response) => {
             console.log("Update successful", response.data);
             setAlertSuccess(<div>อัปเดตข้อมูลสำเร็จ</div>);
 
+            // Update the rows in the state with the new data
             const updatedRows = rows.map((row) =>
               row._id === selectedRowId ? { ...row, ...updatedData } : row
             );
@@ -197,117 +259,160 @@ const ManageProducts: React.FC = () => {
             setAlertMessage(<div>เกิดข้อผิดพลาดในการอัปเดตข้อมูล</div>);
           });
       } else {
+        // Add a new product
         const response = await axios.post(
-          "http://localhost:3000/api/data/products", // เปลี่ยน URL
+          "http://localhost:3000/api/data/addproduct", // Correct URL for adding a product
           data
         );
         setRows([...rows, response.data]);
         setAlertSuccess(<div>เพิ่มข้อมูลสำเร็จ</div>);
       }
-      handleClose();
+      handleClose(); // Close the form dialog
     } catch (error) {
       console.error("Error submitting data:", error);
       setAlertMessage(<div>เกิดข้อผิดพลาดในการดำเนินการ</div>);
     }
   };
-
+  
   return (
     <div style={{ height: '90vh', width: '100%' }}>
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{selectedRowId ? 'แก้ไขข้อมูลแคชเชียร์' : 'เพิ่มข้อมูลแคชเชียร์'}</DialogTitle>
+        <DialogTitle>{selectedRowId ? 'แก้ไขข้อมูลสินค้า' : 'เพิ่มข้อมูลสินค้า'}</DialogTitle>
         <DialogContent>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Controller
-              name="product_Name"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="ชื่อสินค้า"
-                  fullWidth
-                  margin="dense"
-                  error={!!errors.product_Name}
-                  helperText={errors.product_Name?.message}
-                />
-              )}
-            />
-            <Controller
-              name="product_Quantity"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="จำนวนสินค้า"
-                  type="number"
-                  fullWidth
-                  margin="dense"
-                  error={!!errors.product_Quantity}
-                  helperText={errors.product_Quantity?.message}
-                />
-              )}
-            />
-            <Controller
-              name="product_Ramquantity"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="หน่วยความจำสินค้า"
-                  type="number"
-                  fullWidth
-                  margin="dense"
-                  error={!!errors.product_Ramquantity}
-                  helperText={errors.product_Ramquantity?.message}
-                />
-              )}
-            />
-            <Controller
-              name="product_Price"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="ราคาสินค้า"
-                  type="number"
-                  fullWidth
-                  margin="dense"
-                  error={!!errors.product_Price}
-                  helperText={errors.product_Price?.message}
-                />
-              )}
-            />
-            <Controller
-              name="category_Id"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="หมวดหมู่สินค้า"
-                  select
-                  fullWidth
-                  margin="dense"
-                  error={!!errors.category_Id}
-                  helperText={errors.category_Id?.message}
-                >
-                  {/* Render category options dynamically */}
-                  {categories.map((category) => (
-                    <MenuItem key={category._id} value={category._id}>
-                      {category.category_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
-            />
-          </form>
+        <form onSubmit={handleSubmit(onSubmit)}>
+      <Controller
+        name="product_Name"
+        control={control}
+        rules={{ required: "กรุณากรอกชื่อสินค้า" }}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="ชื่อสินค้า"
+            fullWidth
+            margin="dense"
+            error={!!errors.product_Name}
+            helperText={errors.product_Name?.message}
+          />
+        )}
+      />
+
+      <Controller
+        name="product_Quantity"
+        control={control}
+        rules={{ required: "กรุณากรอกปริมาณ" }}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="ปริมาณ"
+            type="number"
+            fullWidth
+            margin="dense"
+            error={!!errors.product_Quantity}
+            helperText={errors.product_Quantity?.message}
+          />
+        )}
+      />
+
+      <Controller
+        name="product_Stock"
+        control={control}
+        rules={{ required: "กรุณากรอกจำนวนสินค้าคงเหลือ" }}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="จำนวนสินค้าคงเหลือ"
+            type="number"
+            fullWidth
+            margin="dense"
+            error={!!errors.product_Stock}
+            helperText={errors.product_Stock?.message}
+          />
+        )}
+      />
+
+      <Controller
+        name="product_Price"
+        control={control}
+        rules={{ required: "กรุณากรอกราคา" }}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            label="ราคาสินค้า"
+            type="number"
+            fullWidth
+            margin="dense"
+            error={!!errors.product_Price}
+            helperText={errors.product_Price?.message}
+          />
+        )}
+      />
+
+      <Controller
+        name="categoryId"
+        control={control}
+        rules={{ required: "กรุณาเลือกประเภท" }}
+        render={({ field }) => (
+          <TextField
+          {...field}
+          select
+          label="ประเภท"
+          fullWidth
+          margin="dense"
+          error={!!errors.categoryId}
+          helperText={errors.categoryId?.message}
+          value={field.value || ""}
+          onChange={(e) => {
+            const selectedValue = e.target.value; // ค่าที่เลือกจาก MenuItem
+            field.onChange(selectedValue); // ส่งค่าไปยัง react-hook-form
+          }}
+        >
+            {categories.map((category) => (
+              <MenuItem key={category._id} value={category._id}>
+                {category.category_name}
+              </MenuItem>
+            ))}
+          </TextField>
+        )}
+      />
+
+      <Controller
+        name="unitId"
+        control={control}
+        rules={{ required: "กรุณาเลือกหน่วย" }}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            select
+            label="หน่วย"
+            fullWidth
+            margin="dense"
+            error={!!errors.unitId}
+            helperText={errors.unitId?.message}
+            value={field.value || ""}
+            onChange={field.onChange}
+          >
+            {units.map((unit) => (
+              <MenuItem key={unit._id} value={unit._id}>
+                {unit.unit_Name}
+              </MenuItem>
+            ))}
+          </TextField>
+        )}
+      />
+    </form>
         </DialogContent>
         <DialogActions>
           <Button variant="contained" onClick={handleClose} color="error">ยกเลิก</Button>
-          <Button variant="contained" onClick={handleSubmit(onSubmit)} color="success">{selectedRowId ? 'อัปเดต' : 'เพิ่ม'}</Button>
+          <Button variant="contained" onClick={handleSubmit(onSubmit)} color="success">
+            {selectedRowId ? 'อัปเดต' : 'เพิ่ม'}
+          </Button>
         </DialogActions>
       </Dialog>
+
       <ErrorBoundary>
         <DataGrid rows={rows} columns={columns} getRowId={(row) => row._id} />
       </ErrorBoundary>
+
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20 }}>
         <Button variant="contained" onClick={handleAddClick}>เพิ่มข้อมูล</Button>
         <WarningAlert messagealert={alertMessage} />
@@ -315,6 +420,6 @@ const ManageProducts: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
-export default ManageProducts;
+export default ManageProducts;  

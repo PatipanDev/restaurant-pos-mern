@@ -2,8 +2,17 @@ import React from 'react';
 import { Box, AppBar, Toolbar, Typography } from '@mui/material';
 import Sidebar from './Sidebar';
 import { Outlet } from 'react-router-dom'; // ใช้ Outlet เพื่อแสดงหน้าใหม่ภายใน Dashboard
+import { useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 
-const Dashboard: React.FC = () => {
+
+
+const DashboardOwner: React.FC = () => {
+    const navigate = useNavigate();
+  
+
+
+
   return (
     <Box sx={{ display: 'flex' }}>
       <Sidebar /> {/* Sidebar จะคงอยู่ */}
@@ -28,4 +37,4 @@ const Dashboard: React.FC = () => {
   );
 };
 
-export default Dashboard;
+export default DashboardOwner;

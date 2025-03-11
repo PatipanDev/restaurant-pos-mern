@@ -79,7 +79,7 @@ const Register = () => {
         >
           <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", m: 2 }}>
             <Typography variant="h5" gutterBottom fontWeight={800}>
-              สมัครสมาชิก1
+              สมัครสมาชิก
             </Typography>
 
             <TextField

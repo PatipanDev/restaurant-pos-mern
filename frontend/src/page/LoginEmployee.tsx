@@ -8,6 +8,14 @@ import FormControl from '@mui/material/FormControl';
 import NativeSelect from '@mui/material/NativeSelect';
 import WarningAlert from "../components/AlertDivWarn";
 import SuccessAlert from "../components/AlertSuccess";
+import Dashboard from "./Dashboard";
+// import LoginEmployee from './LoginEmployee';
+
+axios.defaults.withCredentials = true; 
+
+interface LoginProps {
+  setAuth?: (auth: boolean) => void;
+}
 
 // 🟢 ประเภทข้อมูลที่ฟอร์มจะส่ง
 interface LoginFormInputs {
@@ -16,7 +24,7 @@ interface LoginFormInputs {
   role: string;  // เพิ่มตัวแปร role สำหรับตำแหน่ง
 }
 
-const LoginEmployee = () => {
+const LoginEmployee: React.FC<LoginProps> = ({ setAuth }) => {
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors }} = useForm<LoginFormInputs>(); // 🎯 ใช้ react-hook-form
   const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
@@ -32,37 +40,30 @@ const LoginEmployee = () => {
         employee_Name: name,  // เปลี่ยนเป็นชื่อสำหรับพนักงาน
         employee_Password: password,
         employee_Role: role,  // ส่งค่าตำแหน่งไปด้วย
-      });
+      },{withCredentials: true});
 
-      
+      console.log("📌 Response จาก API:", response.data); // ✅ Debug จุดนี้
 
-      // ตรวจสอบว่ามี token จริงหรือไม่
-      if (response.data && response.data.token) {
-        const token = response.data.token;
-        sessionStorage.setItem("token", token); // ✅ เก็บ token ใน sessionStorage
-        localStorage.setItem('user', JSON.stringify({ username: response.data.user, role: response.data.role})); // ✅ เก็บข้อมูลผู้ใช้และตำแหน่ง
-        console.log("Token:", token);
+      if (response.data.success) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+
         setAlertSuccess(<div>เข้าสู่ระบบเรียบร้อย</div>);
 
+        setAuth?.(true);
+
         setTimeout(() => {
-          navigate("/admin/Dashboard"); 
+          navigate("/DashboardOwner");
         }, 2000);
       } else {
-        console.warn("ไม่มี Token ที่ได้รับจากเซิร์ฟเวอร์");
+        console.warn("Login ไม่สำเร็จ");
       }
-
     } catch (error: any) {
       console.error('Error:', error);
       if (error.response) {
-        // กรณีเซิร์ฟเวอร์ตอบกลับแต่มี error (เช่น 400, 500)
         setAlertMessage(<div>{error.response.data.message}</div>);
       } else if (error.request) {
-        // กรณี request ถูกส่งไปแต่ไม่ได้รับ response (เช่น server ล่ม หรือ network error)
-        console.error('Request error:', error.request);
-        setAlertMessage(<div>Server did not respond. Please try again later.</div>);
+        setAlertMessage(<div>Server ไม่ตอบสนอง โปรดลองใหม่</div>);
       } else {
-        // กรณีเกิดข้อผิดพลาดใน axios เอง (เช่นตั้งค่า request ผิด)
-        console.error('Error message:', error.message);
         setAlertMessage(<div>{error.message}</div>);
       }
     }
@@ -120,10 +121,10 @@ const LoginEmployee = () => {
                   id: 'uncontrolled-native',
                 }}
               >
-                <option value={1}>พนักงาน</option>
-                <option value={2}>แคชเชียร์</option>
-                <option value={3}>เชฟ</option>
-                <option value={4}>เจ้าของร้าน</option>
+                <option value={"employee"}>พนักงาน</option>
+                <option value={"cashier"}>แคชเชียร์</option>
+                <option value={"chef"}>เชฟ</option>
+                <option value={"owner"}>เจ้าของร้าน</option>
               </NativeSelect>
             </FormControl>
           </Box>

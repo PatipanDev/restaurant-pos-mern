@@ -1,11 +1,14 @@
-const express = require('express');  
+const express = require('express');
 require('dotenv').config();
-const PORT = process.env.PORT
-const connectDB = require('./config/db')
+const PORT = process.env.PORT;
+const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const manageRoutes = require('./routes/manageRoutes');
+const userRoutes = require('./routes/userRoutes')
 
 const cors = require('cors');
+const cookieParser = require("cookie-parser");
+
 const ShopOwner = require('./models/ShopOwner');
 
 const app = express();
@@ -15,39 +18,27 @@ connectDB();
 
 // Middleware
 app.use(express.json());
-app.use(cors({ origin: '*'}));
+app.use(cookieParser());
 
-app.use((req, res, next) => {
-    // กำหนดการอนุญาตการเข้าถึงจากทุก origin
-    res.header('Access-Control-Allow-Origin', '*');
-    
-    // กำหนด headers ที่อนุญาตให้ client ใช้งานได้
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    
-    // กำหนดวิธีการที่อนุญาตให้ใช้ใน request (เช่น GET, POST, PUT, DELETE)
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    
-    // ไปยังขั้นตอนถัดไป
-    next();
-})
+// ตั้งค่า CORS
+app.use(cors({
+    origin: "http://localhost:5173", // Frontend URL
+    credentials: true,  // อนุญาตให้ส่งคุกกี้
+}));
 
 // Routes
-app.use('/api/auth', authRoutes);  // ถูกต้อง
-app.use('/api/data', manageRoutes); // เพิ่ม '/' ที่จุดเริ่มต้น
+app.use('/api', userRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/data', manageRoutes);
 
-//connectDataase
-
-// ✅ สร้าง Route (หน้าหลัก)
+// สร้าง Route (หน้าหลัก)
 app.get('/', (req, res) => {
     res.send('Hello Express.js 🚀');
 });
 
-
-// ✅ เริ่มต้น Server
+// เริ่มต้น Server
 app.listen(PORT, () => {
-    console.log("🔍 JWT_SECRET:", process.env.JWT_SECRET); 
-    const currentTime = new Date().toLocaleString(); // ใช้เพื่อแสดงเวลาในรูปแบบที่อ่านง่าย
+    console.log("🔍 JWT_SECRET:", process.env.JWT_SECRET);
+    const currentTime = new Date().toLocaleString();
     console.log(`🚀 Server is running at http://localhost:${PORT} time: ${currentTime}`);
 });
-
-app.use(ShopOwner)

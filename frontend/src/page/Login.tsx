@@ -3,81 +3,68 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { Box, Container, CssBaseline, TextField, Button, Typography } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import Cookies from "js-cookie";
 import WarningAlert from "../components/AlertDivWarn";
 import SuccessAlert from "../components/AlertSuccess";
 
-// 🟢 ประเภทข้อมูลที่ฟอร์มจะส่ง
+axios.defaults.withCredentials = true; // ✅ ให้ axios ส่งคุกกี้อัตโนมัติ
+
+interface LoginProps {
+  setAuth?: (auth: boolean) => void;
+}
+
 interface LoginFormInputs {
   email: string;
   password: string;
 }
 
-const Login = () => {
+const Login: React.FC<LoginProps> = ({ setAuth }) => {
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors }} = useForm<LoginFormInputs>(); // 🎯 ใช้ react-hook-form
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormInputs>();
   const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
   const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
 
-  // 🟢 ฟังก์ชันส่งข้อมูล
-const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
-  const { email, password } = data;
+  const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
+    try {
+      const response = await axios.post('http://localhost:3000/api/auth/login', {
+        customer_Email: data.email,
+        customer_Password: data.password,
+      },{ withCredentials: true });
 
-  try {
-    const response = await axios.post('http://localhost:3000/api/auth/login', {
-      customer_Email: email,
-      customer_Password: password,
-    });
+      console.log("📌 Response จาก API:", response.data); // ✅ Debug จุดนี้
 
-    // ตรวจสอบว่ามี token จริงหรือไม่
-    if (response.data && response.data.token) {
-      const token = response.data.token;
-      sessionStorage.setItem("token", token); // ✅ เก็บ token ใน sessionStorage
-      // localStorage.setItem("user", JSON.stringify(response.data.user));
-      localStorage.setItem('user', JSON.stringify({ username: response.data, role: 1})); // ✅ เก็บข้อมูลผู้ใช้
-      console.log("Token:", token);
-      setAlertSuccess(<div>เข้าสู่ระบบเรียบร้อย</div>)
+      if (response.data.success) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
 
+        setAlertSuccess(<div>เข้าสู่ระบบเรียบร้อย</div>);
 
-      setTimeout(() => {
-        navigate("/"); 
-      }, 2000);
-    } else {
-      console.warn("ไม่มี Token ที่ได้รับจากเซิร์ฟเวอร์");
+        setAuth?.(true);
+
+        setTimeout(() => {
+          navigate("/");
+        }, 2000);
+      } else {
+        console.warn("Login ไม่สำเร็จ");
+      }
+    } catch (error: any) {
+      console.error('Error:', error);
+      if (error.response) {
+        setAlertMessage(<div>{error.response.data.message}</div>);
+      } else if (error.request) {
+        setAlertMessage(<div>Server ไม่ตอบสนอง โปรดลองใหม่</div>);
+      } else {
+        setAlertMessage(<div>{error.message}</div>);
+      }
     }
+  };
 
-    
-
-  } catch (error: any) {
-    console.error('Error:', error);
-    if (error.response) {
-      // กรณีเซิร์ฟเวอร์ตอบกลับแต่มี error (เช่น 400, 500)
-      setAlertMessage(<div>{error.response.data.message}</div>);
-      // setAlertMessage(<div>{String(error.response.data)}</div>);
-  } else if (error.request) {
-      // กรณี request ถูกส่งไปแต่ไม่ได้รับ response (เช่น server ล่ม หรือ network error)
-      console.error('Request error:', error.request);
-      setAlertMessage(<div>Server did not respond. Please try again later.</div>);
-  } else {
-      // กรณีเกิดข้อผิดพลาดใน axios เอง (เช่นตั้งค่า request ผิด)
-      console.error('Error message:', error.message);
-      setAlertMessage(<div>{error.message}</div>);
-  }
-  }
-};
   return (
     <React.Fragment>
-      <CssBaseline/>
+      <CssBaseline />
       <Container fixed style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh" }}>
         <Box
           component="form"
-          sx={{
-            "& .MuiTextField-root": { m: 2, width: "28ch" },
-            padding: 4,
-            borderRadius: 2,
-            boxShadow: 3,
-            maxWidth: 300,
-            margin: "0 auto",
-          }}
+          sx={{ "& .MuiTextField-root": { m: 2, width: "28ch" }, padding: 4, borderRadius: 2, boxShadow: 3, maxWidth: 300, margin: "0 auto" }}
           noValidate
           autoComplete="off"
           onSubmit={handleSubmit(onSubmit)}
@@ -86,7 +73,6 @@ const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
             <Typography variant="h5" gutterBottom fontWeight={800}>
               เข้าสู่ระบบลูกค้า
             </Typography>
-
             <TextField
               label="อีเมล"
               type="email"
@@ -102,7 +88,6 @@ const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
               helperText={errors.password?.message}
             />
           </Box>
-
           <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", m: 2 }}>
             <Button variant="contained" type="submit" color="primary" sx={{ width: "25ch" }}>
               เข้าสู่ระบบ
@@ -119,10 +104,8 @@ const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
             </Link>
           </Box>
         </Box>
-
-        {/* ✅ แสดงแจ้งเตือนเฉพาะเมื่อเกิดข้อผิดพลาดหรือสมัครสำเร็จ */}
         <WarningAlert messagealert={alertMessage} />
-        <SuccessAlert successalert={alertSuccess}/>
+        <SuccessAlert successalert={alertSuccess} />
       </Container>
     </React.Fragment>
   );

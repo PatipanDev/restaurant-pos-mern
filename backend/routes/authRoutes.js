@@ -3,6 +3,8 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const authEmController = require('../controllers/authEmController')
 const authCasController = require('../controllers/authCasController')
+const authChefController = require('../controllers/authChefController')
+
 
 router.post('/register', authController.register);
 
@@ -33,6 +35,17 @@ router.get('/getcashiers', authCasController.getcashiers);
 router.put('/updatecashier/:id', authCasController.updatecashier);
 
 router.delete('/deletecashier/:id', authCasController.deletecashier)
+
+
+
+// จัดการเชฟ
+router.post('/registerChef', authChefController.registerChef);
+
+router.get('/getChefs', authChefController.getChefs);
+
+router.put('/updateChef/:id', authChefController.updateChef);
+
+router.delete('/deleteChef/:id', authChefController.deleteChef);
 
 
 module.exports = router

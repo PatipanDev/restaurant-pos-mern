@@ -1,45 +1,41 @@
-const Product = require('../models/Product');  // Use the Product model
+const Product = require('../models/Product');
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-// Register new product
-exports.addproduct = async (req, res) => {
-    const { 
-        product_Name, 
-        product_Quantity, 
-        product_Ramquantity, 
-        product_Price, 
-        category_Id 
-    } = req.body;
+// เพิ่มสินค้าใหม่
+exports.addProduct = async (req, res) => {
+    const { product_Name, product_Quantity, product_Stock, product_Price, categoryId, unitId } = req.body;
 
     try {
-        // ตรวจสอบว่ามีสินค้านี้อยู่ในฐานข้อมูลหรือไม่
-        let product = await Product.findOne({ product_Name });
+        // ตรวจสอบว่าสินค้านี้มีอยู่ในหมวดหมู่เดียวกันหรือไม่
+        let product = await Product.findOne({ product_Name, categoryId });
         if (product) {
-            return res.status(400).json({ message: 'สินค้านี้มีอยู่แล้ว' });
+            return res.status(400).json({ message: 'สินค้านี้มีอยู่แล้วในหมวดหมู่เดียวกัน' });
         }
 
         // สร้างสินค้าใหม่
         product = new Product({
             product_Name,
             product_Quantity,
-            product_Ramquantity,
+            product_Stock,
             product_Price,
-            category_Id
+            categoryId,
+            unitId
         });
 
         // บันทึกสินค้าในฐานข้อมูล
         await product.save();
 
-        res.status(201).json({ 
+        res.status(201).json({
             _id: product._id,
             product_Name: product.product_Name,
             product_Quantity: product.product_Quantity,
-            product_Ramquantity: product.product_Ramquantity,
+            product_Stock: product.product_Stock,
             product_Price: product.product_Price,
-            category_Id: product.category_Id,
+            categoryId: product.categoryId,
+            unitId: product.unitId,
             message: 'เพิ่มสินค้าใหม่สำเร็จ'
         });
     } catch (error) {
@@ -51,34 +47,31 @@ exports.addproduct = async (req, res) => {
     }
 };
 
-// Get all products
+// ดึงข้อมูลสินค้าทั้งหมด
 exports.getProducts = async (req, res) => {
     try {
-        const products = await Product.find().populate('category_Id');  // Populate category details
+        const products = await Product.find().populate(['categoryId', 'unitId']);  // ดึงข้อมูลหมวดหมู่และหน่วยสินค้า
 
         res.status(200).json(products);
     } catch (error) {
+        console.error("Error fetching products:", error);
         res.status(500).json({ message: 'เกิดข้อผิดพลาด', error: error.message });
     }
 };
 
-// Update product
-exports.updateproduct = async (req, res) => {
+// อัปเดตสินค้า
+exports.updateProduct = async (req, res) => {
     const { id } = req.params;
-    const { product_Name, product_Quantity, product_Ramquantity, product_Price, category_Id } = req.body;
+    const { product_Name, product_Quantity, product_Stock, product_Price, categoryId, unitId } = req.body;
 
     try {
-        const product = await Product.findById(id);
+        const product = await Product.findByIdAndUpdate(
+            id,
+            { product_Name, product_Quantity, product_Stock, product_Price, categoryId, unitId },
+            { new: true } // คืนค่าใหม่ที่อัปเดต
+        );
+
         if (!product) return res.status(404).json({ message: 'ไม่พบสินค้า' });
-
-        // อัปเดตข้อมูลสินค้า
-        product.product_Name = product_Name;
-        product.product_Quantity = product_Quantity;
-        product.product_Ramquantity = product_Ramquantity;
-        product.product_Price = product_Price;
-        product.category_Id = category_Id;
-
-        await product.save();
 
         res.status(200).json({ message: 'อัปเดตข้อมูลสินค้าสำเร็จ' });
     } catch (error) {
@@ -87,12 +80,11 @@ exports.updateproduct = async (req, res) => {
     }
 };
 
-// Delete product
-exports.deleteproduct = async (req, res) => {
-    const { id } = req.params;  // รับ id จาก params
+// ลบสินค้า
+exports.deleteProduct = async (req, res) => {
+    const { id } = req.params;
 
     try {
-        // ลบสินค้าโดยใช้ findByIdAndDelete
         const product = await Product.findByIdAndDelete(id);
 
         if (!product) {

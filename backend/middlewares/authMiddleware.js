@@ -1,15 +1,48 @@
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
 
-module.exports = (req, res, next) => {
-    const token = req.header('Authorization');
-    if (!token) return res.status(401).json({ message: 'ไม่ได้รับอนุญาต' });
+// Middleware สำหรับตรวจสอบ JWT token
+const authenticateJWT = (req, res, next) => {
+  const token = req.cookies.token; // ใช้คุกกี้ในการดึง token
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
-        next();
-    } catch (error) {
-        res.status(401).json({ message: 'Token ไม่ถูกต้อง' });
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized - No token provided" });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: "Forbidden - Invalid token" });
     }
+    
+    req.user = decoded; // เก็บข้อมูลผู้ใช้ที่ถูก decode มาใน req.user
+    next(); // ถ้าผ่านการตรวจสอบ ให้ไปยัง route ถัดไป
+  });
 };
+
+// Middleware สำหรับตรวจสอบ role
+const authorizeRole = (requiredRole) => {
+  return (req, res, next) => {
+    // ตรวจสอบว่า role ของผู้ใช้ตรงกับ requiredRole หรือไม่
+    if (req.user.role !== requiredRole) {
+      return res.status(403).json({ message: "Forbidden - Insufficient permissions" });
+    }
+    next(); // ถ้าผ่านการตรวจสอบ role ให้ไปยัง route ถัดไป
+  };
+};
+
+const logout = (req, res) => {
+  try {
+    // ลบ cookie ที่เก็บ JWT (token)
+    res.clearCookie('token', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Strict' });
+
+    // ส่งข้อความตอบกลับ
+    res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    console.error("Error during logout:", error);
+    res.status(500).json({ message: "Error during logout" });
+  }
+};
+
+
+module.exports = { authenticateJWT, authorizeRole, logout};
+
+

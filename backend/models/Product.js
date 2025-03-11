@@ -4,26 +4,31 @@ const ProductSchema = new mongoose.Schema({
   product_Name: {
     type: String,
     required: true,
-    maxlength: 255
+    maxlength: 255 // จำกัดความยาวชื่อสินค้า
   },
   product_Quantity: {
     type: Number,
     required: true,
     min: 0 // ปริมาณสินค้าต้องไม่น้อยกว่า 0
   },
-  product_Ramquantity: {
+  product_Stock: {
     type: Number,
     required: true,
     min: 0 // ปริมาณคงเหลือต้องไม่น้อยกว่า 0
   },
   product_Price: {
-    type: Number,
+    type: Number, // FLOAT ใน MySQL → ใช้ Number ใน Mongoose
     required: true,
     min: 0 // ราคาต้องไม่น้อยกว่า 0
   },
-  category_Id: {
-    type: mongoose.Schema.Types.ObjectId, // ใช้ ObjectId สำหรับ foreign key
-    ref: 'ProductCategory', // อ้างอิงไปยัง model ProductCategory
+  unitId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Unit', // อ้างอิงไปยัง Model หน่วยสินค้า (Unit)
+    required: true
+  },
+  categoryId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ProductCategory', // อ้างอิงไปยัง Model ประเภทสินค้า
     required: true
   }
 });
