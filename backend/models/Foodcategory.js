@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const foodSchema = new mongoose.Schema({
-  food_Name: {
+  category_name: {
     type: String,
     required: true,
     maxlength: 100,

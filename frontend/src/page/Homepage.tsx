@@ -1,4 +1,6 @@
-import * as React from "react";
+
+import React, { Suspense, useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import {
   Box,
   CssBaseline,
@@ -22,7 +24,7 @@ import Profile from "./Profile";
 import Order from "./Oder";
 import Listfood from "./Listfood1";
 import HomeIndex from "./Homeindex";
-import LoginReminder from "./admin/component/LoginReminder";
+import LoginReminder from "./owner/component/LoginReminder";
 
 // ใช้ไลบรารีต่าง ๆ
 import Cookies from "js-cookie";  // ใช้ js-cookie
@@ -36,33 +38,62 @@ interface DecodedToken {
   exp: number;
 }
 
+interface User {
+  user_Id: string;
+  user_Name: string;
+  role: string;
+}
+
 // ตรวจสอบขนาดหน้าจอ
 export default function HomePage() {
-  const [value, setValue] = React.useState(0);
-  const isDesktop = useMediaQuery("(min-width:600px)"); // จอใหญ่ (600px ขึ้นไป)
-  const [isUser, setIsUser] = React.useState(false); // ใช้ state สำหรับเก็บสถานะ
+  const [value, setValue] = useState(0);
+  const isDesktop = useMediaQuery("(min-width:600px)"); // เช็คขนาดจอ
+  const [isUser, setIsUser] = useState(false);
+  const navigate = useNavigate(); // ✅ เรียกใช้ useNavigate() อย่างถูกต้อง
 
+  useEffect(() => {
+    //ตรวจสอบสิทธิ์ จาก http only cookie ว่ามีโทเค็นไหม
+    const checkAuthorization = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/user", {
+          withCredentials: true, // ส่ง cookie ไปพร้อมกับ request
+        });
 
-  React.useEffect(() => {
-  const checkAuthorization = async () => {
-    try {
-      const response = await axios.get('http://localhost:3000/api/user', { 
-        withCredentials: true // ส่ง cookie ไปพร้อมกับ request
-      });
-      console.log(response)
-
-      // ถ้าผ่านการตรวจสอบสิทธิ์จากเซิร์ฟเวอร์
-      if (response.status === 200) {
-        setIsUser(true);
+        if (response.status === 200) {
+          setIsUser(true);
+        }
+      } catch (error) {
+        console.error("Authorization failed:", error);
+        setIsUser(false);
       }
-    } catch (error) {
-      console.error("Authorization failed:", error);
-      setIsUser(false); // ถ้าการตรวจสอบไม่ผ่าน
-    }
-  };
+    };
 
-  checkAuthorization();
-}, []);
+    const checkUserRole = () => {
+      const userFromStorage = localStorage.getItem("user");
+      if (userFromStorage) {
+        const parsedUser: User = JSON.parse(userFromStorage);
+        const role = parsedUser.role;
+        if (role) {
+          redirectToDashboard(role);
+        }
+      }
+    };
+
+    const redirectToDashboard = (role: string) => {
+      const dashboardRoutes: Record<string, string> = {
+        user: "/",
+        chef: "/DashboardChef",
+        cashier: "/order",
+        employee: "/profile",
+        owner: "/DashboardOwner",
+      };
+      navigate(dashboardRoutes[role] || "/home");
+    };
+
+    checkAuthorization();
+    checkUserRole();
+  }, [navigate]); // ✅ เพิ่ม `navigate` ใน dependency array
+
 
   return (
     <Box sx={{ display: "flex" }}>

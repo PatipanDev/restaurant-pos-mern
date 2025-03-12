@@ -50,7 +50,7 @@ const schema = yup.object({
   employee_Birthday: yup.date().required('กรุณาใส่วันเกิด'),
 }).required();
 
-const DataGridEdit: React.FC = () => {
+const ManageEmployee: React.FC = () => {
   // const [loading, setLoading] = useState(true);  // กำหนดสถานะการโหลด
   const [rows, setRows] = useState<GridRowsProp<Employee>>([]);
   const [open, setOpen] = useState(false);
@@ -304,4 +304,4 @@ const DataGridEdit: React.FC = () => {
   );
 };
 
-export default DataGridEdit;
+export default ManageEmployee;

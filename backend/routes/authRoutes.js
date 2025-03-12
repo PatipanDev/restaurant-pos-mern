@@ -4,6 +4,7 @@ const authController = require('../controllers/authController');
 const authEmController = require('../controllers/authEmController')
 const authCasController = require('../controllers/authCasController')
 const authChefController = require('../controllers/authChefController')
+const authOwnerController = require('../controllers/authOwnerController')
 
 
 router.post('/register', authController.register);
@@ -47,5 +48,14 @@ router.put('/updateChef/:id', authChefController.updateChef);
 
 router.delete('/deleteChef/:id', authChefController.deleteChef);
 
+
+//จัดการเจ้าของร้าน
+router.post('/addShopowner', authOwnerController.registerShopOwner);
+
+router.get('/getShopowner', authOwnerController.getShopOwners);
+
+router.put('/updateShopowner/:id', authOwnerController.updateShopOwner);
+
+router.delete('/deleteShopowner/:id', authOwnerController.deleteShopOwner);
 
 module.exports = router

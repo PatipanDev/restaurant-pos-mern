@@ -1,4 +1,5 @@
 const express = require('express');
+// import ManageIngredients from './../../frontend/src/page/chef/ManageIngredients';
 const router = express.Router();
 const productCategoryControllers = require('../controllers/productCategoryControllers');
 const productsControllers = require('../controllers/productController');
@@ -7,6 +8,7 @@ const tableControllers = require('../controllers/tableController'); // เปล
 const drinkControllers = require('../controllers/drinkController');
 const foodsControllers = require('../controllers/foodsController');
 const foodCetagoryControllers = require('../controllers/foodCategoryControllers');
+const ingredientsControllers = require('../controllers/ingredientsController');
 
 
 
@@ -93,12 +95,22 @@ router.delete('/deletefoods/:id', foodsControllers.deleteFood);
 
 
 //ประเภทอาหาร 
-// router.get('/getfoodcategory', foodCetagoryControllers.getCategories)
+router.get('/getfoodcategory', foodCetagoryControllers.getCategories)
 
 router.post('/createfoodcategory', foodCetagoryControllers.createCategory)
 
-// router.put('/updatefoodcategory/:id', foodCetagoryControllers.updateCategory);
+router.put('/updatefoodcategory/:id', foodCetagoryControllers.updateCategory);
 
-// router.delete('/deletefoodcategory/:id', foodCetagoryControllers.deleteCategory);
+router.delete('/deletefoodcategory/:id', foodCetagoryControllers.deleteCategory);
+
+
+//เตรียมวัตุถุดิบ 
+router.get('/getingredients',ingredientsControllers.getIngredients);
+
+router.post('/createingredients', ingredientsControllers.addIngredient);
+
+router.put('/updateingredients/:id', ingredientsControllers.updateIngredient);
+
+router.delete('/deleteingredients/:id', ingredientsControllers.deleteIngredient);
 
 module.exports = router;

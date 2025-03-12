@@ -19,8 +19,8 @@ interface Food {
   food_Stock: number;
   food_Price: number;
   product_Category: string; // Reference to ProductCategory Model
-  chef_Id: string; // Reference to Chef Model
-  owner_Id: string; // Reference to ShopOwner Model
+  chef_Id: string;
+  owner_Id: string;
 }
 
 interface FormData {
@@ -28,8 +28,6 @@ interface FormData {
   food_Stock: number;
   food_Price: number;
   product_Category: string;
-  chef_Id: string;
-  owner_Id: string;
 }
 
 const schema = yup.object({
@@ -37,8 +35,6 @@ const schema = yup.object({
   food_Stock: yup.number().required('กรุณาใส่จำนวนคงเหลือ').min(0, 'จำนวนคงเหลือไม่สามารถน้อยกว่า 0 ได้'),
   food_Price: yup.number().required('กรุณาใส่ราคา').min(0, 'ราคาต้องไม่ต่ำกว่า 0'),
   product_Category: yup.string().required('กรุณาเลือกประเภทอาหาร'),
-  chef_Id: yup.string().required('กรุณาเลือกเชฟ'),
-  owner_Id: yup.string().required('กรุณาเลือกพนักงาน'),
 }).required();
 
 const ManageFoods: React.FC = () => {
@@ -51,6 +47,7 @@ const ManageFoods: React.FC = () => {
   const [categories, setCategories] = useState<any[]>([]); // To store categories
   const [chefs, setChefs] = useState<any[]>([]); // To store chefs
   const [owners, setOwners] = useState<any[]>([]); // To store owners
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
     resolver: yupResolver(schema),
@@ -62,19 +59,22 @@ const ManageFoods: React.FC = () => {
         const foodsResponse = await axios.get('http://localhost:3000/api/data/getfoods');
         setRows(foodsResponse.data);
 
-        const categoriesResponse = await axios.get('http://localhost:3000/api/data/');
+        const categoriesResponse = await axios.get('http://localhost:3000/api/data/getfoodcategory');
         setCategories(categoriesResponse.data);
 
-        const chefsResponse = await axios.get('http://localhost:3000/api/chefs');
-        setChefs(chefsResponse.data);
+        const chefResponse = await axios.get('http://localhost:3000/api/auth/getChefs');
+        setChefs(chefResponse.data);
 
-        const ownersResponse = await axios.get('http://localhost:3000/api/shopowners');
-        setOwners(ownersResponse.data);
+        const ownerResponse = await axios.get('http://localhost:3000/api/auth/getfoodcategory');
+        setChefs(ownerResponse.data);
 
         console.log('Foods:', foodsResponse.data);
         console.log('Categories:', categoriesResponse.data);
-        console.log('Chefs:', chefsResponse.data);
-        console.log('Owners:', ownersResponse.data);
+        console.log('chef:', chefResponse.data);
+        console.log('owner:', chefResponse.data);
+
+        
+
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -112,8 +112,6 @@ const ManageFoods: React.FC = () => {
       setValue('food_Stock', food.food_Stock);
       setValue('food_Price', food.food_Price);
       setValue('product_Category', food.product_Category);
-      setValue('chef_Id', food.chef_Id);
-      setValue('owner_Id', food.owner_Id);
       setSelectedRowId(id);
       setOpen(true);
     }
@@ -127,8 +125,6 @@ const ManageFoods: React.FC = () => {
         setValue('food_Stock', selectedRow.food_Stock);
         setValue('food_Price', selectedRow.food_Price);
         setValue('product_Category', selectedRow.product_Category);
-        setValue('chef_Id', selectedRow.chef_Id);
-        setValue('owner_Id', selectedRow.owner_Id);
       }
     }
   }, [selectedRowId, rows, setValue]);
@@ -186,7 +182,7 @@ const ManageFoods: React.FC = () => {
       ),
     },
   ];
-  
+
   const handleDeleteClick = async (id: GridRowId) => {
     const confirmDelete = window.confirm('คุณแน่ใจหรือไม่ว่าจะลบข้อมูลนี้?');
     if (confirmDelete) {
@@ -208,39 +204,57 @@ const ManageFoods: React.FC = () => {
       // User cancelled deletion
     }
   };
-  
+
   const handleEditClick = (id: GridRowId) => {
     setSelectedRowId(id);
     setOpen(true);
   };
-  
+
   const handleAddClick = () => {
     setSelectedRowId(null);
     reset();
     setOpen(true);
   };
-  
+
   const handleClose = () => {
     setOpen(false);
     reset();
   };
-  
+
   const onSubmit = async (data: FormData) => {
     console.log("Form Data:", data);
-  
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    console.log(user);
+    console.log(user._id)
+
+
     try {
+      // ตรวจสอบว่า user มีข้อมูลและ role ที่ถูกต้อง
+      if (!user._id || !user.role) {
+        setAlertMessage(<div>ไม่พบข้อมูลผู้ใช้หรือผู้ใช้ไม่ได้ล็อกอิน</div>);
+        return;
+      }
+
+      // สร้างข้อมูลที่จะส่งไปยัง API
+      let updatedData: any = {
+        food_Name: data.food_Name,
+        food_Stock: data.food_Stock,
+        food_Price: data.food_Price,
+        product_Category: data.product_Category,
+      };
+
+      if (user.role === "chef") {
+        updatedData.chef_Id = user._id; // ✅ ถ้าผู้ใช้เป็น chef ให้ใช้ chef_Id
+      } else if (user.role === "owner") {
+        updatedData.owner_Id = user._id; // ✅ ถ้าผู้ใช้เป็น owner ให้ใช้ owner_Id
+      }
+
+      console.log("Updated Data:", updatedData);
+
+      // ถ้ามี selectedRowId หมายถึงการอัปเดตข้อมูล
       if (selectedRowId !== null) {
-        const updatedData = {
-          food_Name: data.food_Name,
-          food_Stock: data.food_Stock,
-          food_Price: data.food_Price,
-          product_Category: data.product_Category,
-          chef_Id: data.chef_Id,
-          owner_Id: data.owner_Id,
-        };
-  
         await axios
-          .put(`http://localhost:3000/api/foods/${selectedRowId}`, updatedData)
+          .put(`http://localhost:3000/api/data/updatefoods/${selectedRowId}`, updatedData)
           .then((response) => {
             console.log("Update successful", response.data);
             setAlertSuccess(<div>อัปเดตข้อมูลสำเร็จ</div>);
@@ -254,13 +268,15 @@ const ManageFoods: React.FC = () => {
             setAlertMessage(<div>เกิดข้อผิดพลาดในการอัปเดตข้อมูล</div>);
           });
       } else {
+        // ถ้าไม่มี selectedRowId หมายถึงการเพิ่มข้อมูลใหม่
         const response = await axios.post(
-          "http://localhost:3000/api/foods",
-          data
+          "http://localhost:3000/api/data/postfoods",
+          updatedData
         );
         setRows([...rows, response.data]);
         setAlertSuccess(<div>เพิ่มข้อมูลสำเร็จ</div>);
       }
+
       handleClose();
     } catch (error) {
       console.error("Error submitting data:", error);
@@ -289,7 +305,7 @@ const ManageFoods: React.FC = () => {
                 />
               )}
             />
-  
+
             <Controller
               name="food_Stock"
               control={control}
@@ -306,7 +322,7 @@ const ManageFoods: React.FC = () => {
                 />
               )}
             />
-  
+
             <Controller
               name="food_Price"
               control={control}
@@ -323,7 +339,7 @@ const ManageFoods: React.FC = () => {
                 />
               )}
             />
-  
+
             <Controller
               name="product_Category"
               control={control}
@@ -351,56 +367,6 @@ const ManageFoods: React.FC = () => {
                 </TextField>
               )}
             />
-  
-            <Controller
-              name="chef_Id"
-              control={control}
-              rules={{ required: "กรุณาเลือกเชฟ" }}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  select
-                  label="เชฟ"
-                  fullWidth
-                  margin="dense"
-                  error={!!errors.chef_Id}
-                  helperText={errors.chef_Id?.message}
-                  value={field.value || ""}
-                  onChange={field.onChange}
-                >
-                  {chefs.map((chef) => (
-                    <MenuItem key={chef._id} value={chef._id}>
-                      {chef.chef_Name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
-            />
-  
-            <Controller
-              name="owner_Id"
-              control={control}
-              rules={{ required: "กรุณาเลือกพนักงาน" }}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  select
-                  label="พนักงาน"
-                  fullWidth
-                  margin="dense"
-                  error={!!errors.owner_Id}
-                  helperText={errors.owner_Id?.message}
-                  value={field.value || ""}
-                  onChange={field.onChange}
-                >
-                  {owners.map((owner) => (
-                    <MenuItem key={owner._id} value={owner._id}>
-                      {owner.owner_Name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
-            />
           </form>
         </DialogContent>
         <DialogActions>
@@ -410,11 +376,11 @@ const ManageFoods: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-  
+
       <ErrorBoundary>
         <DataGrid rows={rows} columns={columns} getRowId={(row) => row._id} />
       </ErrorBoundary>
-  
+
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20 }}>
         <Button variant="contained" onClick={handleAddClick}>เพิ่มข้อมูล</Button>
         <WarningAlert messagealert={alertMessage} />
@@ -424,4 +390,4 @@ const ManageFoods: React.FC = () => {
   );
 }
 
-  export default ManageFoods;  
+export default ManageFoods;  

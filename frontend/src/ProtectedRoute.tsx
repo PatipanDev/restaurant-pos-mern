@@ -2,9 +2,11 @@ import React, { ReactNode, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import axios from 'axios';
 
+
+//เป็นคอมโพเน้นตรวจสอบสิทธิ์ในการเข้าถึงในแต่ละหน้า
 interface User {
-  customer_Id: string;
-  customer_Name: string;
+  user_Id: string;
+  user_Name: string;
   role: string;
 }
 

@@ -1,38 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId } from '@mui/x-data-grid';
-import { MenuItem, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Box } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
+
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import axios from 'axios';
-// import SuccessAlert from '../../components/AlertSuccess';
+import SuccessAlert from '../../components/AlertSuccess';
 import WarningAlert from '../../components/AlertDivWarn';
 import ErrorBoundary from '../ErrorBoundary';
-import SuccessAlert from '../../components/AlertSuccess';
 
-interface Table {
+interface FoodCategory {
   _id: string;
-  number: number;
-  status: 'Available' | 'Occupied' | 'Reserved';
-  seat_count: number;
+  category_name: string;
+  description?: string; // เพิ่ม description
 }
 
 interface FormData {
-  number: number;
-  status: 'Available' | 'Occupied' | 'Reserved';
-  seat_count: number;
+  category_name: string;
+  description?: string; // เพิ่ม description
 }
 
 const schema = yup.object({
-  number: yup.number().required('กรุณาใส่หมายเลขโต๊ะ').min(1, 'หมายเลขโต๊ะต้องมากกว่าหรือเท่ากับ 1').max(100, 'หมายเลขโต๊ะต้องไม่เกิน 100'),
-  status: yup.string().oneOf(['Available', 'Occupied', 'Reserved'], 'กรุณาเลือกสถานะ').required('กรุณาเลือกสถานะ'),
-  seat_count: yup.number().required('กรุณาใส่จำนวนที่นั่ง').min(1, 'จำนวนที่นั่งต้องมากกว่า 0').max(10, 'จำนวนที่นั่งต้องไม่เกิน 10'),
+  category_name: yup.string().required('กรุณาใส่ชื่อหมวดหมู่สินค้า').max(100, 'ชื่อหมวดหมู่สินค้าต้องไม่เกิน 100 ตัวอักษร'),
+  description: yup.string(), // เพิ่ม description
 }).required();
 
-const ManageTable: React.FC = () => {
-  const [rows, setRows] = useState<GridRowsProp<Table>>([]);
+const ManageFoodCategories: React.FC = () => {
+  const [rows, setRows] = useState<GridRowsProp<FoodCategory>>([]);
   const [open, setOpen] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<GridRowId | null>(null);
   const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
@@ -45,8 +42,9 @@ const ManageTable: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/data/gettables'); // เปลี่ยน URL ให้ตรงกับ API สำหรับ Table
+        const response = await axios.get('http://localhost:3000/api/data/getfoodcategory');
         setRows(response.data);
+        console.log(response.data);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -56,20 +54,29 @@ const ManageTable: React.FC = () => {
 
   useEffect(() => {
     if (selectedRowId !== null) {
-      const selectedRow = rows.find((row) => row._id === selectedRowId) as Table;
+      const selectedRow = rows.find((row) => row._id === selectedRowId) as FoodCategory;
       if (selectedRow) {
-        setValue('number', selectedRow.number);
-        setValue('status', selectedRow.status);
-        setValue('seat_count', selectedRow.seat_count);
+        setValue('category_name', selectedRow.category_name);
+        setValue('description', selectedRow.description || ''); // เพิ่ม description
       }
     }
   }, [selectedRowId, rows, setValue]);
 
-  const columns: GridColDef<Table>[] = [
-    { field: 'index', headerName: 'ลำดับ', flex: 0.9, width: 30, renderCell: (params) => rows.indexOf(params.row) + 1 },
-    { field: 'number', headerName: 'หมายเลขโต๊ะ', flex: 1, minWidth: 150 },
-    { field: 'status', headerName: 'สถานะ', flex: 1, minWidth: 150 },
-    { field: 'seat_count', headerName: 'จำนวนที่นั่ง', flex: 1, minWidth: 150 },
+  const columns: GridColDef<FoodCategory>[] = [
+      { 
+        field: 'index', 
+        headerName: 'ลำดับ', 
+        flex: 0.9, 
+        width: 30, 
+        renderCell: (params) => {
+          // ตรวจสอบว่า rows มีการอัปเดตหรือไม่
+          const index = rows.findIndex(row => row._id === params.row._id);  // หาค่าดัชนีใน rows
+          console.log(index); // พิมพ์ดัชนีเพื่อดูว่าได้ค่าหรือไม่
+          return index !== -1 ? index + 1 : ''; // เพิ่ม 1 เพื่อให้ลำดับเริ่มที่ 1
+        }
+      },
+    { field: 'category_name', headerName: 'ชื่อหมวดหมู่อาหาร', flex: 1, minWidth: 180 },
+    { field: 'description', headerName: 'คำอธิบาย', flex: 1, minWidth: 180 }, // เพิ่ม column description
     {
       field: 'actions',
       headerName: 'แก้ไขข้อมูล',
@@ -92,13 +99,11 @@ const ManageTable: React.FC = () => {
     const confirmDelete = window.confirm('คุณแน่ใจหรือไม่ว่าจะลบข้อมูลนี้?');
     if (confirmDelete) {
       try {
-        const tableId = rows.find((row) => row._id === id)?._id;
-        if (tableId) {
-          await axios.delete(`http://localhost:3000/api/data/deletetable/${tableId}`); // เปลี่ยน URL ให้ตรงกับ API สำหรับลบ Table
-
-          const updatedRows = rows.filter((row) => row._id !== tableId);
+        const categoryId = rows.find((row) => row._id === id)?._id;
+        if (categoryId) {
+          await axios.delete(`http://localhost:3000/api/data/deletefoodcategory/${categoryId}`);
+          const updatedRows = rows.filter((row) => row._id !== categoryId);
           setRows(updatedRows);
-
           setAlertSuccess(<div>ลบข้อมูลสำเร็จ</div>);
         } else {
           alert('ไม่พบข้อมูลที่จะลบ');
@@ -107,6 +112,8 @@ const ManageTable: React.FC = () => {
         console.error('เกิดข้อผิดพลาดในการลบข้อมูล:', error);
         setAlertMessage(<div>เกิดข้อผิดพลาดในการลบข้อมูล</div>);
       }
+    } else {
+      // ผู้ใช้ยกเลิกการลบ
     }
   };
 
@@ -127,28 +134,32 @@ const ManageTable: React.FC = () => {
   };
 
   const onSubmit = async (data: FormData) => {
+    console.log("Form Data:", data);
+
     try {
       if (selectedRowId !== null) {
-        const updatedData = {
-          number: data.number,
-          status: data.status,
-          seat_count: data.seat_count,
-        };
-
+        // อัปเดตข้อมูลที่มีอยู่
         await axios
-          .put(`http://localhost:3000/api/data/updatetable/${selectedRowId}`, updatedData)
+          .put(`http://localhost:3000/api/data/updatefoodcategory/${selectedRowId}`, data) // ส่ง data ทั้งหมด
           .then((response) => {
+            console.log("Update successful", response.data);
             setAlertSuccess(<div>อัปเดตข้อมูลสำเร็จ</div>);
+
             const updatedRows = rows.map((row) =>
-              row._id === selectedRowId ? { ...row, ...updatedData } : row
+              row._id === selectedRowId ? { ...row, ...data } : row // อัปเดต row ด้วย data ทั้งหมด
             );
             setRows(updatedRows);
           })
           .catch((error) => {
+            console.error("Error updating data:", error);
             setAlertMessage(<div>เกิดข้อผิดพลาดในการอัปเดตข้อมูล</div>);
           });
       } else {
-        const response = await axios.post('http://localhost:3000/api/data/createtable', data);
+        // สร้างข้อมูลใหม่
+        const response = await axios.post(
+          "http://localhost:3000/api/data/createfoodcategory",
+          data // ส่ง data ทั้งหมด
+        );
         setRows([...rows, response.data]);
         setAlertSuccess(<div>เพิ่มข้อมูลสำเร็จ</div>);
       }
@@ -161,45 +172,54 @@ const ManageTable: React.FC = () => {
 
   return (
     <div style={{ height: '90vh', width: '100%' }}>
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{selectedRowId ? 'แก้ไขข้อมูลโต๊ะ' : 'เพิ่มข้อมูลโต๊ะ'}</DialogTitle>
+      <Dialog key={selectedRowId || "new"} open={open} onClose={handleClose}>
+        <DialogTitle>{selectedRowId ? 'แก้ไขประเภทสินค้า' : 'เพิ่มประเภทสินค้า'}</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit(onSubmit)}>
             <Controller
-              name="number"
+              name="category_name"
               control={control}
               render={({ field }) => (
-                <TextField {...field} label="หมายเลขโต๊ะ" fullWidth margin="dense" error={!!errors.number} helperText={errors.number?.message} />
+                <TextField
+                  {...field}
+                  label="ชื่อประเภทอาหาร"
+                  fullWidth
+                  margin="dense"
+                  error={!!errors.category_name}
+                  helperText={errors.category_name?.message}
+                  value={field.value || ""}
+                />
               )}
             />
-            <Controller
-              name="status"
+            <Controller // เพิ่ม Controller สำหรับ description
+              name="description"
               control={control}
               render={({ field }) => (
-                <TextField select {...field} label="สถานะ" fullWidth margin="dense" error={!!errors.status} helperText={errors.status?.message}>
-                  <MenuItem value="Available">ว่าง</MenuItem>
-                  <MenuItem value="Occupied">กำลังใช้งาน</MenuItem>
-                  <MenuItem value="Reserved">จอง</MenuItem>
-                </TextField>
-              )}
-            />
-            <Controller
-              name="seat_count"
-              control={control}
-              render={({ field }) => (
-                <TextField {...field} type="number" label="จำนวนที่นั่ง" fullWidth margin="dense" error={!!errors.seat_count} helperText={errors.seat_count?.message} />
+                <TextField
+                  {...field}
+                  label="คำอธิบาย"
+                  fullWidth
+                  margin="dense"
+                  multiline // ทำให้เป็น text area
+                  rows={4} // กำหนดจำนวนแถว
+                  value={field.value || ""}
+                />
               )}
             />
           </form>
         </DialogContent>
         <DialogActions>
           <Button variant="contained" onClick={handleClose} color="error">ยกเลิก</Button>
-          <Button variant="contained" onClick={handleSubmit(onSubmit)} color="success">{selectedRowId ? 'อัปเดต' : 'เพิ่ม'}</Button>
+          <Button variant="contained" onClick={handleSubmit(onSubmit)} color="success">
+            {selectedRowId ? 'อัปเดต' : 'เพิ่ม'}
+          </Button>
         </DialogActions>
       </Dialog>
+
       <ErrorBoundary>
         <DataGrid rows={rows} columns={columns} getRowId={(row) => row._id} />
       </ErrorBoundary>
+
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20 }}>
         <Button variant="contained" onClick={handleAddClick}>เพิ่มข้อมูล</Button>
         <WarningAlert messagealert={alertMessage} />
@@ -207,6 +227,7 @@ const ManageTable: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
-export default ManageTable;
+
+export default ManageFoodCategories;  

@@ -30,10 +30,10 @@ const LoginEmployee: React.FC<LoginProps> = ({ setAuth }) => {
   const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
   const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
 
-  // 🟢 ฟังก์ชันส่งข้อมูล
+  // 🟢 ฟังก์ชันส่งข้อมูลเข้าสู่ระบบ
   const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
     const { name, password, role } = data;
-    console.log(data)
+    // console.log(data)
 
     try {
       const response = await axios.post('http://localhost:3000/api/auth/loginemployee', {
@@ -45,14 +45,23 @@ const LoginEmployee: React.FC<LoginProps> = ({ setAuth }) => {
       console.log("📌 Response จาก API:", response.data); // ✅ Debug จุดนี้
 
       if (response.data.success) {
+        //รับค่าระดับ
+        const userRole = response.data.user.role;
         localStorage.setItem('user', JSON.stringify(response.data.user));
 
         setAlertSuccess(<div>เข้าสู่ระบบเรียบร้อย</div>);
 
         setAuth?.(true);
+        //นำทางไป
+        const dashboardRoutes: Record<string, string> = {
+          chef: '/DashboardChef',
+          cashier: '/order',
+          employee: '/profile',
+          owner: '/DashboardOwner'
+        };
 
         setTimeout(() => {
-          navigate("/DashboardOwner");
+          navigate(dashboardRoutes[userRole] || '/home'); // ถ้าไม่มี role ที่กำหนดจะพาไปหน้า home
         }, 2000);
       } else {
         console.warn("Login ไม่สำเร็จ");

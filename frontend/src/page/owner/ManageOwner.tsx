@@ -12,24 +12,28 @@ import SuccessAlert from '../../components/AlertSuccess';
 import WarningAlert from '../../components/AlertDivWarn';
 import ErrorBoundary from '../ErrorBoundary';
 
-interface FoodCategory {
+
+interface ShopOwner {
   _id: string;
-  category_name: string;
-  description?: string; // เพิ่ม description
+  owner_Name: string;
+  owner_Password: string;
+  owner_Details: string;
 }
 
 interface FormData {
-  category_name: string;
-  description?: string; // เพิ่ม description
+  owner_Name: string;
+  owner_Password: string;
+  owner_Details: string;
 }
 
 const schema = yup.object({
-  category_name: yup.string().required('กรุณาใส่ชื่อหมวดหมู่สินค้า').max(100, 'ชื่อหมวดหมู่สินค้าต้องไม่เกิน 100 ตัวอักษร'),
-  description: yup.string(), // เพิ่ม description
+  owner_Name: yup.string().required('กรุณาใส่ชื่อ').max(100, 'ชื่อต้องไม่เกิน 100 ตัวอักษร'),
+  owner_Password: yup.string().required('กรุณาใส่รหัสผ่าน').min(6, 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร').max(255, 'รหัสผ่านต้องไม่เกิน 255 ตัวอักษร'),
+  owner_Details: yup.string().required('กรุณาใส่รายละเอียด'),
 }).required();
 
-const ManageFoodCategories: React.FC = () => {
-  const [rows, setRows] = useState<GridRowsProp<FoodCategory>>([]);
+const ManageShopOwners: React.FC = () => {
+  const [rows, setRows] = useState<GridRowsProp<ShopOwner>>([]);
   const [open, setOpen] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<GridRowId | null>(null);
   const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
@@ -42,9 +46,9 @@ const ManageFoodCategories: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/data/getfoodcategory');
-        setRows(response.data);
-        console.log(response.data);
+        const response = await axios.get('http://localhost:3000/api/auth/getShopowner');
+        setRows(response.data); 
+        console.log(response.data); 
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -54,15 +58,17 @@ const ManageFoodCategories: React.FC = () => {
 
   useEffect(() => {
     if (selectedRowId !== null) {
-      const selectedRow = rows.find((row) => row._id === selectedRowId) as FoodCategory;
+      const selectedRow = rows.find((row) => row._id === selectedRowId) as ShopOwner;
+      console.log(selectedRow)
       if (selectedRow) {
-        setValue('category_name', selectedRow.category_name);
-        setValue('description', selectedRow.description || ''); // เพิ่ม description
+        setValue('owner_Name', selectedRow.owner_Name);
+        setValue('owner_Password', selectedRow.owner_Password);
+        setValue('owner_Details', selectedRow.owner_Details);
       }
     }
   }, [selectedRowId, rows, setValue]);
 
-  const columns: GridColDef<FoodCategory>[] = [
+  const columns: GridColDef<ShopOwner>[] = [
     {
       field: 'index',
       headerName: 'ลำดับ',
@@ -70,8 +76,9 @@ const ManageFoodCategories: React.FC = () => {
       width: 30,
       renderCell: (params) => rows.indexOf(params.row) + 1,
     },
-    { field: 'category_name', headerName: 'ชื่อหมวดหมู่อาหาร', flex: 1, minWidth: 180 },
-    { field: 'description', headerName: 'คำอธิบาย', flex: 1, minWidth: 180 }, // เพิ่ม column description
+    { field: 'owner_Name', headerName: 'ชื่อเจ้าของร้าน', flex: 1, minWidth: 180 },
+    { field: 'owner_Password', headerName: 'รหัสผ่าน', flex: 2, minWidth: 200 },
+    { field: 'owner_Details', headerName: 'รายละเอียด', flex: 2, minWidth: 200 },
     {
       field: 'actions',
       headerName: 'แก้ไขข้อมูล',
@@ -94,10 +101,10 @@ const ManageFoodCategories: React.FC = () => {
     const confirmDelete = window.confirm('คุณแน่ใจหรือไม่ว่าจะลบข้อมูลนี้?');
     if (confirmDelete) {
       try {
-        const categoryId = rows.find((row) => row._id === id)?._id;
-        if (categoryId) {
-          await axios.delete(`http://localhost:3000/api/data/deletefoodcategory/${categoryId}`);
-          const updatedRows = rows.filter((row) => row._id !== categoryId);
+        const ownerId = rows.find((row) => row._id === id)?._id;
+        if (ownerId) {
+          await axios.delete(`http://localhost:3000/api/auth/deleteShopowner/${ownerId}`);
+          const updatedRows = rows.filter((row) => row._id !== ownerId);
           setRows(updatedRows);
           setAlertSuccess(<div>ลบข้อมูลสำเร็จ</div>);
         } else {
@@ -107,8 +114,6 @@ const ManageFoodCategories: React.FC = () => {
         console.error('เกิดข้อผิดพลาดในการลบข้อมูล:', error);
         setAlertMessage(<div>เกิดข้อผิดพลาดในการลบข้อมูล</div>);
       }
-    } else {
-      // ผู้ใช้ยกเลิกการลบ
     }
   };
 
@@ -116,89 +121,105 @@ const ManageFoodCategories: React.FC = () => {
     setSelectedRowId(id);
     setOpen(true);
   };
-
+  
   const handleAddClick = () => {
     setSelectedRowId(null);
     reset();
     setOpen(true);
   };
-
+  
   const handleClose = () => {
     setOpen(false);
     reset();
   };
-
+  
   const onSubmit = async (data: FormData) => {
     console.log("Form Data:", data);
   
     try {
       if (selectedRowId !== null) {
-        // อัปเดตข้อมูลที่มีอยู่
+        const updatedData = {
+          owner_Name: data.owner_Name,
+          owner_Password: data.owner_Password,
+          owner_Details: data.owner_Details,
+        };
+  
         await axios
-          .put(`http://localhost:3000/api/data/updatefoodcategory/${selectedRowId}`, data) // ส่ง data ทั้งหมด
+          .put(`http://localhost:3000/api/auth/updateShopowner/${selectedRowId}`, updatedData)
           .then((response) => {
             console.log("Update successful", response.data);
-            setAlertSuccess(<div>อัปเดตข้อมูลสำเร็จ</div>);
+            setAlertSuccess(<div>{response.data.message}</div>);
   
+            // อัปเดตข้อมูลที่แสดงใน UI
             const updatedRows = rows.map((row) =>
-              row._id === selectedRowId ? { ...row, ...data } : row // อัปเดต row ด้วย data ทั้งหมด
+              row._id === selectedRowId ? { ...row, ...updatedData } : row
             );
             setRows(updatedRows);
           })
           .catch((error) => {
             console.error("Error updating data:", error);
-            setAlertMessage(<div>เกิดข้อผิดพลาดในการอัปเดตข้อมูล</div>);
+            if (error.response) {
+              setAlertMessage(<div>{error.response.data.message}</div>);
+            } else if (error.request) {
+              setAlertMessage(<div>Server ไม่ตอบสนอง โปรดลองใหม่</div>);
+            } else {
+              setAlertMessage(<div>{error.message}</div>);
+            }
+            // setAlertMessage(<div>เกิดข้อผิดพลาดในการอัปเดตข้อมูล</div>);
           });
       } else {
-        // สร้างข้อมูลใหม่
+        // เพิ่มข้อมูลใหม่
         const response = await axios.post(
-          "http://localhost:3000/api/data/createfoodcategory",
-          data // ส่ง data ทั้งหมด
+          "http://localhost:3000/api/auth/addShopowner", // เปลี่ยน endpoint เป็น /api/shopowners
+          data
         );
+        console.log(response)
+        setAlertSuccess(<div>{response.data.message}</div>);
+
         setRows([...rows, response.data]);
-        setAlertSuccess(<div>เพิ่มข้อมูลสำเร็จ</div>);
+
       }
       handleClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting data:", error);
-      setAlertMessage(<div>เกิดข้อผิดพลาดในการดำเนินการ</div>);
+      if (error.response) {
+        setAlertMessage(<div>{error.response.data.message}</div>);
+      } else if (error.request) {
+        setAlertMessage(<div>Server ไม่ตอบสนอง โปรดลองใหม่</div>);
+      } else {
+        setAlertMessage(<div>{error.message}</div>);
+      }
+      // setAlertMessage(<div>เกิดข้อผิดพลาดในการดำเนินการ</div>);
     }
   };
   
   return (
     <div style={{ height: '90vh', width: '100%' }}>
-      <Dialog key={selectedRowId || "new"} open={open} onClose={handleClose}>
-        <DialogTitle>{selectedRowId ? 'แก้ไขประเภทสินค้า' : 'เพิ่มประเภทสินค้า'}</DialogTitle>
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>{selectedRowId ? 'แก้ไขข้อมูลเจ้าของร้าน' : 'เพิ่มข้อมูลเจ้าของร้าน'}</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit(onSubmit)}>
+          <Controller
+  name="owner_Name"
+  control={control}
+  defaultValue=""
+  render={({ field }) => (
+    <TextField {...field} label="ชื่อเจ้าของร้าน" fullWidth margin="dense" 
+      error={!!errors.owner_Name} helperText={errors.owner_Name?.message} />
+  )}
+/>
             <Controller
-              name="category_name"
+              name="owner_Password"
               control={control}
               render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="ชื่อประเภทอาหาร"
-                  fullWidth
-                  margin="dense"
-                  error={!!errors.category_name}
-                  helperText={errors.category_name?.message}
-                  value={field.value || ""}
-                />
+                <TextField {...field} type="password" label="รหัสผ่าน" fullWidth margin="dense" error={!!errors.owner_Password} helperText={errors.owner_Password?.message} />
               )}
             />
-            <Controller // เพิ่ม Controller สำหรับ description
-              name="description"
+            <Controller
+              name="owner_Details"
               control={control}
               render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="คำอธิบาย"
-                  fullWidth
-                  margin="dense"
-                  multiline // ทำให้เป็น text area
-                  rows={4} // กำหนดจำนวนแถว
-                  value={field.value || ""}
-                />
+                <TextField {...field} label="รายละเอียด" fullWidth margin="dense" error={!!errors.owner_Details} helperText={errors.owner_Details?.message} />
               )}
             />
           </form>
@@ -212,7 +233,7 @@ const ManageFoodCategories: React.FC = () => {
         <DataGrid rows={rows} columns={columns} getRowId={(row) => row._id} />
       </ErrorBoundary>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20 }}>
-        <Button variant="contained" onClick={handleAddClick}>เพิ่มประเภทสินค้า</Button>
+        <Button variant="contained" onClick={handleAddClick}>เพิ่มข้อมูล</Button>
         <WarningAlert messagealert={alertMessage} />
         <SuccessAlert successalert={alertSuccess} />
       </div>
@@ -220,5 +241,4 @@ const ManageFoodCategories: React.FC = () => {
   );
 }
 
-
-export default ManageFoodCategories;  
+export default ManageShopOwners;

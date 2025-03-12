@@ -4,17 +4,7 @@ import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-route
 import { Box } from '@mui/material';
 import { SyncLoader } from 'react-spinners';
 
-import ProfileAdmin from './page/admin/Profileadmin';
-import AddEmployee from './page/admin/AddEmployee';
-import ManageCashier from './page/admin/ManageCashier';
-import ManageProducts from './page/admin/ManageProducts';
-import ManageProductCategories from './page/admin/ManageProductCategories';
-import ManageUnits from './page/admin/ManageUnit';
-import ManageTable from './page/admin/ManageTable';
-import ManageDrinks from './page/admin/ManageDrink';
-import ManageChefs from './page/admin/ManageChef';
-import ManageFoods from './page/admin/ManageFoods';
-
+//หน้าแรก
 import HomeIndex from './page/Homeindex';
 import Dashboard from './page/Dashboard';
 import Profile from './page/Profile';
@@ -22,12 +12,29 @@ import Listfood from './page/Listfood1';
 import Order from './page/Oder';
 import Login from './page/Login';
 import Register from './page/Register';
-import DashboardOwner from './page/admin/DashboardOwner';
-import LoginReminder from './page/admin/component/LoginReminder';
+import LoginReminder from './page/owner/component/LoginReminder';
 
 import ProtectedRoute from './ProtectedRoute';
 import ErrorBoundary from './page/ErrorBoundary';
 import LoginEmployee from './page/LoginEmployee';
+
+// หน้าเจ้าของร้าน
+import DashboardOwner from './page/owner/DashboardOwner';
+import ProfileAdmin from './page/owner/Profileadmin';
+import ManageEmployee from './page/owner/ManageEmployee';
+import ManageCashier from './page/owner/ManageCashier';
+import ManageProducts from './page/owner/ManageProducts';
+import ManageProductCategories from './page/owner/ManageProductCategories';
+import ManageUnits from './page/owner/ManageUnit';
+import ManageTable from './page/owner/ManageTable';
+import ManageDrinks from './page/owner/ManageDrink';
+import ManageChefs from './page/owner/ManageChef';
+import ManageFoods from './page/owner/ManageFoods';
+import ManageShopOwners from './page/owner/ManageOwner';
+
+// หน้าเชฟ
+import DashboardChef from './page/chef/DashboardChef';
+
 
 
 const HomePage = React.lazy(() => import('./page/Homepage'));
@@ -65,38 +72,38 @@ const App: React.FC = () => {
           {/* ส่วนของหน้าโชว์ตอนไม่มีการล็อกอิน */}
           <Route path="/loginreminder" element={<LoginReminder />} />
 
-          {/* <RedirectBasedOnDevice />  */}
+          {/* ล็อกอินและสมัครสมาชิก */}
           <Route path="/login" element={<Login setAuth={setAuth} />} />
+          <Route path="/loginemployee" element={<LoginEmployee setAuth={setAuth}/>} />
           <Route path="/register" element={<Register />} />
 
 
           <Route path="/" element={<HomePage />} />
+          {/* ส่วนของหน้าลูกค้า */}
           <Route path="/home" element={<HomeIndex />} />
           <Route path="/listfood" element={<Listfood />} />
           <Route path="/order" element={<ProtectedRoute requiredRole="user"><Order /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute requiredRole="user"><Profile /></ProtectedRoute>} />
-
-
-
-
-          {/* <Route path="/profile" element={<Profile />} /> */}
-          <Route path="/loginemployee" element={<LoginEmployee setAuth={setAuth}/>} />
-          <Route path="/profileadmin" element={<ProfileAdmin />} />
-
           <Route path="/admin/Dashboard" element={<Dashboard />} />
+
+
+          {/* ส่วนของเจ้าของร้าน */}
+          <Route path="/profileadmin" element={<ProfileAdmin />} />
           <Route path="/DashboardOwner" element={<DashboardOwner />} />
-          <Route path="/addemployee" element={<AddEmployee />} />
-
+          <Route path="/manageemployee" element={<ManageEmployee />} />
           <Route path="/manageCashier" element={<ManageCashier />} />
-
           <Route path="/maageproductcategories" element={<ManageProductCategories />} />
           <Route path="/manageunit" element={<ManageUnits />} />
-          {/* <Route path="/managetable" element={<ManageTable />} /> */}
           <Route path="/managetable" element={<ProtectedRoute requiredRole="owner"><ManageTable /></ProtectedRoute>} />
-
+          <Route path="/manageshopowners" element={<ProtectedRoute requiredRole="owner"><ManageShopOwners /></ProtectedRoute>} />
+          <Route path="/manageproduct" element={<ProtectedRoute requiredRole="owner"><ManageProducts /></ProtectedRoute>} />
           <Route path="/managedrink" element={<ManageDrinks />} />
           <Route path="/managechef" element={<ManageChefs />} />
           <Route path="/managefoods" element={<ManageFoods />} />
+
+          {/* ส่วนของเชฟ */}
+          <Route path="/DashboardChef" element={<ProtectedRoute requiredRole="chef"><DashboardChef /></ProtectedRoute>} />
+
 
         </Routes>
 

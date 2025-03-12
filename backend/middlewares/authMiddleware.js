@@ -18,17 +18,6 @@ const authenticateJWT = (req, res, next) => {
   });
 };
 
-// Middleware สำหรับตรวจสอบ role
-const authorizeRole = (requiredRole) => {
-  return (req, res, next) => {
-    // ตรวจสอบว่า role ของผู้ใช้ตรงกับ requiredRole หรือไม่
-    if (req.user.role !== requiredRole) {
-      return res.status(403).json({ message: "Forbidden - Insufficient permissions" });
-    }
-    next(); // ถ้าผ่านการตรวจสอบ role ให้ไปยัง route ถัดไป
-  };
-};
-
 const logout = (req, res) => {
   try {
     // ลบ cookie ที่เก็บ JWT (token)
@@ -43,6 +32,6 @@ const logout = (req, res) => {
 };
 
 
-module.exports = { authenticateJWT, authorizeRole, logout};
+module.exports = { authenticateJWT, logout};
 
 
