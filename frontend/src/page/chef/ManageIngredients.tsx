@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Component } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId, GridCellParams } from '@mui/x-data-grid';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -13,6 +13,9 @@ import SuccessAlert from '../../components/AlertSuccess';
 import WarningAlert from '../../components/AlertDivWarn';
 import ErrorBoundary from '../ErrorBoundary';
 import { ListAlt } from '@mui/icons-material';
+
+// Component
+import Ingrediendetails from './componentchef/Ingrediendetails';
 
 interface Ingredient {
     _id: string;
@@ -42,6 +45,8 @@ const schema = yup.object({
 const ManageIngredients: React.FC = () => {
     const [rows, setRows] = useState<GridRowsProp<Ingredient>>([]);
     const [open, setOpen] = useState(false);
+    const [showModal, setShowModal] = useState(false); // โชว์หน้ารายละเอียด       
+    const [selectedIngredient, setSelectedIngredient] = useState<{ id: string; name: string } | null>(null); //ส่งค่า ไอดีกับชื่อไป
     const [selectedRowId, setSelectedRowId] = useState<GridRowId | null>(null);
     const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
     const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
@@ -108,7 +113,7 @@ const ManageIngredients: React.FC = () => {
             headerName: 'รายละเอียดที่เตรียม',
             minWidth: 150,
             renderCell: (params) => (
-                <Button variant="outlined" startIcon={<ListAlt />} onClick={() => handleEditIngredientClick(params.id)}>
+                <Button variant="outlined" startIcon={<ListAlt />} onClick={() => handleShowIngredientClick(params.id, params.row.ingredient_Name)}>
                     รายละเอียด
                 </Button>
             ),
@@ -157,6 +162,11 @@ const ManageIngredients: React.FC = () => {
         } else {
             // User cancelled deletion
         }
+    };
+
+    const handleShowIngredientClick = (id: GridRowId, name: GridRowId) => {
+        setSelectedIngredient({ id: String(id), name: String(name) });
+        setShowModal(true);
     };
 
     const handleEditIngredientClick = (id: GridRowId) => {
@@ -326,6 +336,16 @@ const ManageIngredients: React.FC = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            {/* <Ingrediendetails/> */}
+            {showModal && selectedIngredient && (
+                <Ingrediendetails
+                    key={selectedIngredient.id} 
+                    id={selectedIngredient.id}
+                    name={selectedIngredient.name}
+                    onClose={() => setShowModal(false)}
+                />
+            )}
 
             <ErrorBoundary>
                 <DataGrid rows={rows} columns={columns} getRowId={(row) => row._id} />

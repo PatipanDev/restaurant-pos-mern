@@ -15,9 +15,9 @@ const foodSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Decimal128, // ใช้ Decimal128 เพื่อเก็บค่าทศนิยมอย่างแม่นยำ
     required: true,
   },
-  product_Category: {
+  product_Category_Id: {
     type: mongoose.Schema.Types.ObjectId, // ใช้ ObjectId เพื่ออ้างอิงถึง ProductCategory
-    ref: 'ProductCategory', // อ้างอิงถึงโมเดล ProductCategory
+    ref: 'Foodcategory', // อ้างอิงถึงโมเดล ProductCategory
   },
   chef_Id: {
     type: mongoose.Schema.Types.ObjectId, // ใช้ ObjectId เพื่ออ้างอิงถึง Chef

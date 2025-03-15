@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Dialog, DialogActions, DialogTitle, DialogContent, Button, Collapse } from '@mui/material';
-import { Home, People, Settings, MonetizationOn, ShoppingCart, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory} from '@mui/icons-material';
+import { Home, People, Settings, MonetizationOn, ShoppingCart, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory, Inventory2} from '@mui/icons-material';
 import AddEmployee from './ManageEmployee';
 import ManageEmployee from './ManageEmployee';
 import ManageCashier from './ManageCashier';
@@ -138,7 +138,7 @@ const Sidebar: React.FC = () => {
             <List component="div" disablePadding>
               <ListItem onClick={() => handleItemClick('manageProducts')} sx={subMenuStyle(selectedPage === 'manageProducts')}>
                 <ListItemIcon sx={{ color: selectedPage === 'manageProducts' ? '#FFF' : '#333' }}>
-                  <ShoppingCart />
+                  <Inventory2 />
                 </ListItemIcon>
                 <ListItemText primary="สินค้า" />
               </ListItem>

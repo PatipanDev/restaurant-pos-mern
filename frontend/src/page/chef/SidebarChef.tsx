@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Dialog, DialogActions, DialogTitle, DialogContent, Button, Collapse } from '@mui/material';
-import { Home, People, Egg, Settings, MonetizationOn, ShoppingCart, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory } from '@mui/icons-material';
+import { Home, People, Egg, Settings, MonetizationOn, HistoryEdu, Inventory2, ShoppingCart, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory } from '@mui/icons-material';
 // import AddEmployee from './ManageEmployee';
 // import ManageEmployee from './ManageEmployee';
 // import ManageCashier from './ManageCashier';
@@ -11,8 +11,10 @@ import { Home, People, Egg, Settings, MonetizationOn, ShoppingCart, Category, Ta
 // import ManageDrinks from './ManageDrink';
 import { useNavigate } from 'react-router-dom'; // เพิ่ม useNavigate
 import SuccessAlert from '../../components/AlertSuccess';
-
 import ManageIngredients from './ManageIngredients';
+import ManageProductsChef from './ManageProductsChef';
+import ManageFoodsChef from './ManageFoodsChef';
+
 import axios from 'axios';
 
 const SidebarChef: React.FC = () => {
@@ -247,6 +249,10 @@ const SidebarChef: React.FC = () => {
         {selectedPage === 'profile' && <h1>ผู้ใช้งาน</h1>}
         {selectedPage === 'settings' && <h1>การตั้งค่า</h1>}
         {selectedPage === 'ingredient' && <ManageIngredients />}
+        {selectedPage === 'product' && <ManageProductsChef />}
+        {selectedPage === 'foodrecipe' && <ManageFoodsChef />}
+
+
       </div>
 
       <Dialog open={openDialog} onClose={handleCloseDialog}>
@@ -274,6 +280,8 @@ const menuItems = [
   { page: 'profile', label: 'ผู้ใช้งาน', icon: <People /> },
   { page: 'settings', label: 'การตั้งค่า', icon: <Settings /> },
   { page: 'ingredient', label: 'เตรียมวัตถุดิบ', icon: <Egg /> },
+  { page: 'product', label: 'สินค้า', icon: <Inventory2 /> },
+  { page: 'foodrecipe', label: 'สูตรอาหาร', icon: <HistoryEdu /> },
 ];
 
 

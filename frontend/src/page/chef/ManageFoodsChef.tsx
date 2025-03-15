@@ -14,7 +14,7 @@ import SuccessAlert from '../../components/AlertSuccess';
 import WarningAlert from '../../components/AlertDivWarn';
 import ErrorBoundary from '../ErrorBoundary';
 
-// import ManageFoodRecipe from './ManageFoodrecipe';
+import ManageFoodRecipe from './ManageFoodrecipe';
 
 interface Food {
   _id: string;
@@ -40,7 +40,7 @@ const schema = yup.object({
   product_Category_Id: yup.string().required('กรุณาเลือกประเภทอาหาร'),
 }).required();
 
-const ManageFoods: React.FC = () => {
+const ManageFoodsChef: React.FC = () => {
   const [rows, setRows] = useState<GridRowsProp<Food>>([]);
   const [open, setOpen] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<GridRowId | null>(null);
@@ -134,6 +134,16 @@ const ManageFoods: React.FC = () => {
       renderCell: (params) => params.row.owner_Id?.owner_Name,
     },
     {
+      field: 'details',
+      headerName: 'รายละเอียดสูตรอาหาร',
+      minWidth: 150,
+      renderCell: (params) => (
+        <Button variant="outlined" startIcon={<HistoryEdu />} onClick={() => handleShowFoodrecipeClick(params.id, params.row.food_Name)}>
+          รายละเอียด
+        </Button>
+      ),
+    },
+    {
       field: 'actions',
       headerName: 'แก้ไขข้อมูล',
       width: 100,
@@ -177,6 +187,10 @@ const ManageFoods: React.FC = () => {
     }
   };
 
+  const handleShowFoodrecipeClick = (id: GridRowId, name: GridRowId) => {
+    setselectedFood({ id: String(id), name: String(name) });
+    setShowModal(true);
+  };
 
   const handleEditClick = (id: GridRowId) => {
     setSelectedRowId(id);
@@ -215,8 +229,7 @@ const ManageFoods: React.FC = () => {
         food_Price: data.food_Price,
         product_Category_Id: data.product_Category_Id,
       };
-
-      // ตรวจสอบว่า user เป็น chef หรือ owner
+      
       if (user.role === "chef") {
         updatedData.chef_Id = user._id; // ถ้าผู้ใช้เป็น chef ให้ใช้ chef_Id
         updatedData.owner_Id = null; // ให้ owner_Id เป็นค่าว่าง
@@ -234,7 +247,6 @@ const ManageFoods: React.FC = () => {
           .then((response) => {
             console.log("Update successful", response.data);
             setAlertSuccess(<div>อัปเดตข้อมูลสำเร็จ</div>);
-            fetchData();
             const updatedRows = rows.map((row) =>
               row._id === selectedRowId ? { ...row, ...updatedData } : row
             );
@@ -354,6 +366,16 @@ const ManageFoods: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      {showModal && selectedFood && (
+        <ManageFoodRecipe
+          key={selectedFood.id} // ใช้ `key` เพื่อให้ component รีเฟรชใหม่ทุกครั้ง
+          id={selectedFood.id}
+          name={selectedFood.name}
+          onClose={() => setShowModal(false)}
+        />
+      )}
+
+
       <ErrorBoundary>
         <DataGrid rows={rows} columns={columns} getRowId={(row) => row._id} />
       </ErrorBoundary>
@@ -367,4 +389,4 @@ const ManageFoods: React.FC = () => {
   );
 }
 
-export default ManageFoods;  
+export default ManageFoodsChef;  

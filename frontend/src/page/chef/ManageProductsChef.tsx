@@ -3,6 +3,8 @@ import { DataGrid, GridColDef, GridRowsProp, GridRowId, GridCellParams } from '@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
+import { ObjectId } from 'mongodb';
+
 
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -42,7 +44,7 @@ const schema = yup.object({
 
 
 
-const ManageProducts: React.FC = () => {
+const ManageProductsChef: React.FC = () => {
   const [rows, setRows] = useState<GridRowsProp<Product>>([]);
   const [open, setOpen] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<GridRowId | null>(null);
@@ -396,4 +398,4 @@ const ManageProducts: React.FC = () => {
   );
 }
 
-export default ManageProducts;  
+export default ManageProductsChef;  

@@ -1,0 +1,308 @@
+import React, { useState, useEffect } from 'react';
+import { DataGrid, GridColDef, GridRowsProp, GridRowId, GridCellParams } from '@mui/x-data-grid';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
+import ModeEditIcon from '@mui/icons-material/ModeEdit';
+import { ObjectId } from 'mongodb';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import axios from 'axios';
+
+import SuccessAlert from '../../../components/AlertSuccess';
+import WarningAlert from '../../../components/AlertDivWarn';
+import ErrorBoundary from '../../ErrorBoundary';
+
+interface IngredientDetail {
+  _id: string;
+  IngredientDt_Qua: number;
+  ingredient_id: any; // Assuming ingredient_id is an object with _id and name
+  product_id: any; // Assuming product_id is an object with _id and name
+}
+
+interface FormData {
+  IngredientDt_Qua: number;
+  product_id: string;
+}
+
+interface IngrediendetailsProps {
+  id: string;
+  name: string;
+  onClose: () => void;
+}
+
+const schema = yup.object({
+  IngredientDt_Qua: yup.number().required('กรุณาใส่ปริมาณ'),
+  // IngredientDt_Unit: yup.string().required('กรุณาใส่หน่วย'),
+  // ingredient_id: yup.string().required('กรุณาเลือกส่วนผสม'),
+  product_id: yup.string().required('กรุณาเลือกสินค้า'),
+}).required();
+
+const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }) => {
+  const [rows, setRows] = useState<GridRowsProp<IngredientDetail>>([]);
+  const [open, setOpen] = useState(false);
+  const [selectedRowId, setSelectedRowId] = useState<GridRowId | null>(null);
+  const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
+  const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
+  const [ingredients, setIngredients] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+
+  const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
+    resolver: yupResolver(schema),
+  });
+
+  const fetchData = async () => {
+    try {
+
+      const productsResponse = await axios.get('http://localhost:3000/api/data/getproducts');
+      setProducts(productsResponse.data);
+
+      const ingredientDetailsResponse = await axios.get(`http://localhost:3000/api/data/getIngredientDetails/${id}`);
+      setRows(ingredientDetailsResponse.data);
+
+
+      
+
+      console.log('Ingredient Details:', ingredientDetailsResponse.data);
+      console.log('Products:', productsResponse.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+
+
+
+  useEffect(() => {
+    if (selectedRowId !== null) {
+      const selectedRow = rows.find((row) => row._id === selectedRowId);
+      if (selectedRow) {
+        setValue('IngredientDt_Qua', selectedRow.IngredientDt_Qua);
+        setValue('product_id', selectedRow.product_id._id);
+      }
+    }
+  }, [selectedRowId, rows, setValue]);
+
+  const columns: GridColDef[] = [
+    { field: 'index', headerName: 'ลำดับ', flex: 0.9, width: 30, renderCell: (params) => rows.indexOf(params.row) + 1 },
+    { field: 'product_id', headerName: 'สินค้า', flex: 1, minWidth: 180, renderCell: (params) => params.row.product_id?.product_Name },
+    { field: 'IngredientDt_Qua', headerName: 'ปริมาณ', flex: 1, minWidth: 100 },
+    { field: 'product_Quantity', headerName: 'ปริมาณวัตถุดิบที่เตรียม', flex: 1, minWidth: 100, renderCell: (params) => params.row.product_id?.product_Quantity},
+    { field: 'product_Stock', headerName: 'ปริมาณวัตถุดิบคงเหลือ', flex: 1, minWidth: 100, renderCell: (params) => params.row.product_id?.product_Stock},
+    { field: 'product_unit', headerName: 'หน่วย', flex: 1, minWidth: 100, renderCell: (params) => params.row.product_id?.unitId?.unit_Name},
+    {
+      field: 'actions',
+      headerName: 'แก้ไขข้อมูล',
+      width: 100,
+      renderCell: (params) => (
+        <Button variant="outlined" startIcon={<ModeEditIcon />} onClick={() => handleEditIngredientClick(params.id as string)}>
+          แก้ไข
+        </Button>
+      ),
+    },
+    {
+      field: 'delete',
+      headerName: 'ลบข้อมูล',
+      width: 100,
+      renderCell: (params) => (
+        <Button variant="outlined" startIcon={<DeleteIcon />} color="error" onClick={() => handleDeleteIngredientClick(params.id as string)}>
+          ลบ
+        </Button>
+      ),
+    },
+  ];
+
+  const handleEditIngredientClick = (id: string) => {
+    const ingredientDetail = rows.find((row) => row._id === id);
+    if (ingredientDetail) {
+      setValue('IngredientDt_Qua', ingredientDetail.IngredientDt_Qua);
+      setValue('product_id', ingredientDetail.product_id._id);
+      setSelectedRowId(id);
+      setOpen(true);
+    }
+  };
+
+  const handleDeleteIngredientClick = async (id: GridRowId) => {
+    const confirmDelete = window.confirm('คุณแน่ใจหรือไม่ว่าจะลบข้อมูลนี้?');
+    if (confirmDelete) {
+      try {
+        const ingredientDetailId = rows.find((row) => row._id === id)?._id;
+        if (ingredientDetailId) {
+          // Call the delete API with the ingredientDetailId
+          await axios.delete(`http://localhost:3000/api/data/deleteIngredientDetail/${ingredientDetailId}`);
+
+          // Filter out the deleted row from the state
+          const updatedRows = rows.filter((row) => row._id !== ingredientDetailId);
+          setRows(updatedRows);
+
+          setAlertSuccess(<div>ลบข้อมูลสำเร็จ</div>);
+        } else {
+          alert('ไม่พบข้อมูลที่จะลบ');
+        }
+      } catch (error: any) {
+        console.error('เกิดข้อผิดพลาดในการลบข้อมูล:', error);
+        setAlertMessage(<div>{error.response.data.message}</div>);
+      }
+    } else {
+      // User cancelled deletion
+    }
+  };
+
+
+  const handleAddClick = () => {
+    // Reset and open the dialog for adding a new product
+    setSelectedRowId(null);
+    reset(); // Reset the form values
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    // Close the dialog and reset form
+    setOpen(false);
+    reset();
+  };
+
+  // On form submission, either create a new product or update an existing one
+  const onSubmit = async (data: FormData) => {
+    console.log("Form Data:", data);
+  
+    try {
+      if (selectedRowId !== null) {
+        // Update an existing product
+        const updatedData = {
+          IngredientDt_Qua: data.IngredientDt_Qua,
+          ingredient_id: id, // Assuming `id` is available and valid
+          product_id: data.product_id,
+        };
+  
+        // Correct the URL and data for update
+        await axios
+          .put(`http://localhost:3000/api/data/updateIngredientDetail/${selectedRowId}`, updatedData) // Correct URL format
+          .then((response) => {
+            console.log("Update successful", response.data);
+            fetchData();
+            setAlertSuccess(<div>อัปเดตข้อมูลสำเร็จ</div>);
+  
+            // Update the rows in the state with the new data
+            const updatedRows = rows.map((row) =>
+              row._id === selectedRowId ? { ...row, ...updatedData } : row
+            );
+            setRows(updatedRows);
+          })
+          .catch((error:any) => {
+            console.error("Error updating data:", error);
+            setAlertMessage(<div>{error.response.data.message}</div>);
+          });
+      } else { 
+        const newData = {
+          IngredientDt_Qua: data.IngredientDt_Qua,
+          ingredient_id: id, // Assuming `id` is available and valid for adding
+          product_id: data.product_id,
+        };
+  
+        const response = await axios.post(
+          "http://localhost:3000/api/data/addIngredientDetail", // Correct URL for adding a new ingredient detail
+          newData
+        );
+
+
+        fetchData();
+
+        setRows([...rows, response.data]);
+        setAlertSuccess(<div>เพิ่มข้อมูลสำเร็จ</div>);
+      }
+      handleClose(); // Close the form dialog
+    } catch (error: any) {
+      console.error("Error submitting data:", error);
+      setAlertMessage(<div>{error.response.data.message}</div>);
+    }
+  };
+  
+
+  return (
+    <div style={{ height: '90vh', width: '100%', marginBottom: 70 }}>
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>{selectedRowId ? 'แก้ไขรายละเอียดส่วนผสม' : 'เพิ่มรายละเอียดส่วนผสม'}</DialogTitle>
+        <DialogContent>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Controller
+              name="IngredientDt_Qua"
+              control={control}
+              rules={{ required: "กรุณากรอกปริมาณ" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="ปริมาณ"
+                  type="number"
+                  fullWidth
+                  margin="dense"
+                  error={!!errors.IngredientDt_Qua}
+                  helperText={errors.IngredientDt_Qua?.message}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} // แปลงค่าเป็นตัวเลข
+                  value={field.value || 0} // ถ้าไม่มีค่าให้ใช้ค่าเริ่มต้นเป็น 0
+                />
+              )}
+            />
+
+            <Controller
+              name="product_id"
+              control={control}
+              rules={{ required: "กรุณาเลือกสินค้า" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  select
+                  label="สินค้า"
+                  fullWidth
+                  margin="dense"
+                  error={!!errors.product_id}
+                  helperText={errors.product_id?.message}
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                >
+                  {products.map((product) => (
+                    <MenuItem key={product._id} value={product._id}>
+                      {product.product_Name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
+          </form>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" onClick={handleClose} color="error">ยกเลิก</Button>
+          <Button variant="contained" onClick={handleSubmit(onSubmit)} color="success">
+            {selectedRowId ? 'อัปเดต' : 'เพิ่ม'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <ErrorBoundary>
+      
+        <DataGrid rows={rows} columns={columns} getRowId={(row) => row._id} />
+      </ErrorBoundary>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20, gap: 10 }}>
+      <Button color="primary">{name}</Button>
+        <Button onClick={onClose} variant="contained" startIcon={<CloseIcon />}>
+          ปิดหน้ารายละเอียด
+        </Button>
+        <Button variant="contained" onClick={handleAddClick}>
+          เพิ่มข้อมูล
+        </Button>
+
+        <WarningAlert messagealert={alertMessage} />
+        <SuccessAlert successalert={alertSuccess} />
+      </div>
+
+    </div>
+  );
+}
+
+export default Ingrediendetails;

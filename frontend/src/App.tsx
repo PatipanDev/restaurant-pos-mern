@@ -34,6 +34,9 @@ import ManageShopOwners from './page/owner/ManageOwner';
 
 // หน้าเชฟ
 import DashboardChef from './page/chef/DashboardChef';
+import ProductChef from './page/chef/ManageProductsChef';
+import ManageFoodRecipe from './page/chef/ManageFoodrecipe';
+import ManageFoodsChef from './page/chef/ManageFoodsChef';
 
 
 
@@ -102,7 +105,9 @@ const App: React.FC = () => {
           <Route path="/managefoods" element={<ManageFoods />} />
 
           {/* ส่วนของเชฟ */}
-          <Route path="/DashboardChef" element={<ProtectedRoute requiredRole="chef"><DashboardChef /></ProtectedRoute>} />
+          <Route path="/dashboardChef" element={<ProtectedRoute requiredRole="chef"><DashboardChef /></ProtectedRoute>} />
+          <Route path="/productChef" element={<ProtectedRoute requiredRole="chef"><ProductChef /></ProtectedRoute>} />
+          <Route path="/managefoodchef" element={<ProtectedRoute requiredRole="chef"><ManageFoodsChef /></ProtectedRoute>} />
 
 
         </Routes>

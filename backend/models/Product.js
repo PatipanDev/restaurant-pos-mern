@@ -24,12 +24,10 @@ const ProductSchema = new mongoose.Schema({
   unitId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Unit', // อ้างอิงไปยัง Model หน่วยสินค้า (Unit)
-    required: true
   },
   categoryId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ProductCategory', // อ้างอิงไปยัง Model ประเภทสินค้า
-    required: true
   }
 });
 
