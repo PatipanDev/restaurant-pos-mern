@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId, GridCellParams } from '@mui/x-data-grid';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
@@ -61,16 +63,16 @@ const ManageFoodsChef: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const foodsResponse = await axios.get('http://localhost:3000/api/data/getfoods');
+      const foodsResponse = await axios.get(`${API_URL}/api/data/getfoods`);
       setRows(foodsResponse.data);
 
-      const categoriesResponse = await axios.get('http://localhost:3000/api/data/getfoodcategory');
+      const categoriesResponse = await axios.get(`${API_URL}/api/data/getfoodcategory`);
       setCategories(categoriesResponse.data);
 
-      const chefResponse = await axios.get('http://localhost:3000/api/auth/getChefs');
+      const chefResponse = await axios.get(`${API_URL}/api/auth/getChefs`);
       setChefs(chefResponse.data);
 
-      const ownerResponse = await axios.get('http://localhost:3000/api/data/getfoodcategory');
+      const ownerResponse = await axios.get(`${API_URL}/api/data/getfoodcategory`);
       setChefs(ownerResponse.data);
 
       console.log('Foods:', foodsResponse.data);
@@ -171,7 +173,7 @@ const ManageFoodsChef: React.FC = () => {
       try {
         const foodId = rows.find((row) => row._id === id)?._id;
         if (foodId) {
-          await axios.delete(`http://localhost:3000/api/data/updatefoods/${foodId}`);
+          await axios.delete(`${API_URL}/api/data/updatefoods/${foodId}`);
           const updatedRows = rows.filter((row) => row._id !== foodId);
           setRows(updatedRows);
           setAlertSuccess(<div>ลบข้อมูลสำเร็จ</div>);
@@ -243,7 +245,7 @@ const ManageFoodsChef: React.FC = () => {
       // ถ้ามี selectedRowId หมายถึงการอัปเดตข้อมูล
       if (selectedRowId !== null) {
         await axios
-          .put(`http://localhost:3000/api/data/updatefoods/${selectedRowId}`, updatedData)
+          .put(`${API_URL}/api/data/updatefoods/${selectedRowId}`, updatedData)
           .then((response) => {
             console.log("Update successful", response.data);
             setAlertSuccess(<div>อัปเดตข้อมูลสำเร็จ</div>);
@@ -260,7 +262,7 @@ const ManageFoodsChef: React.FC = () => {
         console.log(updatedData)
         // ถ้าไม่มี selectedRowId หมายถึงการเพิ่มข้อมูลใหม่
         const response = await axios.post(
-          "http://localhost:3000/api/data/postfoods",
+          `${API_URL}/api/data/postfoods`,
           updatedData
         );
 

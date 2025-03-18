@@ -1,6 +1,8 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId, GridCellParams } from '@mui/x-data-grid';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import { Button, Dialog, DialogActions, Typography, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
 import { HistoryEdu } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
@@ -14,8 +16,6 @@ import SuccessAlert from '../../components/AlertSuccess';
 import WarningAlert from '../../components/AlertDivWarn';
 import ErrorBoundary from '../ErrorBoundary';
 
-// import ManageFoodRecipe from './ManageFoodrecipe';
-
 interface Food {
   _id: string;
   food_Name: string;
@@ -24,6 +24,7 @@ interface Food {
   product_Category_Id: any; // Reference to ProductCategory Model
   chef_Id: string;
   owner_Id: string;
+  food_Image: string; // เพิ่มฟิลด์ food_Image
 }
 
 interface FormData {
@@ -31,23 +32,57 @@ interface FormData {
   food_Stock: number;
   food_Price: number;
   product_Category_Id: string;
+  food_Image: File; // เพิ่มฟิลด์ food_Image สำหรับไฟล์รูปภาพ
 }
 
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const SUPPORTED_FORMATS = ['image/jpg', 'image/jpeg', 'image/png', 'image/webp'];
+
 const schema = yup.object({
-  food_Name: yup.string().required('กรุณาใส่ชื่ออาหาร').max(100, 'ชื่อต้องไม่เกิน 100 ตัวอักษร'),
-  food_Stock: yup.number().required('กรุณาใส่จำนวนคงเหลือ').min(0, 'จำนวนคงเหลือไม่สามารถน้อยกว่า 0 ได้'),
-  food_Price: yup.number().required('กรุณาใส่ราคา').min(0, 'ราคาต้องไม่ต่ำกว่า 0'),
-  product_Category_Id: yup.string().required('กรุณาเลือกประเภทอาหาร'),
+  food_Name: yup
+    .string()
+    .required('กรุณาใส่ชื่ออาหาร')
+    .max(100, 'ชื่อต้องไม่เกิน 100 ตัวอักษร'),
+
+  food_Stock: yup
+    .number()
+    .typeError('จำนวนคงเหลือต้องเป็นตัวเลข')
+    .required('กรุณาใส่จำนวนคงเหลือ')
+    .min(0, 'จำนวนคงเหลือไม่สามารถน้อยกว่า 0 ได้'),
+
+  food_Price: yup
+    .number()
+    .typeError('ราคาต้องเป็นตัวเลข')
+    .required('กรุณาใส่ราคา')
+    .min(0, 'ราคาต้องไม่ต่ำกว่า 0'),
+
+  product_Category_Id: yup
+    .string()
+    .required('กรุณาเลือกประเภทอาหาร'),
+
+  food_Image: yup
+    .mixed<File>()
+    .nullable()
+    .default(null)
+    .required('กรุณาเลือกรูปภาพ')
+    .test('fileSize', 'ไฟล์ต้องมีขนาดไม่เกิน 2MB', (value) => {
+      return value && value.size <= MAX_FILE_SIZE;
+    })
+    .test('fileFormat', 'ไฟล์ต้องเป็น JPG, PNG หรือ WEBP', (value) => {
+      return value && SUPPORTED_FORMATS.includes(value.type);
+    }),
+
 }).required();
 
-const ManageFoods: React.FC = () => {
+const ManageFoods2: React.FC = () => {
   const [rows, setRows] = useState<GridRowsProp<Food>>([]);
   const [open, setOpen] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<GridRowId | null>(null);
   const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
   const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
   const [selectedFood, setselectedFood] = useState<{ id: string; name: string } | null>(null); //เก็บค่าไอดีกับชื่อเพื่อส่งไปที่คอมโพเนน
-  const [showModal, setShowModal] = useState(false); // โชว์หน้ารายละเอียด       
+  const [showModal, setShowModal] = useState(false); // โชว์หน้ารายละเอียด      
+  const [selectedImage, setSelectedImage] = useState<string | null>(null); // เพิ่ม state สำหรับเก็บ path ของรูปภาพ 
 
 
   const [categories, setCategories] = useState<any[]>([]); // To store categories
@@ -55,22 +90,23 @@ const ManageFoods: React.FC = () => {
   const [owners, setOwners] = useState<any[]>([]); // To store owners
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
+
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
     resolver: yupResolver(schema),
   });
 
   const fetchData = async () => {
     try {
-      const foodsResponse = await axios.get('http://localhost:3000/api/data/getfoods');
+      const foodsResponse = await axios.get(`${API_URL}/api/food/getfoods`);
       setRows(foodsResponse.data);
 
-      const categoriesResponse = await axios.get('http://localhost:3000/api/data/getfoodcategory');
+      const categoriesResponse = await axios.get(`${API_URL}/api/data/getfoodcategory`);
       setCategories(categoriesResponse.data);
 
-      const chefResponse = await axios.get('http://localhost:3000/api/auth/getChefs');
+      const chefResponse = await axios.get(`${API_URL}/api/auth/getChefs`);
       setChefs(chefResponse.data);
 
-      const ownerResponse = await axios.get('http://localhost:3000/api/data/getfoodcategory');
+      const ownerResponse = await axios.get(`${API_URL}/api/data/getfoodcategory`);
       setChefs(ownerResponse.data);
 
       console.log('Foods:', foodsResponse.data);
@@ -97,6 +133,7 @@ const ManageFoods: React.FC = () => {
         setValue('food_Stock', selectedRow.food_Stock);
         setValue('food_Price', selectedRow.food_Price);
         setValue('product_Category_Id', selectedRow.product_Category_Id._id);
+        setSelectedImage(selectedRow.food_Image || null); // ตั้งค่า path ของรูปภาพใน state
       }
     }
   }, [selectedRowId, rows, setValue]);
@@ -108,6 +145,19 @@ const ManageFoods: React.FC = () => {
       flex: 0.9,
       width: 30,
       renderCell: (params) => rows.indexOf(params.row) + 1,
+    },
+    {
+      field: 'food_Image',
+      headerName: 'รูปภาพ',
+      flex: 1,
+      minWidth: 100,
+      renderCell: (params) => (
+        <img
+          src={`${API_URL}/images/${params.row.food_Image}`} // ดึงภาพจาก URL
+          alt={params.row.food_Name}
+          style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 4 }}
+        />
+      ),
     },
     { field: 'food_Name', headerName: 'ชื่ออาหาร', flex: 1, minWidth: 180 },
     { field: 'food_Stock', headerName: 'จำนวนคงเหลือ', flex: 1, minWidth: 100 },
@@ -161,7 +211,7 @@ const ManageFoods: React.FC = () => {
       try {
         const foodId = rows.find((row) => row._id === id)?._id;
         if (foodId) {
-          await axios.delete(`http://localhost:3000/api/data/updatefoods/${foodId}`);
+          await axios.delete(`${API_URL}/api/food/deleteFood/${foodId}`);
           const updatedRows = rows.filter((row) => row._id !== foodId);
           setRows(updatedRows);
           setAlertSuccess(<div>ลบข้อมูลสำเร็จ</div>);
@@ -176,7 +226,6 @@ const ManageFoods: React.FC = () => {
       // User cancelled deletion
     }
   };
-
 
   const handleEditClick = (id: GridRowId) => {
     setSelectedRowId(id);
@@ -194,73 +243,56 @@ const ManageFoods: React.FC = () => {
     reset();
   };
 
-  const onSubmit = async (data: FormData) => {
-    console.log("Form Data:", data);
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    console.log(user);
-    console.log(user._id)
+  const onSubmit = async (data: any) => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
 
+    if (!user._id || !user.role) {
+      setAlertMessage(<div>ไม่พบข้อมูลผู้ใช้หรือผู้ใช้ไม่ได้ล็อกอิน</div>);
+      return;
+    }
 
     try {
-      // ตรวจสอบว่า user มีข้อมูลและ role ที่ถูกต้อง
-      if (!user._id || !user.role) {
-        setAlertMessage(<div>ไม่พบข้อมูลผู้ใช้หรือผู้ใช้ไม่ได้ล็อกอิน</div>);
-        return;
+      const formData = new FormData();
+      formData.append("food_Name", data.food_Name);
+      formData.append("food_Stock", data.food_Stock);
+      formData.append("food_Price", data.food_Price);
+      formData.append("product_Category_Id", data.product_Category_Id);
+      if (data.food_Image) {
+        formData.append("food_Image", data.food_Image);
       }
 
-      // สร้างข้อมูลที่จะส่งไปยัง API
-      let updatedData: any = {
-        food_Name: data.food_Name,
-        food_Stock: data.food_Stock,
-        food_Price: data.food_Price,
-        product_Category_Id: data.product_Category_Id,
-      };
-
-      // ตรวจสอบว่า user เป็น chef หรือ owner
       if (user.role === "chef") {
-        updatedData.chef_Id = user._id; // ถ้าผู้ใช้เป็น chef ให้ใช้ chef_Id
-        updatedData.owner_Id = null; // ให้ owner_Id เป็นค่าว่าง
+        formData.append("owner_Id", "");
+        formData.append("chef_Id", user._id);
       } else if (user.role === "owner") {
-        updatedData.owner_Id = user._id; // ถ้าผู้ใช้เป็น owner ให้ใช้ owner_Id
-        updatedData.chef_Id = null; // ให้ chef_Id เป็นค่าว่าง
+        formData.append("owner_Id", user._id);
+        formData.append("chef_Id", "");
       }
 
-      console.log("Updated Data:", updatedData);
-
-      // ถ้ามี selectedRowId หมายถึงการอัปเดตข้อมูล
-      if (selectedRowId !== null) {
-        await axios
-          .put(`http://localhost:3000/api/data/updatefoods/${selectedRowId}`, updatedData)
-          .then((response) => {
-            console.log("Update successful", response.data);
-            setAlertSuccess(<div>อัปเดตข้อมูลสำเร็จ</div>);
-            fetchData();
-            const updatedRows = rows.map((row) =>
-              row._id === selectedRowId ? { ...row, ...updatedData } : row
-            );
-            setRows(updatedRows);
-          })
-          .catch((error) => {
-            console.error("Error updating data:", error);
-            setAlertMessage(<div>เกิดข้อผิดพลาดในการอัปเดตข้อมูล</div>);
-          });
+      console.log(formData)
+  
+      let response;
+      if (selectedRowId) {
+        // อัปเดตข้อมูล (PUT)
+        response = await axios.put(`${API_URL}/api/food/updateFood/${selectedRowId}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
       } else {
-        console.log(updatedData)
-        // ถ้าไม่มี selectedRowId หมายถึงการเพิ่มข้อมูลใหม่
-        const response = await axios.post(
-          "http://localhost:3000/api/data/postfoods",
-          updatedData
-        );
-
-        setRows([...rows, response.data]);
-        fetchData();
-        setAlertSuccess(<div>เพิ่มข้อมูลสำเร็จ</div>);
+        // เพิ่มข้อมูลใหม่ (POST)
+        response = await axios.post(`${API_URL}/api/food/createFood`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
       }
 
-      handleClose();
+
+  
+      console.log("Response:", response.data);
+      setAlertSuccess(<div>เข้าเพิ่มข้อมูลรูปภาพสำเร็จ</div>)
+      handleClose(); // ปิด Dialog
+      fetchData()
     } catch (error: any) {
-      console.error("Error submitting data:", error);
-      setAlertMessage(<div>{error.response.data.message}</div>);
+      console.error("Error:", error);
+      setAlertMessage(<div>{error.response.message}</div>)
     }
   };
 
@@ -299,6 +331,8 @@ const ManageFoods: React.FC = () => {
                   margin="dense"
                   error={!!errors.food_Stock}
                   helperText={errors.food_Stock?.message}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} // แปลงค่าเป็นตัวเลข
+                  value={field.value || 0} // ถ้าไม่มีค่าให้ใช้ค่าเริ่มต้นเป็น 0
                 />
               )}
             />
@@ -310,12 +344,14 @@ const ManageFoods: React.FC = () => {
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="ราคาอาหาร"
+                  label="ราคาอาหาร(บาท)"
                   type="number"
                   fullWidth
                   margin="dense"
                   error={!!errors.food_Price}
                   helperText={errors.food_Price?.message}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} // แปลงค่าเป็นตัวเลข
+                  value={field.value || 0} // ถ้าไม่มีค่าให้ใช้ค่าเริ่มต้นเป็น 0
                 />
               )}
             />
@@ -345,6 +381,38 @@ const ManageFoods: React.FC = () => {
               )}
             />
 
+            <Controller
+              name="food_Image"
+              control={control}
+              rules={{ required: "กรุณาเลือกรูปภาพ" }}
+              render={({ field }) => (
+                <div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="upload-button"
+                    style={{ display: "none" }} // ซ่อน input file
+                    onChange={(e) => field.onChange(e.target.files?.[0] || null)}
+                  />
+                  <label htmlFor="upload-button">
+                    <Button variant="contained" component="span" color="primary">
+                      เลือกรูปภาพ
+                    </Button>
+                  </label>
+                  {field.value && (
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      {field.value.name}
+                    </Typography>
+                  )}
+                  {errors.food_Image && (
+                    <Typography color="error" variant="body2">
+                      {errors.food_Image.message}
+                    </Typography>
+                  )}
+                </div>
+              )}
+            />
+
           </form>
         </DialogContent>
         <DialogActions>
@@ -354,6 +422,8 @@ const ManageFoods: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+
       <ErrorBoundary>
         <DataGrid rows={rows} columns={columns} getRowId={(row) => row._id} />
       </ErrorBoundary>
@@ -367,4 +437,4 @@ const ManageFoods: React.FC = () => {
   );
 }
 
-export default ManageFoods;  
+export default ManageFoods2;  

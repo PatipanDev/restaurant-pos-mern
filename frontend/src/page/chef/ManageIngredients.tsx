@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 import React, { useState, useEffect, Component } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId, GridCellParams } from '@mui/x-data-grid';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
@@ -60,10 +62,10 @@ const ManageIngredients: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const ingredientsResponse = await axios.get('http://localhost:3000/api/data/getingredients');
+                const ingredientsResponse = await axios.get(`${API_URL}/api/data/getingredients`);
                 setRows(ingredientsResponse.data);
 
-                const chefsResponse = await axios.get('http://localhost:3000/api/auth/getChefs');
+                const chefsResponse = await axios.get(`${API_URL}/api/auth/getChefs`);
                 setChefs(chefsResponse.data);
 
                 console.log('Ingredients:', ingredientsResponse.data);
@@ -146,7 +148,7 @@ const ManageIngredients: React.FC = () => {
             try {
                 const ingredientId = rows.find((row) => row._id === id)?._id;
                 if (ingredientId) {
-                    await axios.delete(`http://localhost:3000/api/data/deleteingredients/${ingredientId}`);
+                    await axios.delete(`${API_URL}/api/data/deleteingredients/${ingredientId}`);
 
                     const updatedRows = rows.filter((row) => row._id !== ingredientId);
                     setRows(updatedRows);
@@ -214,7 +216,7 @@ const ManageIngredients: React.FC = () => {
             if (selectedRowId !== null) {
                 // อัปเดตข้อมูล
                 await axios
-                    .put(`http://localhost:3000/api/data/updateingredients/${selectedRowId}`, ingredientData)
+                    .put(`${API_URL}/api/data/updateingredients/${selectedRowId}`, ingredientData)
                     .then((response) => {
                         console.log("Update successful", response.data);
                         setAlertSuccess(<div>อัปเดตข้อมูลส่วนผสมสำเร็จ</div>);
@@ -231,7 +233,7 @@ const ManageIngredients: React.FC = () => {
             } else {
                 // เพิ่มข้อมูลใหม่
                 const response = await axios.post(
-                    "http://localhost:3000/api/data/createingredients/",
+                    `${API_URL}/api/data/createingredients/`,
                     ingredientData
                 );
 

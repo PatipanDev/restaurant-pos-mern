@@ -22,10 +22,15 @@ const foodSchema = new mongoose.Schema({
   chef_Id: {
     type: mongoose.Schema.Types.ObjectId, // ใช้ ObjectId เพื่ออ้างอิงถึง Chef
     ref: 'Chef', // อ้างอิงถึงโมเดล Chef
+    // default: "", // ค่าดีฟอลต์คือค่าว่าง
   },
   owner_Id: {
     type: mongoose.Schema.Types.ObjectId, // ใช้ ObjectId เพื่ออ้างอิงถึง ShopOwner
     ref: 'ShopOwner', // อ้างอิงถึงโมเดล ShopOwner
+  },
+  food_Image: {
+    type: String, // เก็บ URL ของรูปภาพ
+    default: "", // ค่าดีฟอลต์คือค่าว่าง
   },
 });
 

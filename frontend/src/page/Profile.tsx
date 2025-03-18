@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 import * as React from 'react';
 import { useState } from 'react';
 import ListSubheader from '@mui/material/ListSubheader';
@@ -58,7 +60,7 @@ export default function Profile() {
 
   const handleConfirm = async () => {
     try {
-      await axios.post('http://localhost:3000/api/logout', {}, { withCredentials: true });
+      await axios.post(`${API_URL}/api/logout`, {}, { withCredentials: true });
       localStorage.removeItem('user'); // ลบข้อมูลผู้ใช้
       setSuccAlertMessage(<div>ล็อกเอาท์ออกจากระบบเรียบร้อย</div>);
       setOpenDialog(false);

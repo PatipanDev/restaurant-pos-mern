@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId, GridCellParams } from '@mui/x-data-grid';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
@@ -61,13 +63,13 @@ const ManageProductsChef: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const productsResponse = await axios.get('http://localhost:3000/api/data/getproducts');
+      const productsResponse = await axios.get(`${API_URL}/api/data/getproducts`);
       setRows(productsResponse.data);
 
-      const unitsResponse = await axios.get('http://localhost:3000/api/data/getunits');
+      const unitsResponse = await axios.get(`${API_URL}}/api/data/getunits`);
       setUnits(unitsResponse.data);
 
-      const categoriesResponse = await axios.get('http://localhost:3000/api/data/getcategories');
+      const categoriesResponse = await axios.get(`${API_URL}/api/data/getcategories`);
       setCategories(categoriesResponse.data);
 
       console.log('Products:', productsResponse.data);
@@ -154,7 +156,7 @@ const ManageProductsChef: React.FC = () => {
         const productId = rows.find((row) => row._id === id)?._id;
         if (productId) {
           // Call the delete API with the productId
-          await axios.delete(`http://localhost:3000/api/data/deleteproduct/${productId}`);
+          await axios.delete(`${API_URL}/api/data/deleteproduct/${productId}`);
 
           // Filter out the deleted row from the state
           const updatedRows = rows.filter((row) => row._id !== productId);
@@ -212,7 +214,7 @@ const ManageProductsChef: React.FC = () => {
 
         // Correct the URL and data
         await axios
-          .put(`http://localhost:3000/api/data/updateproduct/${selectedRowId}`, updatedData) // Fixed URL format
+          .put(`${API_URL}/api/data/updateproduct/${selectedRowId}`, updatedData) // Fixed URL format
           .then((response) => {
             console.log("Update successful", response.data);
             fetchData();
@@ -231,7 +233,7 @@ const ManageProductsChef: React.FC = () => {
       } else {
         // Add a new product
         const response = await axios.post(
-          "http://localhost:3000/api/data/addproduct", // Correct URL for adding a product
+          `${API_URL}/api/data/addproduct`, // Correct URL for adding a product
           data
         );
         fetchData();

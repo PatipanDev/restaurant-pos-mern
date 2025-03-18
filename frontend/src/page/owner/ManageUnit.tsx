@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId } from '@mui/x-data-grid';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
@@ -42,7 +44,7 @@ const ManageUnits: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/data/getunits'); // ใช้ API ที่เกี่ยวกับ Unit
+        const response = await axios.get(`${API_URL}/api/data/getunits`); // ใช้ API ที่เกี่ยวกับ Unit
         setRows(response.data);
         console.log(response.data);
       } catch (error) {
@@ -96,7 +98,7 @@ const ManageUnits: React.FC = () => {
       try {
         const unitId = rows.find((row) => row._id === id)?._id;
         if (unitId) {
-          await axios.delete(`http://localhost:3000/api/data/deleteunit/${unitId}`); // ใช้ API สำหรับลบ Unit
+          await axios.delete(`${API_URL}/api/data/deleteunit/${unitId}`); // ใช้ API สำหรับลบ Unit
 
           const updatedRows = rows.filter((row) => row._id !== unitId);
           setRows(updatedRows);
@@ -139,7 +141,7 @@ const ManageUnits: React.FC = () => {
         };
 
         await axios
-          .put(`http://localhost:3000/api/data/updateunit/${selectedRowId}`, updatedData) // ใช้ API สำหรับอัปเดต Unit
+          .put(`${API_URL}/api/data/updateunit/${selectedRowId}`, updatedData) // ใช้ API สำหรับอัปเดต Unit
           .then((response) => {
             console.log("Update successful", response.data);
             setAlertSuccess(<div>อัปเดตข้อมูลสำเร็จ</div>);
@@ -155,7 +157,7 @@ const ManageUnits: React.FC = () => {
           });
       } else {
         const response = await axios.post(
-          "http://localhost:3000/api/data/createunit", // ใช้ API สำหรับสร้าง Unit
+          `${API_URL}/api/data/createunit`, // ใช้ API สำหรับสร้าง Unit
           data
         );
         setRows([...rows, response.data]);

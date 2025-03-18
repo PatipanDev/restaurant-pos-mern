@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId, GridCellParams } from '@mui/x-data-grid';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
@@ -55,7 +57,7 @@ const ManageDrinks: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const drinksResponse = await axios.get('http://localhost:3000/api/data/getDrinks'); // Endpoint สำหรับดึงข้อมูลเครื่องดื่ม
+        const drinksResponse = await axios.get(`${API_URL}/api/data/getDrinks`); // Endpoint สำหรับดึงข้อมูลเครื่องดื่ม
         setRows(drinksResponse.data);
         console.log('Drinks:', drinksResponse.data);
       } catch (error) {
@@ -67,7 +69,7 @@ const ManageDrinks: React.FC = () => {
 
   const handleAddDrink = async (data: FormData) => {
     try {
-      const response = await axios.post('http://localhost:3000/api/data/addDrink', data); // Endpoint สำหรับเพิ่มเครื่องดื่ม
+      const response = await axios.post(`${API_URL}/api/data/addDrink`, data); // Endpoint สำหรับเพิ่มเครื่องดื่ม
       setRows([...rows, response.data]);
       setAlertSuccess('Drink added successfully!');
       setOpen(false);
@@ -79,7 +81,7 @@ const ManageDrinks: React.FC = () => {
 
   const handleDeleteDrink = async (id: string) => {
     try {
-      await axios.delete(`http://localhost:3000/api/data/deleteDrink/${id}`); // Endpoint สำหรับลบเครื่องดื่ม
+      await axios.delete(`${API_URL}/api/data/deleteDrink/${id}`); // Endpoint สำหรับลบเครื่องดื่ม
       setRows(rows.filter((row) => row._id !== id));
       setAlertSuccess('Drink deleted successfully!');
     } catch (error) {
@@ -159,7 +161,7 @@ const ManageDrinks: React.FC = () => {
         const drinkId = rows.find((row) => row._id === id)?._id;
         if (drinkId) {
           // Call the delete API with the drinkId
-          await axios.delete(`http://localhost:3000/api/data/deleteDrink/${drinkId}`); // ใช้ endpoint ที่ถูกต้อง
+          await axios.delete(`${API_URL}/api/data/deleteDrink/${drinkId}`); // ใช้ endpoint ที่ถูกต้อง
   
           // Filter out the deleted row from the state
           const updatedRows = rows.filter((row) => row._id !== drinkId);
@@ -215,7 +217,7 @@ const ManageDrinks: React.FC = () => {
   
         // Correct the URL and data
         await axios
-          .put(`http://localhost:3000/api/data/updateDrink/${selectedRowId}`, updatedData)
+          .put(`${API_URL}/api/data/updateDrink/${selectedRowId}`, updatedData)
           .then((response) => {
             console.log("Update successful", response.data);
             setAlertSuccess(<div>อัปเดตข้อมูลสำเร็จ</div>);
@@ -233,7 +235,7 @@ const ManageDrinks: React.FC = () => {
       } else {
         // Add a new drink
         const response = await axios.post(
-          "http://localhost:3000/api/data/addDrink",
+          `${API_URL}/api/data/addDrink`,
           data
         );
         setRows([...rows, response.data]);

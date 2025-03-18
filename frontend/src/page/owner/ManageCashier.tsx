@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId } from '@mui/x-data-grid';
 import { MenuItem, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
@@ -59,7 +61,7 @@ const ManageCashier: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/auth/getcashiers');
+        const response = await axios.get(`${API_URL}/api/auth/getcashiers`);
         setRows(response.data);
         console.log(response.data)
       } catch (error) {
@@ -122,7 +124,7 @@ const ManageCashier: React.FC = () => {
       try {
         const cashierId = rows.find((row) => row._id === id)?._id;
         if (cashierId) {
-          await axios.delete(`http://localhost:3000/api/auth/deletecashier/${cashierId}`);
+          await axios.delete(`${API_URL}/api/auth/deletecashier/${cashierId}`);
 
           const updatedRows = rows.filter((row) => row._id !== cashierId);
           setRows(updatedRows);
@@ -176,7 +178,7 @@ const ManageCashier: React.FC = () => {
         };
 
         await axios
-          .put(`http://localhost:3000/api/auth/updatecashier/${selectedRowId}`, updatedData)
+          .put(`${API_URL}/api/auth/updatecashier/${selectedRowId}`, updatedData)
           .then((response) => {
             console.log("Update successful", response.data);
             setAlertSuccess(<div>อัปเดตข้อมูลสำเร็จ</div>);
@@ -194,7 +196,7 @@ const ManageCashier: React.FC = () => {
       } else {
         // เพิ่มข้อมูลใหม่
         const response = await axios.post(
-          "http://localhost:3000/api/auth/registercashier",
+          `${API_URL}/api/auth/registercashier`,
           data
         );
         setRows([...rows, response.data]);

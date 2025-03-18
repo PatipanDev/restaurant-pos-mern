@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Box, Container, CssBaseline, TextField, Button, Typography } from "@mui/material";
@@ -23,7 +25,7 @@ const Register = () => {
   const onSubmit: SubmitHandler<RegisterFormInputs> = async (data) => {
     try {
       console.log("Sending data:", data);
-      const response = await axios.post("http://localhost:3000/api/auth/register", {
+      const response = await axios.post(`${API_URL}/api/auth/register`, {
         customer_Name: data.username,
         customer_Email: data.email,
         customer_Password: data.password,

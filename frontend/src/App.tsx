@@ -6,10 +6,9 @@ import { SyncLoader } from 'react-spinners';
 
 //หน้าแรก
 import HomeIndex from './page/Homeindex';
-import Dashboard from './page/Dashboard';
 import Profile from './page/Profile';
-import Listfood from './page/Listfood1';
-import Order from './page/Oder';
+import Listfood from './page/Listfood';
+import Order from './page/user/Order';
 import Login from './page/Login';
 import Register from './page/Register';
 import LoginReminder from './page/owner/component/LoginReminder';
@@ -32,6 +31,8 @@ import ManageChefs from './page/owner/ManageChef';
 import ManageFoods from './page/owner/ManageFoods';
 import ManageShopOwners from './page/owner/ManageOwner';
 
+import ManageFoods2 from './page/owner/ManageFoods2';
+
 // หน้าเชฟ
 import DashboardChef from './page/chef/DashboardChef';
 import ProductChef from './page/chef/ManageProductsChef';
@@ -41,6 +42,7 @@ import ManageFoodsChef from './page/chef/ManageFoodsChef';
 
 
 const HomePage = React.lazy(() => import('./page/Homepage'));
+// const Listfood = React.lazy(() => import('./page/Listfood'))
 
 
 const App: React.FC = () => {
@@ -87,7 +89,6 @@ const App: React.FC = () => {
           <Route path="/listfood" element={<Listfood />} />
           <Route path="/order" element={<ProtectedRoute requiredRole="user"><Order /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute requiredRole="user"><Profile /></ProtectedRoute>} />
-          <Route path="/admin/Dashboard" element={<Dashboard />} />
 
 
           {/* ส่วนของเจ้าของร้าน */}
@@ -103,6 +104,10 @@ const App: React.FC = () => {
           <Route path="/managedrink" element={<ManageDrinks />} />
           <Route path="/managechef" element={<ManageChefs />} />
           <Route path="/managefoods" element={<ManageFoods />} />
+          <Route path="/managefoods2" element={<ManageFoods2 />} />
+
+
+          
 
           {/* ส่วนของเชฟ */}
           <Route path="/dashboardChef" element={<ProtectedRoute requiredRole="chef"><DashboardChef /></ProtectedRoute>} />

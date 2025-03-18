@@ -7,6 +7,8 @@ import Cookies from "js-cookie";
 import WarningAlert from "../components/AlertDivWarn";
 import SuccessAlert from "../components/AlertSuccess";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 axios.defaults.withCredentials = true; // ✅ ให้ axios ส่งคุกกี้อัตโนมัติ
 
 interface LoginProps {
@@ -26,7 +28,7 @@ const Login: React.FC<LoginProps> = ({ setAuth }) => {
 
   const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', {
+      const response = await axios.post(`${API_URL}/api/auth/login`, {
         customer_Email: data.email,
         customer_Password: data.password,
       },{ withCredentials: true });

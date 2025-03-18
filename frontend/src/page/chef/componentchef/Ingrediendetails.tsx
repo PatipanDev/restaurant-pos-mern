@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId, GridCellParams } from '@mui/x-data-grid';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
@@ -55,10 +57,10 @@ const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }
   const fetchData = async () => {
     try {
 
-      const productsResponse = await axios.get('http://localhost:3000/api/data/getproducts');
+      const productsResponse = await axios.get(`${API_URL}/api/data/getproducts`);
       setProducts(productsResponse.data);
 
-      const ingredientDetailsResponse = await axios.get(`http://localhost:3000/api/data/getIngredientDetails/${id}`);
+      const ingredientDetailsResponse = await axios.get(`${API_URL}/api/data/getIngredientDetails/${id}`);
       setRows(ingredientDetailsResponse.data);
 
 
@@ -134,7 +136,7 @@ const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }
         const ingredientDetailId = rows.find((row) => row._id === id)?._id;
         if (ingredientDetailId) {
           // Call the delete API with the ingredientDetailId
-          await axios.delete(`http://localhost:3000/api/data/deleteIngredientDetail/${ingredientDetailId}`);
+          await axios.delete(`${API_URL}/api/data/deleteIngredientDetail/${ingredientDetailId}`);
 
           // Filter out the deleted row from the state
           const updatedRows = rows.filter((row) => row._id !== ingredientDetailId);
@@ -182,7 +184,7 @@ const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }
   
         // Correct the URL and data for update
         await axios
-          .put(`http://localhost:3000/api/data/updateIngredientDetail/${selectedRowId}`, updatedData) // Correct URL format
+          .put(`${API_URL}/api/data/updateIngredientDetail/${selectedRowId}`, updatedData) // Correct URL format
           .then((response) => {
             console.log("Update successful", response.data);
             fetchData();
@@ -206,7 +208,7 @@ const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }
         };
   
         const response = await axios.post(
-          "http://localhost:3000/api/data/addIngredientDetail", // Correct URL for adding a new ingredient detail
+          `${API_URL}/api/data/addIngredientDetail`, // Correct URL for adding a new ingredient detail
           newData
         );
 

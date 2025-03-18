@@ -1,14 +1,9 @@
 import React, { useState } from 'react';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Dialog, DialogActions, DialogTitle, DialogContent, Button, Collapse } from '@mui/material';
 import { Home, People, Egg, Settings, MonetizationOn, HistoryEdu, Inventory2, ShoppingCart, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory } from '@mui/icons-material';
-// import AddEmployee from './ManageEmployee';
-// import ManageEmployee from './ManageEmployee';
-// import ManageCashier from './ManageCashier';
-// import ManageProducts from './ManageProducts';
-// import ManageProductCategories from './ManageProductCategories';
-// import ManageUnits from './ManageUnit';
-// import ManageTable from './ManageTable';
-// import ManageDrinks from './ManageDrink';
+
+const API_URL = import.meta.env.VITE_API_URL;
+
 import { useNavigate } from 'react-router-dom'; // เพิ่ม useNavigate
 import SuccessAlert from '../../components/AlertSuccess';
 import ManageIngredients from './ManageIngredients';
@@ -38,7 +33,7 @@ const SidebarChef: React.FC = () => {
 
   const handleConfirm = async () => {
     try {
-      await axios.post('http://localhost:3000/api/logout', {}, { withCredentials: true });
+      await axios.post(`${API_URL}/api/logout`, {}, { withCredentials: true });
       localStorage.removeItem('user'); // ลบข้อมูลผู้ใช้
       setSuccAlertMessage(<div>ล็อกเอาท์ออกจากระบบเรียบร้อย</div>);
       setOpenDialog(false);

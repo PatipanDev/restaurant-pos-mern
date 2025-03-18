@@ -1,52 +1,181 @@
+const multer = require('multer');
+const path = require('path');
+const sharp = require('sharp'); // เพิ่ม sharp สำหรับบีบอัดรูปภาพ
+const fs = require('fs').promises; // เพิ่ม fs.promises สำหรับจัดการไฟล์แบบ async
 const Food = require('../models/Food');
-const express = require('express');
-require('dotenv').config();
 
-// เพิ่มอาหารใหม่
-exports.addFood = async (req, res) => {
-  const { food_Name, food_Stock, food_Price, product_Category_Id, chef_Id, owner_Id } = req.body;
+// กำหนดที่เก็บไฟล์
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/image'); // เก็บไฟล์ไว้ในโฟลเดอร์ uploads
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // ตั้งชื่อไฟล์เป็น timestamp
+  },
+});
 
+const upload = multer({ storage: storage });
+
+// สร้าง controller สำหรับเพิ่มข้อมู
+
+// สร้าง controller สำหรับเพิ่มข้อมูล
+const createFood = async (req, res) => {
   try {
-    // ตรวจสอบว่าอาหารนี้มีอยู่ในหมวดหมู่เดียวกันหรือไม่
-    let food = await Food.findOne({ food_Name, product_Category_Id });
-    if (food) {
-      return res.status(400).json({ message: 'อาหารนี้มีอยู่แล้วในหมวดหมู่เดียวกัน' });
+    const { food_Name, food_Stock, food_Price, product_Category_Id, owner_Id, chef_Id } = req.body;
+    const originalImagePath = req.file ? req.file.path : null;
+
+    if (originalImagePath) {
+      const compressedImagePath = path.join(
+        path.dirname(originalImagePath),
+        'compressed-' + path.basename(originalImagePath, path.extname(originalImagePath)) + '.webp'
+      );
+
+      await sharp(originalImagePath)
+        .resize({ width: 800 })
+        .webp({ quality: 80 })
+        .toFile(compressedImagePath);
+
+      await fs.unlink(originalImagePath);
+
+      // เก็บชื่อไฟล์ที่บีบอัดแทน
+      req.file.filename = path.basename(compressedImagePath);
     }
 
-    // สร้างอาหารใหม่
-    food = new Food({
+    // เก็บเฉพาะชื่อไฟล์ที่บีบอัด
+    const food_Image = req.file ? req.file.filename : null;
+    const chefIdToSave = (chef_Id === "" || chef_Id === undefined) ? null : chef_Id;
+
+    const foodData = new Food({
       food_Name,
       food_Stock,
       food_Price,
       product_Category_Id,
-      chef_Id,
       owner_Id,
+      chef_Id: chefIdToSave,
+      food_Image,
     });
 
-    // บันทึกอาหารในฐานข้อมูล
-    await food.save();
+    await foodData.save();
 
-    res.status(201).json({
-      _id: food._id,
-      food_Name: food.food_Name,
-      food_Stock: food.food_Stock,
-      food_Price: food.food_Price,
-      product_Category_Id: product_Category_Id,
-      chef_Id: food.chef_Id,
-      owner_Id: food.owner_Id,
-      message: 'เพิ่มอาหารใหม่สำเร็จ',
+    res.status(200).json({
+      message: 'เพิ่มข้อมูลสำเร็จ',
+      data: foodData,
     });
   } catch (error) {
-    console.error("Error during Food registration:", error);
-    res.status(500).json({
-      message: 'เกิดข้อผิดพลาดขณะเพิ่มอาหาร',
-      error: error.message || error,
-    });
+    console.error(error);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการเพิ่มข้อมูล' });
   }
 };
 
-// ดึงข้อมูลอาหารทั้งหมด
-exports.getFoods = async (req, res) => {
+
+
+
+
+const updateFood = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { food_Name, food_Stock, food_Price, product_Category_Id, owner_Id, chef_Id } = req.body;
+    const originalImagePath = req.file ? req.file.path : null;
+
+    if (originalImagePath) {
+      const compressedImagePath = path.join(
+        path.dirname(originalImagePath),
+        'compressed-' + path.basename(originalImagePath, path.extname(originalImagePath)) + '.webp'
+      );
+
+      await sharp(originalImagePath)
+        .resize({ width: 800 })
+        .webp({ quality: 80 })
+        .toFile(compressedImagePath);
+
+      await fs.unlink(originalImagePath);
+
+      // เก็บชื่อไฟล์ที่บีบอัดแทน
+      req.file.filename = path.basename(compressedImagePath);
+    }
+
+    // เก็บเฉพาะชื่อไฟล์ที่บีบอัด
+    const food_Image = req.file ? req.file.filename : null;
+    const chefIdToSave = (chef_Id === "" || chef_Id === undefined) ? null : chef_Id;
+
+    // ดึงข้อมูลอาหารเก่าจากฐานข้อมูล
+    const oldFoodData = await Food.findById(id);
+
+    // ตรวจสอบว่ามีรูปภาพเก่าหรือไม่ และลบออก
+    if (oldFoodData && oldFoodData.food_Image) {
+      if (food_Image) { // ถ้ามีการส่งภาพมาใหม่ให้ลบภาพเก่า
+        try {
+          await fs.unlink(path.join('uploads/image', oldFoodData.food_Image));
+        } catch (unlinkError) {
+          console.error('Error deleting old image:', unlinkError);
+        }
+      }
+    }
+
+    // อัปเดตข้อมูลในฐานข้อมูล
+    const updatedFood = await Food.findByIdAndUpdate(
+      id,
+      {
+        food_Name,
+        food_Stock,
+        food_Price,
+        product_Category_Id,
+        owner_Id,
+        chef_Id: chefIdToSave,
+        food_Image: food_Image || oldFoodData.food_Image, // ใช้รูปภาพใหม่ถ้ามี ไม่เช่นนั้นใช้รูปภาพเก่า
+      },
+      { new: true }
+    );
+
+    if (!updatedFood) {
+      return res.status(404).json({ message: 'ไม่พบข้อมูลอาหาร' });
+    }
+
+    res.status(200).json({
+      message: 'อัปเดตข้อมูลสำเร็จ',
+      data: updatedFood,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล' });
+  }
+};
+
+
+
+
+const deleteFood = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // ดึงข้อมูลอาหารที่จะลบ
+    const food = await Food.findById(id);
+
+    if (!food) {
+      return res.status(404).json({ message: 'ไม่พบข้อมูลอาหาร' });
+    }
+
+    // ลบรูปภาพ (ถ้ามี) โดยใช้ชื่อไฟล์ที่เก็บในฐานข้อมูล
+    if (food.food_Image) {
+      const imagePath = path.join('uploads/image', food.food_Image);
+      try {
+        await fs.unlink(imagePath);
+      } catch (unlinkError) {
+        console.error('Error deleting image:', unlinkError);
+      }
+    }
+
+    // ลบข้อมูลอาหารจากฐานข้อมูล
+    await Food.findByIdAndDelete(id);
+
+    res.status(200).json({ message: 'ลบข้อมูลอาหารสำเร็จ' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการลบข้อมูลอาหาร' });
+  }
+};
+
+const getFoods = async (req, res) => {
   try {
     const foods = await Food.find().populate(['product_Category_Id', 'chef_Id', 'owner_Id']);
 
@@ -63,42 +192,12 @@ exports.getFoods = async (req, res) => {
   }
 };
 
-
-// อัปเดตอาหาร
-exports.updateFood = async (req, res) => {
-  const { id } = req.params;
-  const { food_Name, food_Stock, food_Price, product_Category, chef_Id, owner_Id } = req.body;
-
-  try {
-    const food = await Food.findByIdAndUpdate(
-      id,
-      { food_Name, food_Stock, food_Price, product_Category, chef_Id, owner_Id },
-      { new: true } // คืนค่าใหม่ที่อัปเดต
-    );
-
-    if (!food) return res.status(404).json({ message: 'ไม่พบอาหาร' });
-
-    res.status(200).json({ message: 'อัปเดตข้อมูลอาหารสำเร็จ' });
-  } catch (error) {
-    console.error('Error updating food:', error);
-    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการอัปเดตอาหาร' });
-  }
+module.exports = {
+  upload,
+  createFood,
+  updateFood,
+  deleteFood,
+  getFoods
 };
 
-// ลบอาหาร
-exports.deleteFood = async (req, res) => {
-  const { id } = req.params;
 
-  try {
-    const food = await Food.findByIdAndDelete(id);
-
-    if (!food) {
-      return res.status(404).json({ message: 'ไม่พบอาหาร' });
-    }
-
-    res.status(200).json({ message: 'ลบข้อมูลอาหารสำเร็จ' });
-  } catch (error) {
-    console.error('Error deleting food:', error);
-    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการลบอาหาร' });
-  }
-};

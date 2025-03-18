@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId } from '@mui/x-data-grid';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Box } from '@mui/material';
@@ -42,7 +44,7 @@ const ManageFoodCategories: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/data/getfoodcategory');
+        const response = await axios.get(`${API_URL}/api/data/getfoodcategory`);
         setRows(response.data);
         console.log(response.data);
       } catch (error) {
@@ -101,7 +103,7 @@ const ManageFoodCategories: React.FC = () => {
       try {
         const categoryId = rows.find((row) => row._id === id)?._id;
         if (categoryId) {
-          await axios.delete(`http://localhost:3000/api/data/deletefoodcategory/${categoryId}`);
+          await axios.delete(`${API_URL}api/data/deletefoodcategory/${categoryId}`);
           const updatedRows = rows.filter((row) => row._id !== categoryId);
           setRows(updatedRows);
           setAlertSuccess(<div>ลบข้อมูลสำเร็จ</div>);
@@ -140,7 +142,7 @@ const ManageFoodCategories: React.FC = () => {
       if (selectedRowId !== null) {
         // อัปเดตข้อมูลที่มีอยู่
         await axios
-          .put(`http://localhost:3000/api/data/updatefoodcategory/${selectedRowId}`, data) // ส่ง data ทั้งหมด
+          .put(`${API_URL}/api/data/updatefoodcategory/${selectedRowId}`, data) // ส่ง data ทั้งหมด
           .then((response) => {
             console.log("Update successful", response.data);
             setAlertSuccess(<div>อัปเดตข้อมูลสำเร็จ</div>);
@@ -157,7 +159,7 @@ const ManageFoodCategories: React.FC = () => {
       } else {
         // สร้างข้อมูลใหม่
         const response = await axios.post(
-          "http://localhost:3000/api/data/createfoodcategory",
+          `${API_URL}/api/data/createfoodcategory`,
           data // ส่ง data ทั้งหมด
         );
         setRows([...rows, response.data]);

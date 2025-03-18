@@ -1,10 +1,14 @@
 const express = require('express');
+const path = require('path');  // เพิ่มบรรทัดนี้
 require('dotenv').config();
 const PORT = process.env.PORT;
 const connectDB = require('./config/db');
+//เราท์เตอร์
 const authRoutes = require('./routes/authRoutes');
 const manageRoutes = require('./routes/manageRoutes');
 const userRoutes = require('./routes/userRoutes')
+const foodRoutes = require('./routes/foodRoutes')
+
 
 const cors = require('cors');
 const cookieParser = require("cookie-parser");
@@ -22,14 +26,21 @@ app.use(cookieParser());
 
 // ตั้งค่า CORS
 app.use(cors({
-    origin: "http://localhost:5173", // Frontend URL
+    // origin: "http://localhost:5173", // Frontend URL
+    origin: "http://192.168.1.6:5173",
     credentials: true,  // อนุญาตให้ส่งคุกกี้
 }));
+
 
 // Routes
 app.use('/api', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/data', manageRoutes);
+// เส้นทางสำหรับอัปโหลดไฟล์
+app.use('/api/food', foodRoutes)
+
+
+app.use('/images', express.static(path.join(__dirname, 'uploads' ,'image')));
 
 // สร้าง Route (หน้าหลัก)
 app.get('/', (req, res) => {

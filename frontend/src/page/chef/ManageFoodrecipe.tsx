@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId, GridCellParams } from '@mui/x-data-grid';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
@@ -56,10 +58,10 @@ const ManageFoodRecipe: React.FC<FoodRecipeDetailsProps> = ({ id, name, onClose 
 
   const fetchData = async () => {
     try {
-      const productsResponse = await axios.get('http://localhost:3000/api/data/getproducts');
+      const productsResponse = await axios.get(`${API_URL}/api/data/getproducts`);
       setProducts(productsResponse.data);
 
-      const foodRecipeResponse = await axios.get(`http://localhost:3000/api/data/getFoodRecipes/${id}`);
+      const foodRecipeResponse = await axios.get(`${API_URL}/api/data/getFoodRecipes/${id}`);
       setRows(foodRecipeResponse.data);
 
       console.log('Food Recipes:', foodRecipeResponse.data);
@@ -128,7 +130,7 @@ const ManageFoodRecipe: React.FC<FoodRecipeDetailsProps> = ({ id, name, onClose 
       try {
         const foodRecipeId = rows.find((row) => row._id === id)?._id;
         if (foodRecipeId) {
-          await axios.delete(`http://localhost:3000/api/data/deleteFoodRecipe/${foodRecipeId}`);
+          await axios.delete(`${API_URL}/api/data/deleteFoodRecipe/${foodRecipeId}`);
 
           const updatedRows = rows.filter((row) => row._id !== foodRecipeId);
           setRows(updatedRows);
@@ -168,7 +170,7 @@ const ManageFoodRecipe: React.FC<FoodRecipeDetailsProps> = ({ id, name, onClose 
         };
 
         await axios
-          .put(`http://localhost:3000/api/data/updateFoodRecipe/${selectedRowId}`, updatedData)
+          .put(`${API_URL}/api/data/updateFoodRecipe/${selectedRowId}`, updatedData)
           .then((response) => {
             console.log('Update successful', response.data);
             fetchData();
@@ -192,7 +194,7 @@ const ManageFoodRecipe: React.FC<FoodRecipeDetailsProps> = ({ id, name, onClose 
         };
 
         const response = await axios.post(
-          'http://localhost:3000/api/data/addFoodRecipe',
+          `${API_URL}/api/data/addFoodRecipe`,
           newData
         );
 

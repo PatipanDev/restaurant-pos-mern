@@ -5,7 +5,6 @@ const productsControllers = require('../controllers/productController');
 const unitControllers = require('../controllers/unitControllers');
 const tableControllers = require('../controllers/tableController'); // เปลี่ยนเป็น tableControllers
 const drinkControllers = require('../controllers/drinkController');
-const foodsControllers = require('../controllers/foodsController');
 const foodCetagoryControllers = require('../controllers/foodCategoryControllers');
 const ingredientsControllers = require('../controllers/ingredientsController');
 const ingrediendetailsControllers = require('../controllers/ingredientDetControoller');
@@ -80,17 +79,17 @@ router.delete('/deleteDrink/:id', drinkControllers.deleteDrink);
 
 
 
-// ดึงข้อมูลประเภทอาหารทั้งหมด
-router.get('/getfoods', foodsControllers.getFoods);
+// อาหารทั้งหมด
+// router.get('/getfoods', foodsControllers.getFoods);
 
 // สร้างประเภทอาหารใหม่
-router.post('/postfoods', foodsControllers.addFood);
+// router.post('/postfoods', foodsControllers.addFood);
 
-// อัปเดตประเภทอาหาร
-router.put('/updatefoods/:id', foodsControllers.updateFood);
+// // อัปเดตประเภทอาหาร
+// router.put('/updatefoods/:id', foodsControllers.updateFood);
 
-// ลบประเภทอาหาร
-router.delete('/deletefoods/:id', foodsControllers.deleteFood);
+// // ลบประเภทอาหาร
+// router.delete('/deletefoods/:id', foodsControllers.deleteFood);
 
 
 

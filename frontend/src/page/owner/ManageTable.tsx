@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId } from '@mui/x-data-grid';
 import { MenuItem, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Box } from '@mui/material';
@@ -45,7 +47,7 @@ const ManageTable: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/data/gettables'); // เปลี่ยน URL ให้ตรงกับ API สำหรับ Table
+        const response = await axios.get(`${API_URL}/api/data/gettables`); // เปลี่ยน URL ให้ตรงกับ API สำหรับ Table
         setRows(response.data);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -94,7 +96,7 @@ const ManageTable: React.FC = () => {
       try {
         const tableId = rows.find((row) => row._id === id)?._id;
         if (tableId) {
-          await axios.delete(`http://localhost:3000/api/data/deletetable/${tableId}`); // เปลี่ยน URL ให้ตรงกับ API สำหรับลบ Table
+          await axios.delete(`${API_URL}/api/data/deletetable/${tableId}`); // เปลี่ยน URL ให้ตรงกับ API สำหรับลบ Table
 
           const updatedRows = rows.filter((row) => row._id !== tableId);
           setRows(updatedRows);
@@ -136,7 +138,7 @@ const ManageTable: React.FC = () => {
         };
 
         await axios
-          .put(`http://localhost:3000/api/data/updatetable/${selectedRowId}`, updatedData)
+          .put(`${API_URL}/api/data/updatetable/${selectedRowId}`, updatedData)
           .then((response) => {
             setAlertSuccess(<div>อัปเดตข้อมูลสำเร็จ</div>);
             const updatedRows = rows.map((row) =>
@@ -148,7 +150,7 @@ const ManageTable: React.FC = () => {
             setAlertMessage(<div>เกิดข้อผิดพลาดในการอัปเดตข้อมูล</div>);
           });
       } else {
-        const response = await axios.post('http://localhost:3000/api/data/createtable', data);
+        const response = await axios.post(`${API_URL}/api/data/createtable`, data);
         setRows([...rows, response.data]);
         setAlertSuccess(<div>เพิ่มข้อมูลสำเร็จ</div>);
       }

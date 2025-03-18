@@ -72,11 +72,20 @@ exports.login = async (req, res) => {
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
         // ✅ ใช้ HTTP-only Cookie เก็บ Token
+        // res.cookie('token', token, {
+        //     httpOnly: true,
+        //     secure: process.env.NODE_ENV === 'production',
+        //     sameSite: process.env.NODE_ENV === 'production' ? 'Strict' : 'Lax',
+        //     maxAge: 3600000, // 1 ชั่วโมง
+        // });
+
+
+        //ถ้าใช้ HTTP ธรรมดา
         res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'Strict' : 'Lax',
-            maxAge: 3600000, // 1 ชั่วโมง
+            httpOnly: true, // ป้องกันการเข้าถึงจาก JavaScript
+            secure: false,  // เนื่องจากใช้ HTTP, ไม่ใช่ HTTPS
+            sameSite: 'Lax', // เลือก Lax หรือ Strict ขึ้นอยู่กับกรณีการใช้งาน
+            maxAge: 3600000, // ตั้งเวลาหมดอายุของคุกกี้ 1 ชั่วโมง
         });
 
         // ✅ ส่งข้อมูลผู้ใช้กลับ
@@ -153,11 +162,19 @@ exports.loginemployee = async (req, res) => {
 
 
         // ✅ ใช้ HTTP-only Cookie เก็บ Token
+        // res.cookie('token', token, {
+        //     httpOnly: true, // ✅ ป้องกัน XSS
+        //     secure: process.env.NODE_ENV === 'production', // ✅ ใช้ HTTPS ใน production
+        //     sameSite: 'Strict', // ✅ ป้องกัน CSRF
+        //     maxAge: 3600000, // ✅ หมดอายุใน 1 ชั่วโมง
+        // });
+
+        //ถ้าใช้ HTTP ธรรมดา
         res.cookie('token', token, {
-            httpOnly: true, // ✅ ป้องกัน XSS
-            secure: process.env.NODE_ENV === 'production', // ✅ ใช้ HTTPS ใน production
-            sameSite: 'Strict', // ✅ ป้องกัน CSRF
-            maxAge: 3600000, // ✅ หมดอายุใน 1 ชั่วโมง
+            httpOnly: true, // ป้องกันการเข้าถึงจาก JavaScript
+            secure: false,  // เนื่องจากใช้ HTTP, ไม่ใช่ HTTPS
+            sameSite: 'Lax', // เลือก Lax หรือ Strict ขึ้นอยู่กับกรณีการใช้งาน
+            maxAge: 3600000, // ตั้งเวลาหมดอายุของคุกกี้ 1 ชั่วโมง
         });
 
         res.status(200).json({

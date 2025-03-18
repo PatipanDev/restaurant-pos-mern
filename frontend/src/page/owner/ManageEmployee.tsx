@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId } from '@mui/x-data-grid';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
@@ -66,7 +68,7 @@ const ManageEmployee: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/auth/getemployees'); // แทนที่ด้วย endpoint ของคุณ
+        const response = await axios.get(`${API_URL}/api/auth/getemployees`); // แทนที่ด้วย endpoint ของคุณ
         setRows(response.data);
         console.log(response.data)
       } catch (error) {
@@ -135,7 +137,7 @@ const ManageEmployee: React.FC = () => {
             const employeeId = rows.find((row) => row._id === id)?._id;
             if (employeeId) {
                 // ส่งคำขอ DELETE ไปยัง API โดยใช้ 'employeeId' ที่ตรงกับ _id ของข้อมูล
-                await axios.delete(`http://localhost:3000/api/auth/deleteemployee/${employeeId}`);
+                await axios.delete(`${API_URL}/api/auth/deleteemployee/${employeeId}`);
                 // console.log(employeeId)
 
                 // อัพเดต state ของแถวใน local หลังจากลบสำเร็จ
@@ -189,7 +191,7 @@ const ManageEmployee: React.FC = () => {
         };
 
         await axios.put(
-          `http://localhost:3000/api/auth/updateemployee/${selectedRowId}`,
+          `${API_URL}/api/auth/updateemployee/${selectedRowId}`,
           updatedData
         )
         .then(response => {
@@ -204,7 +206,7 @@ const ManageEmployee: React.FC = () => {
         })
       } else {
         // เพิ่มข้อมูลใหม่
-        const response = await axios.post('http://localhost:3000/api/auth/registeremployee', data); // แทนที่ด้วย endpoint ของคุณ
+        const response = await axios.post(`${API_URL}/api/auth/registeremployee`, data); // แทนที่ด้วย endpoint ของคุณ
         setRows([...rows, response.data]);
         setAlertSuccess(<div>เพิ่มข้อมูลสำเร็จ</div>)
       }

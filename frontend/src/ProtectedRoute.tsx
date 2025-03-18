@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 import React, { ReactNode, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import axios from 'axios';
@@ -24,7 +26,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
     const checkAuth = async () => {
       try {
         // เช็คสิทธิ์จาก backend ว่าผู้ใช้มีสิทธิ์เข้าใช้งานหรือไม่
-        const response = await axios.get('http://localhost:3000/api/user', { withCredentials: true });
+        const response = await axios.get(`${API_URL}/api/user`, { withCredentials: true });
 
         if (response.status === 200) {
           // เช็คการอนุญาตจาก backend สำเร็จแล้ว

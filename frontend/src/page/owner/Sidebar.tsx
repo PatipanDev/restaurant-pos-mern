@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 import React, { useState } from 'react';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Dialog, DialogActions, DialogTitle, DialogContent, Button, Collapse } from '@mui/material';
 import { Home, People, Settings, MonetizationOn, ShoppingCart, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory, Inventory2} from '@mui/icons-material';
@@ -15,6 +17,8 @@ import ManageChefs from './ManageChef';
 import ManageFoods from './ManageFoods';
 import ManageFoodCategories from './ManageFoodCategories';
 import ManageShopOwners from './ManageOwner';
+import ManageFoods2 from './ManageFoods2';
+
 import axios from 'axios';
 
 const Sidebar: React.FC = () => {
@@ -38,7 +42,7 @@ const Sidebar: React.FC = () => {
 
   const handleConfirm = async () => {
     try {
-      await axios.post('http://localhost:3000/api/logout', {}, { withCredentials: true });
+      await axios.post(`${API_URL}/api/logout`, {}, { withCredentials: true });
       localStorage.removeItem('user'); // ลบข้อมูลผู้ใช้
       setSuccAlertMessage(<div>ล็อกเอาท์ออกจากระบบเรียบร้อย</div>);
       setOpenDialog(false);
@@ -262,6 +266,10 @@ const Sidebar: React.FC = () => {
 
         {selectedPage === 'manageFood' && <ManageFoods />}
         {selectedPage === 'manageShopOwner' && <ManageShopOwners />}
+
+
+        {selectedPage === 'managefoods2' && <ManageFoods2 />}
+
       </div>
 
       <Dialog open={openDialog} onClose={handleCloseDialog}>
@@ -288,6 +296,9 @@ const Sidebar: React.FC = () => {
 const menuItems = [
   { page: 'profile', label: 'ผู้ใช้งาน', icon: <People /> },
   { page: 'settings', label: 'การตั้งค่า', icon: <Settings /> },
+  { page: 'managefoods2', label: 'จัดการอาหาร', icon: <People /> },
+
+
 ];
 
 

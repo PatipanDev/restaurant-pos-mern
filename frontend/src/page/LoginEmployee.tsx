@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Box, Container, CssBaseline, TextField, Button, Typography } from "@mui/material";
@@ -8,7 +10,6 @@ import FormControl from '@mui/material/FormControl';
 import NativeSelect from '@mui/material/NativeSelect';
 import WarningAlert from "../components/AlertDivWarn";
 import SuccessAlert from "../components/AlertSuccess";
-import Dashboard from "./Dashboard";
 // import LoginEmployee from './LoginEmployee';
 
 axios.defaults.withCredentials = true; 
@@ -36,7 +37,7 @@ const LoginEmployee: React.FC<LoginProps> = ({ setAuth }) => {
     // console.log(data)
 
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/loginemployee', {
+      const response = await axios.post(`${API_URL}/api/auth/loginemployee`, {
         employee_Name: name,  // เปลี่ยนเป็นชื่อสำหรับพนักงาน
         employee_Password: password,
         employee_Role: role,  // ส่งค่าตำแหน่งไปด้วย

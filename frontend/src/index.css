@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Sarabun&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap');
+
 html, body {
   width: 100%;
   margin: 0;
@@ -6,5 +9,4 @@ html, body {
   font-family: 'Sarabun', 'Noto Sans', sans-serif; /* ฟอนต์ภาษาไทยและอังกฤษ */
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Sarabun&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap');
+

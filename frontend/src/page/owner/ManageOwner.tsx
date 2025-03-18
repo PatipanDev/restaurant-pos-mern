@@ -1,3 +1,5 @@
+const API_URL = import.meta.env.VITE_API_URL;
+
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId } from '@mui/x-data-grid';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
@@ -46,7 +48,7 @@ const ManageShopOwners: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/auth/getShopowner');
+        const response = await axios.get(`${API_URL}/api/auth/getShopowner`);
         setRows(response.data); 
         console.log(response.data); 
       } catch (error) {
@@ -103,7 +105,7 @@ const ManageShopOwners: React.FC = () => {
       try {
         const ownerId = rows.find((row) => row._id === id)?._id;
         if (ownerId) {
-          await axios.delete(`http://localhost:3000/api/auth/deleteShopowner/${ownerId}`);
+          await axios.delete(`${API_URL}/api/auth/deleteShopowner/${ownerId}`);
           const updatedRows = rows.filter((row) => row._id !== ownerId);
           setRows(updatedRows);
           setAlertSuccess(<div>ลบข้อมูลสำเร็จ</div>);
@@ -145,7 +147,7 @@ const ManageShopOwners: React.FC = () => {
         };
   
         await axios
-          .put(`http://localhost:3000/api/auth/updateShopowner/${selectedRowId}`, updatedData)
+          .put(`${API_URL}/api/auth/updateShopowner/${selectedRowId}`, updatedData)
           .then((response) => {
             console.log("Update successful", response.data);
             setAlertSuccess(<div>{response.data.message}</div>);
@@ -170,7 +172,7 @@ const ManageShopOwners: React.FC = () => {
       } else {
         // เพิ่มข้อมูลใหม่
         const response = await axios.post(
-          "http://localhost:3000/api/auth/addShopowner", // เปลี่ยน endpoint เป็น /api/shopowners
+          `${API_URL}}/api/auth/addShopowner`, // เปลี่ยน endpoint เป็น /api/shopowners
           data
         );
         console.log(response)

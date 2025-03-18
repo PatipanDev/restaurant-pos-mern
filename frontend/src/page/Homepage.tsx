@@ -1,3 +1,4 @@
+const API_URL = import.meta.env.VITE_API_URL;
 
 import React, { Suspense, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
@@ -21,8 +22,8 @@ import axios from "axios";
 
 // นำเข้าหน้า
 import Profile from "./Profile";
-import Order from "./Oder";
-import Listfood from "./Listfood1";
+import Order from "./user/Order";
+import Listfood from "./Listfood";
 import HomeIndex from "./Homeindex";
 import LoginReminder from "./owner/component/LoginReminder";
 
@@ -55,7 +56,7 @@ export default function HomePage() {
     //ตรวจสอบสิทธิ์ จาก http only cookie ว่ามีโทเค็นไหม
     const checkAuthorization = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/user", {
+        const response = await axios.get(`${API_URL}/api/user`, {
           withCredentials: true, // ส่ง cookie ไปพร้อมกับ request
         });
 
