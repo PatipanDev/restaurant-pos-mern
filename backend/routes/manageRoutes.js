@@ -62,38 +62,6 @@ router.delete('/deletetable/:id', tableControllers.deleteTable);
 
 
 
-
-
-// ดึงข้อมูลเครื่องดื่มทั้งหมด
-router.get('/getDrinks', drinkControllers.getDrinks);
-
-// สร้างเครื่องดื่มใหม่
-router.post('/addDrink', drinkControllers.addDrink);
-
-// อัปเดตเครื่องดื่ม
-router.put('/updateDrink/:id', drinkControllers.updateDrink);
-
-// ลบเครื่องดื่ม
-router.delete('/deleteDrink/:id', drinkControllers.deleteDrink);
-
-
-
-
-// อาหารทั้งหมด
-// router.get('/getfoods', foodsControllers.getFoods);
-
-// สร้างประเภทอาหารใหม่
-// router.post('/postfoods', foodsControllers.addFood);
-
-// // อัปเดตประเภทอาหาร
-// router.put('/updatefoods/:id', foodsControllers.updateFood);
-
-// // ลบประเภทอาหาร
-// router.delete('/deletefoods/:id', foodsControllers.deleteFood);
-
-
-
-
 //ประเภทอาหาร 
 router.get('/getfoodcategory', foodCetagoryControllers.getCategories)
 

@@ -2,6 +2,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 import React, { Suspense, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import {
   Box,
   CssBaseline,
@@ -51,6 +52,16 @@ export default function HomePage() {
   const isDesktop = useMediaQuery("(min-width:600px)"); // เช็คขนาดจอ
   const [isUser, setIsUser] = useState(false);
   const navigate = useNavigate(); // ✅ เรียกใช้ useNavigate() อย่างถูกต้อง
+  const location = useLocation();
+
+
+  //เก็บค่าหน้าเมื่อกลับมา
+  useEffect(() => {
+    // หากมีค่าของ value ใน state ที่ส่งมาจากหน้าอื่น ให้ใช้ค่าเหล่านั้น
+    if (location.state?.value !== undefined) {
+      setValue(location.state.value);
+    }
+  }, [location]);
 
   useEffect(() => {
     //ตรวจสอบสิทธิ์ จาก http only cookie ว่ามีโทเค็นไหม

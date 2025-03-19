@@ -41,6 +41,8 @@ app.use('/api/food', foodRoutes)
 
 
 app.use('/images', express.static(path.join(__dirname, 'uploads' ,'image')));
+app.use('/imagesdrink', express.static(path.join(__dirname, 'uploads' ,'drink-images')));
+
 
 // สร้าง Route (หน้าหลัก)
 app.get('/', (req, res) => {

@@ -74,7 +74,7 @@ const schema = yup.object({
 
 }).required();
 
-const ManageFoods2: React.FC = () => {
+const ManageFoods: React.FC = () => {
   const [rows, setRows] = useState<GridRowsProp<Food>>([]);
   const [open, setOpen] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<GridRowId | null>(null);
@@ -437,4 +437,4 @@ const ManageFoods2: React.FC = () => {
   );
 }
 
-export default ManageFoods2;  
+export default ManageFoods;  

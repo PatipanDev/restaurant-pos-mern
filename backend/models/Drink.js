@@ -28,7 +28,11 @@ const drinkSchema = new mongoose.Schema({
   drink_Expiry_date: {
     type: Date,
     required: true,
-  }
+  },
+  drink_Image: {
+    type: String, // เก็บ URL ของรูปภาพ
+    default: "", // ค่าดีฟอลต์คือค่าว่าง
+  },
 }, {
   timestamps: true, // เพิ่ม createdAt และ updatedAt
 });

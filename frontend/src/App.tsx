@@ -8,6 +8,8 @@ import { SyncLoader } from 'react-spinners';
 import HomeIndex from './page/Homeindex';
 import Profile from './page/Profile';
 import Listfood from './page/Listfood';
+// import FoodDetail from './page/FoodDetail';
+import DrinkDetail from './page/DrinkDetail';
 import Order from './page/user/Order';
 import Login from './page/Login';
 import Register from './page/Register';
@@ -38,10 +40,12 @@ import DashboardChef from './page/chef/DashboardChef';
 import ProductChef from './page/chef/ManageProductsChef';
 import ManageFoodRecipe from './page/chef/ManageFoodrecipe';
 import ManageFoodsChef from './page/chef/ManageFoodsChef';
+import HomePage from './page/Homepage';
+// HomePage
 
 
 
-const HomePage = React.lazy(() => import('./page/Homepage'));
+// const HomePage = React.lazy(() => import('./page/Homepage'));
 // const Listfood = React.lazy(() => import('./page/Listfood'))
 
 
@@ -89,6 +93,9 @@ const App: React.FC = () => {
           <Route path="/listfood" element={<Listfood />} />
           <Route path="/order" element={<ProtectedRoute requiredRole="user"><Order /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute requiredRole="user"><Profile /></ProtectedRoute>} />
+          {/* <Route path="/food-detail/:_id" element={<ProtectedRoute requiredRole="user"><FoodDetail /></ProtectedRoute>} /> */}
+          {/* <Route path="/drink-detail/:_id" element={<ProtectedRoute requiredRole="user"><DrinkDetail /></ProtectedRoute>} /> */}
+
 
 
           {/* ส่วนของเจ้าของร้าน */}

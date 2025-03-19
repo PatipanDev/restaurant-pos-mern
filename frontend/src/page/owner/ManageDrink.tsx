@@ -2,7 +2,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId, GridCellParams } from '@mui/x-data-grid';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl,Typography } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 
@@ -14,6 +14,8 @@ import SuccessAlert from '../../components/AlertSuccess';
 import WarningAlert from '../../components/AlertDivWarn';
 import ErrorBoundary from '../ErrorBoundary';
 
+
+
 interface Drink {
   _id: string;
   drink_Name: string;
@@ -22,6 +24,7 @@ interface Drink {
   drink_Stock_quantity: number;
   drink_Manufacture_date: string;
   drink_Expiry_date: string;
+  drink_Image: string; 
 
 }
 
@@ -32,7 +35,11 @@ interface FormData {
   drink_Stock_quantity: number;
   drink_Manufacture_date: string;
   drink_Expiry_date: string;
+  drink_Image: File
 }
+
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const SUPPORTED_FORMATS = ['image/jpg', 'image/jpeg', 'image/png', 'image/webp'];
 
 const schema = yup.object({
   drink_Name: yup.string().required('กรุณาใส่ชื่อเครื่องดื่ม').max(100, 'ชื่อต้องไม่เกิน 100 ตัวอักษร'),
@@ -41,6 +48,17 @@ const schema = yup.object({
   drink_Stock_quantity: yup.number().required('กรุณาใส่ปริมาณคงเหลือ').min(0, 'ปริมาณคงเหลือต้องไม่ต่ำกว่า 0'),
   drink_Manufacture_date: yup.string().required('กรุณาใส่วันที่ผลิต'),
   drink_Expiry_date: yup.string().required('กรุณาใส่วันหมดอายุ'),
+  drink_Image: yup
+      .mixed<File>()
+      .nullable()
+      .default(null)
+      .required('กรุณาเลือกรูปภาพ')
+      .test('fileSize', 'ไฟล์ต้องมีขนาดไม่เกิน 2MB', (value) => {
+        return value && value.size <= MAX_FILE_SIZE;
+      })
+      .test('fileFormat', 'ไฟล์ต้องเป็น JPG, PNG หรือ WEBP', (value) => {
+        return value && SUPPORTED_FORMATS.includes(value.type);
+      }),
 }).required();
 
 const ManageDrinks: React.FC = () => {
@@ -50,59 +68,27 @@ const ManageDrinks: React.FC = () => {
   const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
   const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
 
+  const [selectedImage, setSelectedImage] = useState<string | null>(null); //เพิ่มที่เก็บรูปภาพ
+  
+
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
     resolver: yupResolver(schema),
   });
 
+  const fetchData = async () => {
+    try {
+      const drinksResponse = await axios.get(`${API_URL}/api/food/getDrinks`); // Endpoint สำหรับดึงข้อมูลเครื่องดื่ม
+      setRows(drinksResponse.data);
+      console.log('Drinks:', drinksResponse.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const drinksResponse = await axios.get(`${API_URL}/api/data/getDrinks`); // Endpoint สำหรับดึงข้อมูลเครื่องดื่ม
-        setRows(drinksResponse.data);
-        console.log('Drinks:', drinksResponse.data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+    
     fetchData();
   }, []);
-
-  const handleAddDrink = async (data: FormData) => {
-    try {
-      const response = await axios.post(`${API_URL}/api/data/addDrink`, data); // Endpoint สำหรับเพิ่มเครื่องดื่ม
-      setRows([...rows, response.data]);
-      setAlertSuccess('Drink added successfully!');
-      setOpen(false);
-    } catch (error) {
-      setAlertMessage('Error adding drink.');
-      console.error(error);
-    }
-  };
-
-  const handleDeleteDrink = async (id: string) => {
-    try {
-      await axios.delete(`${API_URL}/api/data/deleteDrink/${id}`); // Endpoint สำหรับลบเครื่องดื่ม
-      setRows(rows.filter((row) => row._id !== id));
-      setAlertSuccess('Drink deleted successfully!');
-    } catch (error) {
-      setAlertMessage('Error deleting drink.');
-      console.error(error);
-    }
-  };
-
-  const handleEditDrink = (id: string) => {
-    const drink = rows.find((row) => row._id === id);
-    if (drink) {
-      setValue('drink_Name', drink.drink_Name);
-      setValue('drink_Price', drink.drink_Price);
-      setValue('drink_Quantity', drink.drink_Quantity);
-      setValue('drink_Stock_quantity', drink.drink_Stock_quantity);
-      setValue('drink_Manufacture_date', drink.drink_Manufacture_date);
-      setValue('drink_Expiry_date', drink.drink_Expiry_date);
-      setSelectedRowId(id);
-      setOpen(true);
-    }
-  };
 
   useEffect(() => {
     if (selectedRowId !== null) {
@@ -114,6 +100,7 @@ const ManageDrinks: React.FC = () => {
         setValue('drink_Stock_quantity', selectedRow.drink_Stock_quantity);
         setValue('drink_Manufacture_date', selectedRow.drink_Manufacture_date);
         setValue('drink_Expiry_date', selectedRow.drink_Expiry_date);
+        setSelectedImage(selectedRow.drink_Image || null);
       }
     }
   }, [selectedRowId, rows, setValue]);
@@ -125,6 +112,19 @@ const ManageDrinks: React.FC = () => {
       flex: 0.9,
       width: 30,
       renderCell: (params) => rows.indexOf(params.row) + 1,
+    },
+    {
+      field: 'drink_Image',
+      headerName: 'รูปภาพ',
+      flex: 1,
+      minWidth: 100,
+      renderCell: (params) => (
+        <img
+          src={`${API_URL}/imagesdrink/${params.row.drink_Image}`} // ดึงภาพจาก URL
+          alt={params.row.drink_Name}
+          style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 4 }}
+        />
+      ),
     },
     { field: 'drink_Name', headerName: 'ชื่อเครื่องดื่ม', flex: 1, minWidth: 180 },
     { field: 'drink_Price', headerName: 'ราคา', flex: 1, minWidth: 120 },
@@ -161,7 +161,7 @@ const ManageDrinks: React.FC = () => {
         const drinkId = rows.find((row) => row._id === id)?._id;
         if (drinkId) {
           // Call the delete API with the drinkId
-          await axios.delete(`${API_URL}/api/data/deleteDrink/${drinkId}`); // ใช้ endpoint ที่ถูกต้อง
+          await axios.delete(`${API_URL}/api/food/deleteDrink/${drinkId}`); // ใช้ endpoint ที่ถูกต้อง
   
           // Filter out the deleted row from the state
           const updatedRows = rows.filter((row) => row._id !== drinkId);
@@ -200,53 +200,54 @@ const ManageDrinks: React.FC = () => {
   };
   
   // On form submission, either create a new drink or update an existing one
-  const onSubmit = async (data: FormData) => {
-    console.log("Form Data:", data);
+  const onSubmit = async (data: any) => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+  
+    if (!user._id || !user.role) {
+      setAlertMessage(<div>ไม่พบข้อมูลผู้ใช้หรือผู้ใช้ไม่ได้ล็อกอิน</div>);
+      return;
+    }
   
     try {
-      if (selectedRowId !== null) {
-        // Update an existing drink
-        const updatedData = {
-          drink_Name: data.drink_Name,
-          drink_Price: data.drink_Price,
-          drink_Quantity: data.drink_Quantity,
-          drink_Stock_quantity: data.drink_Stock_quantity,
-          drink_Manufacture_date: data.drink_Manufacture_date,
-          drink_Expiry_date: data.drink_Expiry_date,
-        };
-  
-        // Correct the URL and data
-        await axios
-          .put(`${API_URL}/api/data/updateDrink/${selectedRowId}`, updatedData)
-          .then((response) => {
-            console.log("Update successful", response.data);
-            setAlertSuccess(<div>อัปเดตข้อมูลสำเร็จ</div>);
-  
-            // Update the rows in the state with the new data
-            const updatedRows = rows.map((row) =>
-              row._id === selectedRowId ? { ...row, ...updatedData } : row
-            );
-            setRows(updatedRows);
-          })
-          .catch((error) => {
-            console.error("Error updating data:", error);
-            setAlertMessage(<div>เกิดข้อผิดพลาดในการอัปเดตข้อมูล</div>);
-          });
-      } else {
-        // Add a new drink
-        const response = await axios.post(
-          `${API_URL}/api/data/addDrink`,
-          data
-        );
-        setRows([...rows, response.data]);
-        setAlertSuccess(<div>เพิ่มข้อมูลสำเร็จ</div>);
+      const formData = new FormData();
+      formData.append("drink_Name", data.drink_Name);
+      formData.append("drink_Price", data.drink_Price);
+      formData.append("drink_Quantity", data.drink_Quantity);
+      formData.append("drink_Stock_quantity", data.drink_Stock_quantity);
+      formData.append("drink_Manufacture_date", data.drink_Manufacture_date);
+      formData.append("drink_Expiry_date", data.drink_Expiry_date);
+      if (data.drink_Image) {
+        formData.append("drink_Image", data.drink_Image);
       }
-      handleClose(); // Close the form dialog
-    } catch (error) {
-      console.error("Error submitting data:", error);
-      setAlertMessage(<div>เกิดข้อผิดพลาดในการดำเนินการ</div>);
+  
+      // ไม่ต้องเพิ่ม owner_Id และ chef_Id เนื่องจากไม่มีใน drinkSchema
+  
+      console.log(formData);
+  
+      let response;
+      if (selectedRowId) {
+        // อัปเดตข้อมูล (PUT)
+        response = await axios.put(`${API_URL}/api/food/updateDrink/${selectedRowId}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      } else {
+        // เพิ่มข้อมูลใหม่ (POST)
+        response = await axios.post(`${API_URL}/api/food/createDrink`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      }
+  
+      console.log("Response:", response.data);
+      setAlertSuccess(<div>เพิ่มข้อมูลเครื่องดื่มสำเร็จ</div>);
+      handleClose(); // ปิด Dialog
+      fetchData();
+    } catch (error: any) {
+      console.error("Error:", error);
+      setAlertMessage(<div>{error.response.data.message || "เกิดข้อผิดพลาด"}</div>);
     }
   };
+
+
   return (
     <div style={{ height: '90vh', width: '100%' }}>
       <Dialog open={open} onClose={handleClose}>
@@ -342,6 +343,37 @@ const ManageDrinks: React.FC = () => {
                   error={!!errors.drink_Expiry_date}
                   helperText={errors.drink_Expiry_date?.message}
                 />
+              )}
+            />
+            <Controller
+              name="drink_Image"
+              control={control}
+              rules={{ required: "กรุณาเลือกรูปภาพ" }}
+              render={({ field }) => (
+                <div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="upload-button"
+                    style={{ display: "none" }} // ซ่อน input file
+                    onChange={(e) => field.onChange(e.target.files?.[0] || null)}
+                  />
+                  <label htmlFor="upload-button">
+                    <Button variant="contained" component="span" color="primary">
+                      เลือกรูปภาพ
+                    </Button>
+                  </label>
+                  {field.value && (
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      {field.value.name}
+                    </Typography>
+                  )}
+                  {errors.drink_Image && (
+                    <Typography color="error" variant="body2">
+                      {errors.drink_Image.message}
+                    </Typography>
+                  )}
+                </div>
               )}
             />
           </form>

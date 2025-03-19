@@ -30,18 +30,25 @@ const createFood = async (req, res) => {
         'compressed-' + path.basename(originalImagePath, path.extname(originalImagePath)) + '.webp'
       );
 
+      // บีบอัดรูปภาพ
       await sharp(originalImagePath)
         .resize({ width: 800 })
         .webp({ quality: 80 })
         .toFile(compressedImagePath);
 
-      await fs.unlink(originalImagePath);
+      // ลบไฟล์ต้นฉบับหลังจากการบีบอัด
+      try {
+        await fs.unlink(originalImagePath);
+        console.log('ไฟล์ต้นฉบับถูกลบสำเร็จ');
+      } catch (error) {
+        console.error('ไม่สามารถลบไฟล์ต้นฉบับได้:', error);
+      }
 
       // เก็บชื่อไฟล์ที่บีบอัดแทน
       req.file.filename = path.basename(compressedImagePath);
     }
 
-    // เก็บเฉพาะชื่อไฟล์ที่บีบอัด
+    // เก็บชื่อไฟล์ที่บีบอัด
     const food_Image = req.file ? req.file.filename : null;
     const chefIdToSave = (chef_Id === "" || chef_Id === undefined) ? null : chef_Id;
 
@@ -66,6 +73,7 @@ const createFood = async (req, res) => {
     res.status(500).json({ message: 'เกิดข้อผิดพลาดในการเพิ่มข้อมูล' });
   }
 };
+
 
 
 
@@ -175,6 +183,8 @@ const deleteFood = async (req, res) => {
   }
 };
 
+
+
 const getFoods = async (req, res) => {
   try {
     const foods = await Food.find().populate(['product_Category_Id', 'chef_Id', 'owner_Id']);
@@ -192,12 +202,36 @@ const getFoods = async (req, res) => {
   }
 };
 
+
+const getFoodById = async (req, res) => {
+  try {
+    const food = await Food.findById(req.params.id);
+    if (!food) {
+      return res.status(404).json({ message: 'ไม่พบอาหาร' });
+    }
+
+    // แปลง Decimal128 เป็น Number หรือ String
+    const formattedFood = {
+      ...food.toObject(),
+      food_Price: parseFloat(food.food_Price.toString()) // ✅ แปลงเป็นตัวเลข
+    };
+
+    res.status(200).json(formattedFood);
+  } catch (error) {
+    res.status(500).json({ message: 'เกิดข้อผิดพลาด', error: error.message });
+  }
+};
+
+
+
+
 module.exports = {
   upload,
   createFood,
   updateFood,
   deleteFood,
-  getFoods
+  getFoods,
+  getFoodById
 };
 
 
