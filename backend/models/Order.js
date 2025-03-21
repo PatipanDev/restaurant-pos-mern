@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const orderSchema = new Schema({
+const orderSchema = new mongoose.Schema({
   order_Dec: {
     type: String,
     required: false, // ถ้าคำสั่งซื้อไม่จำเป็นต้องใส่รายละเอียด
@@ -8,15 +8,6 @@ const orderSchema = new Schema({
   order_Eating_status: {
     type: String,
     enum: ['Takeout', 'Dine-in'],
-    required: true,
-  },
-  order_Time: {
-    type: String,
-    required: true,
-  },
-  order_Date: {
-    type: Date,
-    required: true,
   },
   employee_Id: {
     type: mongoose.Schema.Types.ObjectId, 

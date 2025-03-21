@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { upload, createFood, updateFood, deleteFood, getFoods, getFoodById} = require('../controllers/foodsController');
 const drinkController = require('../controllers/drinkController');
+const orderControllor = require('../controllers/orderController')
 
 // เส้นทางสำหรับเพิ่มข้อมูล (POST)
 router.post('/createFood', upload.single('food_Image'), createFood);
@@ -27,6 +28,16 @@ router.post('/createDrink', drinkController.upload.single('drink_Image'), drinkC
 router.put('/updateDrink/:id', drinkController.upload.single('drink_Image'), drinkController.updateDrink)
 
 router.delete('/deleteDrink/:id', drinkController.deleteDrink);
+
+
+//OrderFoodDetail
+router.post('/createOrderFoodDetail', orderControllor.createOrderFoodDetail)
+//OrderDrinkDetail
+router.post('/createOrderDrinkDetail', orderControllor.createOrderDrinkDetail)
+
+
+
+
 
 
 module.exports = router;
