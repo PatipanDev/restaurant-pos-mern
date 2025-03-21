@@ -25,7 +25,7 @@ const orderFoodDetailSchema = new mongoose.Schema({
   },
   food_Id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Menu', // อ้างอิงถึงโมเดล Menu
+    ref: 'Food', // อ้างอิงถึงโมเดล Menu
     default: null, // ค่าเริ่มต้นเป็น null
   },
   chef_Id: {

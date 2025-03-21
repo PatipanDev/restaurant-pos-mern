@@ -36,6 +36,12 @@ router.post('/createOrderFoodDetail', orderControllor.createOrderFoodDetail)
 router.post('/createOrderDrinkDetail', orderControllor.createOrderDrinkDetail)
 
 
+//ดึงข้อมูลรายการอาหาร
+router.get('/getPendingOrdersByCustomer/:id', orderControllor.getPendingOrdersByCustomer)
+
+router.put('/putSendOrderDetail/:id', orderControllor.putSendOrderDetail)
+
+
 
 
 

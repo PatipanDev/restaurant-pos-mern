@@ -9,7 +9,7 @@ const tableSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Available', 'Occupied', 'Reserved'], // กำหนดสถานะเป็น ENUM
+    enum: ['Available', 'Occupied'], // กำหนดสถานะเป็น ENUM
     default: 'Available', // ค่า default คือ 'Available'
   },
   seat_count: {

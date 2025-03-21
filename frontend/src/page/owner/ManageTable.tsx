@@ -181,7 +181,6 @@ const ManageTable: React.FC = () => {
                 <TextField select {...field} label="สถานะ" fullWidth margin="dense" error={!!errors.status} helperText={errors.status?.message}>
                   <MenuItem value="Available">ว่าง</MenuItem>
                   <MenuItem value="Occupied">กำลังใช้งาน</MenuItem>
-                  <MenuItem value="Reserved">จอง</MenuItem>
                 </TextField>
               )}
             />

@@ -8,6 +8,7 @@ const orderSchema = new mongoose.Schema({
   order_Eating_status: {
     type: String,
     enum: ['Takeout', 'Dine-in'],
+    default: 'Dine-in',  
   },
   employee_Id: {
     type: mongoose.Schema.Types.ObjectId, 

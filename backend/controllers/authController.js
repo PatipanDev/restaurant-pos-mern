@@ -69,7 +69,7 @@ exports.login = async (req, res) => {
             role: "user",  
         };
 
-        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '3h' });
 
         // ✅ ใช้ HTTP-only Cookie เก็บ Token
         // res.cookie('token', token, {
@@ -85,7 +85,7 @@ exports.login = async (req, res) => {
             httpOnly: true, // ป้องกันการเข้าถึงจาก JavaScript
             secure: false,  // เนื่องจากใช้ HTTP, ไม่ใช่ HTTPS
             sameSite: 'Lax', // เลือก Lax หรือ Strict ขึ้นอยู่กับกรณีการใช้งาน
-            maxAge: 3600000, // ตั้งเวลาหมดอายุของคุกกี้ 1 ชั่วโมง
+            maxAge: 10800000, // ตั้งเวลาหมดอายุของคุกกี้ 1 ชั่วโมง
         });
 
         // ✅ ส่งข้อมูลผู้ใช้กลับ
@@ -158,7 +158,7 @@ exports.loginemployee = async (req, res) => {
             role: role,  
         };
 
-        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '3h' });
 
 
         // ✅ ใช้ HTTP-only Cookie เก็บ Token
@@ -174,7 +174,7 @@ exports.loginemployee = async (req, res) => {
             httpOnly: true, // ป้องกันการเข้าถึงจาก JavaScript
             secure: false,  // เนื่องจากใช้ HTTP, ไม่ใช่ HTTPS
             sameSite: 'Lax', // เลือก Lax หรือ Strict ขึ้นอยู่กับกรณีการใช้งาน
-            maxAge: 3600000, // ตั้งเวลาหมดอายุของคุกกี้ 1 ชั่วโมง
+            maxAge: 10800000, // ตั้งเวลาหมดอายุของคุกกี้ 1 ชั่วโมง
         });
 
         res.status(200).json({
