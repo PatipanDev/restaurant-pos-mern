@@ -3,6 +3,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, CssBaseline, Paper, Typography, Grid, Card, CardContent, Button, Tabs, Tab } from '@mui/material';
 
 import OrderDetails from './OrderDetails';
+import useProtectedPage from '../../ProtectedPage';
+import { getUserRole } from '../../utils/userUtils';
+import LoginReminder from '../../components/LoginReminder';
+
 
 const orderedItems = [
   { name: 'สเต็ก', quantity: 2, price: 150 },
@@ -17,13 +21,13 @@ const Order = () => {
   const [tabIndex, setTabIndex] = useState(0); // แท็บที่เลือก
   const navigate = useNavigate();
 
-
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
     // ลบส่วนที่เกี่ยวข้องกับการอัปเดต URL ออก
   };
 
 
+  // }
   return (
     <div>
       <>

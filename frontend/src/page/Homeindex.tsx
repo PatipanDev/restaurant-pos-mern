@@ -16,7 +16,7 @@ const foods = [
   { name: "ต้มยำกุ้ง", image: "/images/food3.jpg" },
 ];
 
-const Home = () => {
+const HomeIndex = () => {
   const navigate = useNavigate();
   return (
     <Container>
@@ -68,4 +68,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default HomeIndex;

@@ -22,11 +22,11 @@ import { Home, ManageAccounts, ListAlt, RamenDining } from "@mui/icons-material"
 import axios from "axios";
 
 // นำเข้าหน้า
-import Profile from "./Profile";
+import Profile from "./user/Profile";
 import Order from "./user/Order";
 import Listfood from "./Listfood";
 import HomeIndex from "./Homeindex";
-import LoginReminder from "./owner/component/LoginReminder";
+import LoginReminder from "../components/LoginReminder";
 
 // ใช้ไลบรารีต่าง ๆ
 import Cookies from "js-cookie";  // ใช้ js-cookie
@@ -72,6 +72,7 @@ export default function HomePage() {
         const response = await axios.get(`${API_URL}/api/user`, {
           withCredentials: true, // ส่ง cookie ไปพร้อมกับ request
         });
+        console.log(response)
 
         if (response.status === 200) {
           setIsUser(true);
@@ -98,7 +99,7 @@ export default function HomePage() {
         user: "/",
         chef: "/DashboardChef",
         cashier: "/order",
-        employee: "/profile",
+        employee: "/DashboardEmployee",
         owner: "/DashboardOwner",
       };
       navigate(dashboardRoutes[role] || "/home");
@@ -143,7 +144,7 @@ export default function HomePage() {
       {/* Content */}
       <Box sx={{ flexGrow: 2, p: 1 }}>
         {value === 0 && <HomeIndex />}
-        {value === 1 && (isUser ? <Listfood /> : <LoginReminder />)}
+        {value === 1 && <Listfood /> }
         {value === 2 && (isUser ? <Order /> : <LoginReminder />)}
         {value === 3 && (isUser ? <Profile /> : <LoginReminder/>)}
       </Box>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Dialog, DialogActions, DialogTitle, DialogContent, Button, Collapse } from '@mui/material';
-import { Home, People, Egg, Settings, MonetizationOn, HistoryEdu, Inventory2, ShoppingCart, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory } from '@mui/icons-material';
+import { Home, People, Egg, Settings, MonetizationOn, HistoryEdu, Inventory2, ShoppingCart, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory,Kitchen } from '@mui/icons-material';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -242,10 +242,11 @@ const SidebarChef: React.FC = () => {
       <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100%' }}>
         {selectedPage === 'home' && <h1>หน้าหลัก</h1>}
         {selectedPage === 'profile' && <h1>ผู้ใช้งาน</h1>}
-        {selectedPage === 'settings' && <h1>การตั้งค่า</h1>}
+    
         {selectedPage === 'ingredient' && <ManageIngredients />}
         {selectedPage === 'product' && <ManageProductsChef />}
         {selectedPage === 'foodrecipe' && <ManageFoodsChef />}
+        {selectedPage === 'settings' && <h1>การตั้งค่า</h1>}
 
 
       </div>
@@ -272,11 +273,12 @@ const SidebarChef: React.FC = () => {
 
 // เมนูใน Sidebar ที่โชว์
 const menuItems = [
-  { page: 'profile', label: 'ผู้ใช้งาน', icon: <People /> },
-  { page: 'settings', label: 'การตั้งค่า', icon: <Settings /> },
+  { page: 'profile', label: 'อาหารที่สั่ง', icon: <Kitchen /> },
   { page: 'ingredient', label: 'เตรียมวัตถุดิบ', icon: <Egg /> },
   { page: 'product', label: 'สินค้า', icon: <Inventory2 /> },
   { page: 'foodrecipe', label: 'สูตรอาหาร', icon: <HistoryEdu /> },
+  { page: 'settings', label: 'การตั้งค่า', icon: <Settings /> },
+
 ];
 
 

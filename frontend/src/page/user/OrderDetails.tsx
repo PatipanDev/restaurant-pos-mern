@@ -29,6 +29,8 @@ import SuccessAlert from '../../components/AlertSuccess';
 import { getUserId } from '../../utils/userUtils';
 import { formatDateTime } from '../../utils/formatDateTime';
 
+import socket from '../../utils/socket';
+
 
 const API_URL = import.meta.env.VITE_API_URL;
 const id: string = getUserId();
@@ -92,8 +94,8 @@ function OrderDetails() {
     const [tables, setTables] = useState<any[]>([]);
 
     const [loading, setLoading] = useState(true);
-      const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
-    
+    const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
+
 
 
     const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormOrder>({
@@ -129,9 +131,16 @@ function OrderDetails() {
     };
 
     useEffect(() => {
+        socket.connect();
         if (id) {  // ตรวจสอบว่า customerId มีค่า
             fetchPendingOrders();
         }
+        return () => {
+            setTimeout(() => {
+                socket.disconnect(); // ตัดการเชื่อมต่อกับ server หลังจากหน่วงเวลา
+                console.log("🔴 Socket disconnected after delay");
+            }, 10000); // หน่วงเวลา 5 วินาที (5000 มิลลิวินาที)
+        };
     }, [id]);  // เพิ่ม customerId ใน dependency array
 
     console.log("มีข้อมูลไหม", orderDrinkDetails)
@@ -153,39 +162,36 @@ function OrderDetails() {
     console.log(totalPrice)
 
     const onSubmit = async (data: FormOrder) => {
-        if(window.confirm("คุณต้องการสั่งอาหารใช่หรือไม่ ?")){
+        if (window.confirm("คุณต้องการสั่งอาหารใช่หรือไม่ ?")) {
             try {
                 const id = order.map((order) => order._id)[0] ?? '';
-                console.log('ไอดี',id)
+                console.log('ไอดี', id);
                 const orderData = {
                     ...data,
                 };
-                console.log()
+
                 console.log('Order Data:', orderData);
                 console.log('Form Data:', data);
-    
-                // ส่งข้อมูลไปยัง API โดยใช้ Axios
-                const response = await axios.put(`${API_URL}/api/food/putSendOrderDetail/${id}`, orderData); // แทนที่ '/api/order-details' ด้วย URL API ของคุณ
-                setAlertSuccess(<div>สั่งอาหารสำเร็จ</div>)
-    
-                console.log('API Response:', response.data); // แสดงข้อมูลที่ได้รับจาก API
+
+                // ส่งข้อมูลไปยัง server ผ่าน socket.emit โดยไม่ต้องรอการตอบกลับ
+                socket.emit('putSendOrderDetail', { id, ...orderData });
+
+                // รีเซ็ตข้อมูลหรือแจ้งเตือน UI ตามที่ต้องการ
+                setAlertSuccess(<div>สั่งอาหารสำเร็จ</div>);
+
                 setTimeout(() => {
-                   fetchPendingOrders();
-                   setOrders([]);
-                   setOrderDrinkDetails([]);
-                   setOrderFoodDetails([]);
-                   reset();
+                    fetchPendingOrders();
+                    setOrders([]);
+                    setOrderDrinkDetails([]);
+                    setOrderFoodDetails([]);
+                    reset();
                 }, 2000);
-                // alert('Order Submitted Successfully!'); // แจ้งเตือนเมื่อส่งข้อมูลสำเร็จ
-    
+
             } catch (error: any) {
                 console.error('Error submitting order:', error);
-                alert(error.response.messege); // แจ้งเตือนเมื่อเกิดข้อผิดพลาด
+                alert(error.response?.message || 'เกิดข้อผิดพลาด');
             }
-        }else{
-
         }
-        
     };
 
     if (order.length === 0) {

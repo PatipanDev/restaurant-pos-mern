@@ -2,6 +2,8 @@ const Order = require('../models/Order')
 const OrderFoodDetail = require('../models/OrderFoodDetail')
 const OrderDrinkDetail = require('../models/OrderDrinkDetail')
 const Table = require('../models/Table')
+const { io } = require('../server');
+
 
 
 exports.createOrderFoodDetail = async (req, res) => {
@@ -204,33 +206,11 @@ exports.getPendingOrdersByCustomer = async (req, res) => {
 };
 
 
-// อัปเดตคำสั่งซื้อ
-exports.putSendOrderDetail = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { table_Id, order_Eating_status } = req.body;
 
-        // ตรวจสอบว่า order มีอยู่จริงไหม
-        const order = await Order.findById(id);
-        if (!order) {
-            return res.status(404).json({ message: 'Order not found' });
-        }
 
-        // อัปเดตข้อมูลที่ต้องการ
-        if (table_Id) order.table_Id = table_Id;
-        if (order_Eating_status) order.order_Eating_status = order_Eating_status;
-        
-        // ✅ อัปเดต order_Status เป็น "In Progress"
-        order.order_Status = "In Progress";
 
-        // บันทึกข้อมูลที่อัปเดต
-        const updatedOrder = await order.save();
-        
-        res.status(200).json({ message: 'Order updated successfully', order: updatedOrder });
-    } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
-    }
-};
+
+
 
 
 

@@ -21,7 +21,15 @@ const authenticateJWT = (req, res, next) => {
 const logout = (req, res) => {
   try {
     // ลบ cookie ที่เก็บ JWT (token)
-    res.clearCookie('token', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Strict' });
+    // res.clearCookie('token', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Strict' });
+    
+    // การใช้ http ธรรมดา
+    res.clearCookie('token', {
+      httpOnly: true,  // ป้องกันการเข้าถึงจาก JavaScript
+      secure: false,   // ถ้าใช้ HTTP (ไม่ใช่ HTTPS) ต้องตั้งเป็น false
+      sameSite: 'Lax',  // เลือก Lax หรือ Strict ขึ้นอยู่กับกรณีการใช้งาน
+      maxAge: 0,       // ตั้ง maxAge เป็น 0 เพื่อให้คุกกี้หมดอายุทันที
+    });
 
     // ส่งข้อความตอบกลับ
     res.status(200).json({ message: "Logout successful" });

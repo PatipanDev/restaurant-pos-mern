@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { authenticateJWT, authorizeRole,logout} = require('../middlewares/authMiddleware');
+const { authenticateJWT,logout} = require('../middlewares/authMiddleware');
 
 // router.get('/admin', authenticateJWT, authorizeRole('owner'), (req, res) => {
 //   res.status(200).json({
@@ -22,7 +22,8 @@ const { authenticateJWT, authorizeRole,logout} = require('../middlewares/authMid
 
 router.get('/user', authenticateJWT, (req, res) => {
   res.status(200).json({
-    message: 'Welcome to the user page'
+    message: 'Welcome to the user page',
+    user: req.user // ข้อมูลของผู้ใช้ที่ถูกตรวจสอบ
   });
 });
 

@@ -17,8 +17,8 @@ import StarBorder from '@mui/icons-material/StarBorder';
 import { Box, Fab, CssBaseline, Avatar } from "@mui/material";
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
-import WarningAlert from "../components/AlertDivWarn";
-import SuccessAlert from '../components/AlertSuccess';
+import WarningAlert from "../../components/AlertDivWarn";
+import SuccessAlert from '../../components/AlertSuccess';
 
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -28,7 +28,11 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
 import axios from 'axios';
-import Cookies from 'js-cookie';
+import LoginReminder from '../../components/LoginReminder';
+
+
+import useProtectedPage from '../../ProtectedPage';
+import { getUserRole } from '../../utils/userUtils';
 
 export default function Profile() {
   const [openCollapse, setOpenCollapse] = React.useState(true); // เปลี่ยนชื่อให้แตกต่างจาก Dialog
@@ -36,6 +40,10 @@ export default function Profile() {
   const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
   const [succesMessage, setSuccAlertMessage] = useState<React.ReactNode | null>(null);
   const [openDialog, setOpenDialog] = React.useState(false);
+
+  // const protection = useProtectedPage(getUserRole());  // เรียกใช้งานฟังก์ชัน
+  // console.log('ระดับผู้ใช้',getUserRole())
+  // if (protection === false) return <LoginReminder/>;  // ถ้าไม่ได้รับการอนุญาตจะถูก redirect ไปหน้า login
 
   // เปิด/ปิดลิสต์เมนู
   const handleClick = () => {

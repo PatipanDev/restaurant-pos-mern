@@ -6,14 +6,13 @@ import { SyncLoader } from 'react-spinners';
 
 //หน้าแรก
 import HomeIndex from './page/Homeindex';
-import Profile from './page/Profile';
 import Listfood from './page/Listfood';
 // import FoodDetail from './page/FoodDetail';
 import DrinkDetail from './page/DrinkDetail';
 import Order from './page/user/Order';
 import Login from './page/Login';
 import Register from './page/Register';
-import LoginReminder from './page/owner/component/LoginReminder';
+
 
 import ProtectedRoute from './ProtectedRoute';
 import ErrorBoundary from './page/ErrorBoundary';
@@ -41,7 +40,10 @@ import ProductChef from './page/chef/ManageProductsChef';
 import ManageFoodRecipe from './page/chef/ManageFoodrecipe';
 import ManageFoodsChef from './page/chef/ManageFoodsChef';
 import HomePage from './page/Homepage';
-// HomePage
+
+// พนักงาน
+import DashboardEmployee from './page/employee/DashboardEmployee';
+
 
 
 
@@ -79,7 +81,7 @@ const App: React.FC = () => {
       >
         <Routes>
           {/* ส่วนของหน้าโชว์ตอนไม่มีการล็อกอิน */}
-          <Route path="/loginreminder" element={<LoginReminder />} />
+          {/* <Route path="/loginreminder" element={<LoginReminder />} /> */}
 
           {/* ล็อกอินและสมัครสมาชิก */}
           <Route path="/login" element={<Login setAuth={setAuth} />} />
@@ -91,8 +93,8 @@ const App: React.FC = () => {
           {/* ส่วนของหน้าลูกค้า */}
           <Route path="/home" element={<HomeIndex />} />
           <Route path="/listfood" element={<Listfood />} />
-          <Route path="/order" element={<ProtectedRoute requiredRole="user"><Order /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute requiredRole="user"><Profile /></ProtectedRoute>} />
+          {/* <Route path="/order" element={<ProtectedRoute requiredRole="user"><Order /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute requiredRole="user"><Profile /></ProtectedRoute>} /> */}
           {/* <Route path="/food-detail/:_id" element={<ProtectedRoute requiredRole="user"><FoodDetail /></ProtectedRoute>} /> */}
           {/* <Route path="/drink-detail/:_id" element={<ProtectedRoute requiredRole="user"><DrinkDetail /></ProtectedRoute>} /> */}
 
@@ -120,6 +122,13 @@ const App: React.FC = () => {
           <Route path="/dashboardChef" element={<ProtectedRoute requiredRole="chef"><DashboardChef /></ProtectedRoute>} />
           <Route path="/productChef" element={<ProtectedRoute requiredRole="chef"><ProductChef /></ProtectedRoute>} />
           <Route path="/managefoodchef" element={<ProtectedRoute requiredRole="chef"><ManageFoodsChef /></ProtectedRoute>} />
+
+
+          {/* ส่วนของพนักงาน */}
+          <Route path="/DashboardEmployee" element={<ProtectedRoute requiredRole="employee"><DashboardEmployee /></ProtectedRoute>} />
+
+
+
 
 
         </Routes>
