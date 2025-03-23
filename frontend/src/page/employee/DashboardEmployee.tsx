@@ -25,7 +25,6 @@ import axios from "axios";
 import Order from '../user/Order';
 import Profile from '../user/Profile';
 import Listfood from '../Listfood';
-import HomeIndex from '../Homeindex';
 import LoginReminder from '../../components/LoginReminder';
 import ServFood from './ServFood';
 // ใช้ไลบรารีต่าง ๆ

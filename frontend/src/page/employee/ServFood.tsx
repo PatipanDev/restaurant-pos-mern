@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, CssBaseline, Paper, Typography, Grid, Card, CardContent, Button, Tabs, Tab, Divider } from '@mui/material';
 
 import OrderDetailsCard from './componentEmployee/OrderDetailsCard';
+import ServFoodList from './componentEmployee/servFoodList';
 
 
 const orderedItems = [
@@ -42,7 +43,7 @@ const ServFood = () => {
 
         {tabIndex === 0 ? (
           <div>
-            <OrderDetailsCard/>
+            <ServFoodList/>
           </div>
 
         ) : tabIndex === 1 ? (
