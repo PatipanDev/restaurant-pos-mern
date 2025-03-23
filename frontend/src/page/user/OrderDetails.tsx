@@ -135,12 +135,6 @@ function OrderDetails() {
         if (id) {  // ตรวจสอบว่า customerId มีค่า
             fetchPendingOrders();
         }
-        return () => {
-            setTimeout(() => {
-                socket.disconnect(); // ตัดการเชื่อมต่อกับ server หลังจากหน่วงเวลา
-                console.log("🔴 Socket disconnected after delay");
-            }, 10000); // หน่วงเวลา 5 วินาที (5000 มิลลิวินาที)
-        };
     }, [id]);  // เพิ่ม customerId ใน dependency array
 
     console.log("มีข้อมูลไหม", orderDrinkDetails)
@@ -178,9 +172,8 @@ function OrderDetails() {
 
                 // รีเซ็ตข้อมูลหรือแจ้งเตือน UI ตามที่ต้องการ
                 setAlertSuccess(<div>สั่งอาหารสำเร็จ</div>);
-
                 setTimeout(() => {
-                    fetchPendingOrders();
+                    // fetchPendingOrders();
                     setOrders([]);
                     setOrderDrinkDetails([]);
                     setOrderFoodDetails([]);

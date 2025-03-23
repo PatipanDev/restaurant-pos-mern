@@ -34,7 +34,7 @@ const OrderCheck = () => {
         <Typography variant="h4" gutterBottom>รายการอาหารที่สั่งแล้ว</Typography>
         {/* Tabs */}
         <Tabs value={tabIndex} onChange={handleTabChange}>
-          <Tab label="รายการอาหารจากลูกค้า" />
+          <Tab label="ตรวจสอบรายการอาหาร" />
           <Tab label="กำลังดำเนินการ" />
           <Tab label="รายการที่สำเร็จ" />
           <Tab label="รายการที่ยกเลิก" />

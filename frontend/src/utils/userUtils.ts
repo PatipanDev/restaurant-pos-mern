@@ -7,6 +7,15 @@ export function getUserId(): string {
     return ''; // หรือจะส่งค่าที่เหมาะสม เช่น null
   }
 
+  export function getEmployeeId(): string {
+    const userFromStorage: any = localStorage.getItem("user");
+    const parsedUser = JSON.parse(userFromStorage);
+    if (parsedUser && parsedUser._id) {
+      return parsedUser._id;
+    }
+    return ''; // หรือจะส่งค่าที่เหมาะสม เช่น null
+  }
+
 export function getUserRole(): string[]{
   const userFromStorage: any = localStorage.getItem("user");
   const parsedUser = JSON.parse(userFromStorage);

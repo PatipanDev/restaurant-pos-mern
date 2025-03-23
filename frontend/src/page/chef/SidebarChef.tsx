@@ -9,6 +9,7 @@ import SuccessAlert from '../../components/AlertSuccess';
 import ManageIngredients from './ManageIngredients';
 import ManageProductsChef from './ManageProductsChef';
 import ManageFoodsChef from './ManageFoodsChef';
+import OrderTable from './componentchef/orderTable';
 
 import axios from 'axios';
 
@@ -241,7 +242,7 @@ const SidebarChef: React.FC = () => {
       </Drawer>
       <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100%' }}>
         {selectedPage === 'home' && <h1>หน้าหลัก</h1>}
-        {selectedPage === 'profile' && <h1>ผู้ใช้งาน</h1>}
+        {selectedPage === 'profile' && <h1><OrderTable/></h1>}
     
         {selectedPage === 'ingredient' && <ManageIngredients />}
         {selectedPage === 'product' && <ManageProductsChef />}

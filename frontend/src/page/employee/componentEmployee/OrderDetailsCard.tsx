@@ -1,10 +1,13 @@
 import React, { Suspense, useState, useEffect } from 'react';
 import { Card, CardContent, Typography, Box, Button, Divider, Grid } from '@mui/material';
 import OrderDetailsCheck from './OrderDetailsCheck';
+import axios from 'axios';
 
 import socket from '../../../utils/socket';
+import { getEmployeeId } from '../../../utils/userUtils';
 // ฟังเหตุการณ์ที่ส่งจาก server
 import { formatDateTime } from '../../../utils/formatDateTime';
+import SuccessAlert from '../../../components/AlertSuccess';
 
 
 const OrderDetailsCard = () => {
@@ -14,27 +17,23 @@ const OrderDetailsCard = () => {
   useEffect(() => {
     // เปิดการเชื่อมต่อ socket
     socket.connect();
-    // เมื่อ socket เชื่อมต่อเสร็จ ให้เข้าร่วมห้อง
-    socket.emit('joinRoom', 'order');  // ใส่ชื่อห้องที่คุณต้องการให้เข้าร่วม
-    console.log(`Client joined room: roomName`);
-
     // ขอข้อมูลคำสั่งซื้อล่าสุดจากเซิร์ฟเวอร์
-    socket.emit('get_latest_order');
+    if (socket.connected) {
+      socket.emit('get_latest_order');
+      console.log("==>Socket connected");
+    } else {
+      console.error("Socket is not connected!");
+    }
 
-    // ฟัง event `new_order_for_staff`
     socket.on('new_order_for_staff', (latestOrders) => {
       console.log('📦 คำสั่งซื้อที่ได้รับ:', latestOrders);
-      setOrders(latestOrders);
+      if (latestOrders) {
+        setOrders(latestOrders);
+      } else {
+        console.error("ไม่มีคำสั่งซื้อใหม่");
+      }
     });
-
-    // Cleanup เมื่อ component ถูก unmount
-    return () => {
-      setTimeout(() => {
-        socket.off('new_order_for_staff'); // หยุดฟัง event
-        socket.disconnect(); // ปิดการเชื่อมต่อ
-        console.log("🔴 Socket disconnected");
-      }, 10000); // หน่วงเวลา 5 วินาที (5000 มิลลิวินาที)
-    };
+    
   }, []);
 
   const handleOpenClick = (drinkId: string) => {
@@ -43,6 +42,90 @@ const OrderDetailsCard = () => {
   const handdlecloseDetail = () => {
     setSelectedOrderId(null); // ปิด Modal
   };
+
+  const handleConfirmOrder = async (orderId: string) => {
+    const isConfirmed = window.confirm("คุณต้องการยืนยันคำสั่งซื้อนี้ใช่หรือไม่?");
+    if (!isConfirmed) {
+      console.log("ผู้ใช้ยกเลิกการยืนยันคำสั่งซื้อ");
+      return; // ถ้าผู้ใช้ยกเลิก ก็จะไม่ทำอะไร
+    }
+
+    const userId = getEmployeeId();
+    console.log("ชื่อ", userId, "oder", orderId)
+    // ส่งข้อมูลไปที่ Server เพื่อยืนยันคำสั่งซื้อ
+    socket.emit('confirmOrder', { orderId, userId });
+
+    // ฟังผลลัพธ์จาก Server
+    socket.once('orderConfirmed', (order) => {
+      console.log('Order confirmed successfully:', order);
+      alert('ยืนยันคำสั่งซื้อสำเร็จ!');
+
+      socket.emit('get_latest_order');
+
+      // ฟัง event `new_order_for_staff`
+      socket.on('new_order_for_staff', (latestOrders) => {
+        console.log('📦 คำสั่งซื้อที่ได้รับ:', latestOrders);
+        setOrders(latestOrders);
+      });
+
+    });
+
+    socket.on('orderError', (error) => {
+      console.error('Error confirming order:', error.message);
+      alert(`เกิดข้อผิดพลาด: ${error.message}`);
+    });
+
+  };
+
+  const handleCancelOrder = async (orderId: string) => {
+    const isConfirmed = window.confirm("คุณต้องการยกเลิกคำสั่งซื้อนี้ใช่หรือไม่?");
+    if (!isConfirmed) {
+      console.log("ผู้ใช้ยกเลิกการยืนยันคำสั่งซื้อ");
+      return; // ถ้าผู้ใช้ยกเลิก ก็จะไม่ทำอะไร
+    }
+
+    const userId = getEmployeeId();
+    console.log("ชื่อ", userId, "oder", orderId)
+    // ส่งข้อมูลไปที่ Server เพื่อยืนยันคำสั่งซื้อ
+    socket.emit('CancelledOrder', { orderId, userId });
+
+    // ฟังผลลัพธ์จาก Server
+    socket.once('orderCancelled', (order) => {
+      console.log('Order confirmed successfully:', order);
+      alert('ยกเลิกคำสั่งซื้อสำเร็จ!');
+
+      socket.emit('get_latest_order');
+
+      // ฟัง event `new_order_for_staff`
+      socket.on('new_order_for_staff', (latestOrders) => {
+        console.log('📦 คำสั่งซื้อที่ได้รับ:', latestOrders);
+        setOrders(latestOrders);
+      });
+
+    });
+
+    socket.on('orderError', (error) => {
+      console.error('Error confirming order:', error.message);
+      alert(`เกิดข้อผิดพลาด: ${error.message}`);
+    });
+
+  };
+  if (orders.length === 0) {
+    return (
+      <div>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="80vh" // ทำให้ Box เต็มความสูงของ viewport
+        >
+          <Typography variant="body1" align="center">
+            ไม่มีรายการ
+          </Typography>
+        </Box>
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -64,16 +147,35 @@ const OrderDetailsCard = () => {
                   <Typography variant="body1" gutterBottom>สั่งเมื่อ: เวลา {formattedTime} น.  วันที่ {formattedDate}</Typography>
                   <Typography variant="body1" gutterBottom>โต๊ะ: {order.table_Id.number} จำนวนที่นั่ง {order.table_Id.seat_count}</Typography>
 
-                  {/* ปุ่มชิดขวา */}
+                  {/* ปุ่มชิดขวา */}
                   <Box sx={{ marginTop: 2, display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button variant="contained" color="primary" sx={{ marginRight: 2 }}>ยืนยันคำสั่งซื้อ</Button>
-                    <Button variant="contained" color="secondary">ยกเลิกคำสั่งซื้อ</Button>
+
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      sx={{ marginRight: 2 }}
+                      onClick={(event) => {
+                        event.stopPropagation(); // ป้องกันการส่งต่อ event ไปยัง CardContent
+                        handleCancelOrder(order._id);
+                      }}
+                    >
+                      ยกเลิกคำสั่งซื้อ
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+
+                      onClick={(event) => {
+                        event.stopPropagation(); // ป้องกันการส่งต่อ event ไปยัง CardContent
+                        handleConfirmOrder(order._id);
+                      }}
+                    >
+                      ยืนยันคำสั่งซื้อ
+                    </Button>
                   </Box>
                 </CardContent>
-              )
-
+              );
             })}
-
           </Card>
         </Grid>)}
     </div>
