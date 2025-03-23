@@ -35,6 +35,8 @@ module.exports = function (io) {
       }
     });
 
+
+    //ดึงข้อมูลอาหารที่เชฟต้องทำ
     socket.on('getOrderFoodDetails', async () => {
       try {
         // ค้นหา Order ที่มี order_Status = "In Progress" และมี employee_Id
@@ -53,14 +55,17 @@ module.exports = function (io) {
         }
     
         // ค้นหาข้อมูลใน OrderFoodDetail โดยใช้ order_Id ที่ได้จาก orderIds
-        const orderDetails = await OrderFoodDetail.find({ order_Id: { $in: orderIds } })
+        const orderDetails = await OrderFoodDetail.find({
+          order_Id: { $in: orderIds },
+          orderDetail_Cooking: { $in: ["In Progress", "Pending"] } // ใช้ $in เพื่อเลือกค่าใดค่าหนึ่ง
+        })
           .populate('order_Id')  // ดึงข้อมูลจาก Order model
           .populate('food_Id')   // ดึงข้อมูลจาก Food model
           .populate('chef_Id');  // ดึงข้อมูลจาก Chef model
     
         if (orderDetails.length === 0) {
           // ถ้าไม่มีข้อมูลใน OrderFoodDetail ส่งข้อความแจ้งเตือน
-          socket.emit('orderFoodDetails', { message: 'No order food details found.' });
+          socket.emit('orderFoodDetails', []); // ✅ ส่ง array แทน object
         } else {
           // ส่งข้อมูลกลับไปยังไคลเอนต์
           socket.emit('orderFoodDetails', orderDetails);
@@ -149,6 +154,7 @@ module.exports = function (io) {
       }
     });
 
+    // ยกเลิกออเดอร์ที่ลูกค้าส่งมา
     socket.on('CancelledOrder', async ({ orderId, userId }) => {
       try {
         // อัปเดตคำสั่งซื้อในฐานข้อมูล
@@ -159,6 +165,74 @@ module.exports = function (io) {
 
         // ส่งข้อมูลกลับไปที่ client ว่าอัปเดตสำเร็จ
         socket.emit('orderCancelled', order);
+
+      } catch (error) {
+        console.error('Error updating order:', error);
+        // ส่งข้อผิดพลาดกลับไปยัง client
+        socket.emit('orderError', { message: 'Error updating order' });
+      }
+    });
+
+
+    //สำหรับเชฟเริ่มการทำอาหาร
+    socket.on('startCooking', async ({ orderId, userId }) => {
+      try {
+        // อัปเดตคำสั่งซื้อในฐานข้อมูล
+        const cooking = await OrderFoodDetail.findByIdAndUpdate(orderId, {
+          chef_Id: userId,
+          orderDetail_Cooking: "In Progress"
+        }, { new: true });
+
+        // ส่งข้อมูลกลับไปที่ client ว่าอัปเดตสำเร็จ
+        socket.emit('startConfirmed', cooking);
+
+        ///เอามาจากการเฟรชครั้งแรกของเชฟ
+        const orders = await Order.find(
+          { order_Status: "In Progress", employee_Id: { $exists: true, $ne: null } },
+          { _id: 1 }
+        );
+        
+        // ดึงเฉพาะ _id ของ Order
+        const orderIds = orders.map(order => order._id);
+    
+        if (orderIds.length === 0) {
+          // ถ้าไม่มีคำสั่งซื้อที่ตรงตามเงื่อนไข ส่งข้อความแจ้งเตือนกลับไป
+          socket.emit('orderFoodDetails', { message: 'No orders found with the given criteria.' });
+          return;
+        }
+    
+        // ค้นหาข้อมูลใน OrderFoodDetail โดยใช้ order_Id ที่ได้จาก orderIds
+        const orderDetails = await OrderFoodDetail.find({ order_Id: { $in: orderIds }})
+          .populate('order_Id')  // ดึงข้อมูลจาก Order model
+          .populate('food_Id')   // ดึงข้อมูลจาก Food model
+          .populate('chef_Id');  // ดึงข้อมูลจาก Chef model
+    
+        if (orderDetails.length === 0) {
+          // ถ้าไม่มีข้อมูลใน OrderFoodDetail ส่งข้อความแจ้งเตือน
+          socket.emit('orderFoodDetails', []); // ✅ ส่ง array แทน object
+        } else {
+          // ส่งข้อมูลกลับไปยังไคลเอนต์
+          io.emit('orderFoodDetails', orderDetails);
+        }
+
+      } catch (error) {
+        console.error('Error updating order:', error);
+        // ส่งข้อผิดพลาดกลับไปยัง client
+        socket.emit('orderError', { message: 'Error updating order' });
+      }
+    });
+
+    //สำหรับเชฟเริ่มการทำอาหาร
+    socket.on('FinishCooking', async ({ orderId, userId }) => {
+      try {
+        // อัปเดตคำสั่งซื้อในฐานข้อมูล
+        const cooking = await OrderFoodDetail.findByIdAndUpdate(orderId, {
+          chef_Id: userId,
+          orderDetail_Cooking: "Completed"
+        }, { new: true });
+
+        // ส่งข้อมูลกลับไปที่ client ว่าอัปเดตสำเร็จ
+        socket.emit('FinishConfirmed', cooking);
 
       } catch (error) {
         console.error('Error updating order:', error);

@@ -18,7 +18,7 @@ import {
   useMediaQuery,
   Typography,
 } from "@mui/material";
-import { Home, ManageAccounts, ListAlt, RamenDining, FactCheck} from "@mui/icons-material";
+import { Home, ManageAccounts, ListAlt, RamenDining, FactCheck, TableBar } from "@mui/icons-material";
 import axios from "axios";
 
 // นำเข้าหน้า
@@ -27,6 +27,7 @@ import Profile from '../user/Profile';
 import Listfood from '../Listfood';
 import HomeIndex from '../Homeindex';
 import LoginReminder from '../../components/LoginReminder';
+import ServFood from './ServFood';
 // ใช้ไลบรารีต่าง ๆ
 import Cookies from "js-cookie";  // ใช้ js-cookie
 import { jwtDecode } from 'jwt-decode';
@@ -125,11 +126,11 @@ export default function DashboardEmployee() {
           }}
         >
           <List>
-            {[{ label: "Home", icon: <Home /> },
+            {[
               { label: "Food", icon: <RamenDining /> },
               { label: "Order", icon: <ListAlt /> },
               { label: "Check", icon: <FactCheck /> },
-
+              { label: "Serv", icon: <TableBar /> },
               { label: "Profile", icon: <ManageAccounts /> }
 
             ].map((item, index) => (
@@ -146,16 +147,16 @@ export default function DashboardEmployee() {
 
       {/* Content */}
       <Box sx={{ flexGrow: 2, p: 1 }}>
-        {value === 0 && <HomeIndex />}
-        {value === 1 && <Listfood /> }
-        {value === 2 && (isUser ? <Order /> : <LoginReminder />)}
-        {value === 3 && (isUser ? <OrderCheck /> : <LoginReminder />)}
-        {value === 4 && (isUser ? <Profile /> : <LoginReminder/>)}
+        {value === 1 && (isUser ? <Order /> : <LoginReminder />)}
+        {value === 0 && <Listfood />}
+        {value === 2 && (isUser ? <OrderCheck /> : <LoginReminder />)}
+        {value === 3 && (isUser ? <ServFood /> : <LoginReminder />)}
+        {value === 4 && (isUser ? <Profile /> : <LoginReminder />)}
       </Box>
 
       {/* แสดง Bottom Navigation ถ้าเป็นจอเล็ก */}
       {!isDesktop && (
-        <Paper sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }} elevation={4}>
+        <Paper sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }} elevation={5}>
           <BottomNavigation
             showLabels
             value={value}
@@ -163,10 +164,10 @@ export default function DashboardEmployee() {
               setValue(newValue);
             }}
           >
-            <BottomNavigationAction label="Home" icon={<Home />} />
             <BottomNavigationAction label="Food" icon={<RamenDining />} />
             <BottomNavigationAction label="Order" icon={<ListAlt />} />
             <BottomNavigationAction label="Check" icon={<FactCheck />} />
+            <BottomNavigationAction label="Serv" icon={<TableBar />} />
             <BottomNavigationAction label="Profile" icon={<ManageAccounts />} />
           </BottomNavigation>
         </Paper>

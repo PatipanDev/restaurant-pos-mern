@@ -14,7 +14,7 @@ const orderedItems = [
 // คำนวณราคารวม
 const totalPrice = orderedItems.reduce((total, item) => total + item.quantity * item.price, 0);
 
-const OrderCheck = () => {
+const ServFood = () => {
   const [tabIndex, setTabIndex] = useState(0); // แท็บที่เลือก
   const navigate = useNavigate();
 
@@ -31,10 +31,10 @@ const OrderCheck = () => {
   return (
     <div>
       <>
-        <Typography variant="h4" gutterBottom>รายการที่ต้องตรวจสอบ</Typography>
+        <Typography variant="h4" gutterBottom>รายการอาหารที่ต้องเสิร์ฟ</Typography>
         {/* Tabs */}
         <Tabs value={tabIndex} onChange={handleTabChange}>
-          <Tab label="ตรวจสอบรายการอาหาร" />
+          <Tab label="อาหารที่ทำเสร็จ" />
           <Tab label="กำลังดำเนินการ" />
           <Tab label="รายการที่สำเร็จ" />
           <Tab label="รายการที่ยกเลิก" />
@@ -64,5 +64,5 @@ const OrderCheck = () => {
   );
 };
 
-export default OrderCheck;
+export default ServFood;
 
