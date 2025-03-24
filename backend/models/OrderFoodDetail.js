@@ -15,7 +15,7 @@ const orderFoodDetailSchema = new mongoose.Schema({
   },
   orderDetail_Serving: {
     type: String,
-    enum: ['Not Served', 'Served', 'In Transit', 'Delivered', 'Returned'],
+    enum: ['Not Served', 'Served','Delivered', 'Returned'],
     required: true,
   },
   order_Id: {

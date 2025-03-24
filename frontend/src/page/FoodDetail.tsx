@@ -157,7 +157,7 @@ const FoodDetail: React.FC<FoodDetailProps> = ({ _id, onClose }) => {
                   </IconButton>
                 </Box>
                 <Typography variant="h6">{quantity * foodDetails.food_Price}฿</Typography>
-                <Button type="submit" variant="contained" color="primary" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-evenly', marginRight: 1, padding: 2, borderRadius: '5%' }} onClick={() => alert('คุณต้อง')}>
+                <Button type="submit" variant="contained" color="primary" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-evenly', marginRight: 1, padding: 2, borderRadius: '5%' }}>
                   <ShoppingCart sx={{ marginRight: 2 }} />ใส่ตะกร้า
                 </Button>
               </Box>

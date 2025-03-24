@@ -139,6 +139,8 @@ exports.createOrderDrinkDetail = async (req, res) => {
 
 
 
+
+
 // exports.getPendingOrdersByCustomer = async (req, res) => {
 //     const { id } = req.params;
 //     console.log(id)
@@ -203,6 +205,46 @@ exports.getPendingOrdersByCustomer = async (req, res) => {
         return res.status(500).json({ message: 'Error fetching pending orders.', error: error.message });
     }
 };
+
+
+exports.getInProgressOrdersByCustomer = async (req, res) => {
+    const { id } = req.params;
+    try {
+        // ค้นหาข้อมูลออเดอร์ที่สถานะเป็น "Pending" โดยอิงจาก customer_Id
+        const orders = await Order.find({ customer_Id: id, order_Status: 'In Progress' }).populate("table_Id", "number seat_count");
+
+        // ตรวจสอบว่ามีคำสั่งซื้อหรือไม่
+        if (orders.length === 0) {
+            return res.status(404).json({ message: 'No pending orders found for this customer.' });
+        }
+
+        // ดึงข้อมูล Table ที่เชื่อมโยงกับแต่ละคำสั่งซื้อ
+        const tables = await Table.find({});
+
+        // ดึงข้อมูล OrderFoodDetail และ OrderDrinkDetail พร้อมกันด้วย Promise.all
+        const [orderFoodDetails, orderDrinkDetails] = await Promise.all([
+            OrderFoodDetail.find({ order_Id: { $in: orders.map(order => order._id) } })
+                .populate('food_Id')  // Populate the food details (menu items)
+                .populate('chef_Id')  // Optionally, populate other details like chef
+                .populate('employee_Id'),  // Optionally, populate employee details
+            OrderDrinkDetail.find({ order_Id: { $in: orders.map(order => order._id) } })
+                .populate('drink_Id')  // Populate the drink details (drink items)
+                .populate('employee_Id')  // Optionally, populate employee details
+        ]);
+
+        // ส่งข้อมูลคำสั่งซื้อพร้อมรายละเอียดอาหาร น้ำดื่ม และข้อมูลโต๊ะที่พบ
+        return res.status(200).json({
+            orders,
+            orderFoodDetails,
+            orderDrinkDetails,
+            tables // เพิ่มข้อมูลโต๊ะ
+        });
+    } catch (error) {
+        console.error('Error fetching pending orders:', error);
+        return res.status(500).json({ message: 'Error fetching pending orders.', error: error.message });
+    }
+};
+
 
 
 
