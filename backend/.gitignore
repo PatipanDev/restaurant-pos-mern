@@ -3,9 +3,11 @@ node_modules/
 
 uploads/drink-images/*
 uploads/image/*
+node_modules/*
 
 !uploads/drink-images/.gitkeep
 !uploads/image/.gitkeep
+!node_modules/.gitkeep
 
 # Ignore build output
 /build/
