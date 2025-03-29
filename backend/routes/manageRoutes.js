@@ -9,6 +9,7 @@ const foodCetagoryControllers = require('../controllers/foodCategoryControllers'
 const ingredientsControllers = require('../controllers/ingredientsController');
 const ingrediendetailsControllers = require('../controllers/ingredientDetControoller');
 const foodrecipeControllers = require('../controllers/foodrecipeController');
+const suppilerController = require('../controllers/suppilerController')
 
 
 
@@ -101,6 +102,9 @@ router.post('/addFoodRecipe', foodrecipeControllers.addFoodRecipe)
 router.put('/updateFoodRecipe/:id', foodrecipeControllers.updateFoodRecipe)
 
 router.delete('/deleteFoodRecipe/:id', foodrecipeControllers.deleteFoodRecipe)
+
+//ดึงข้อมูลร้านค้า
+router.get('/getSuppliers', suppilerController.getSupplier)
 
 
 module.exports = router;

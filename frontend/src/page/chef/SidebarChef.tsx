@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Dialog, DialogActions, DialogTitle, DialogContent, Button, Collapse } from '@mui/material';
-import { Home, People, Egg, Settings, MonetizationOn, HistoryEdu, Inventory2, ShoppingCart, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory,Kitchen } from '@mui/icons-material';
+import { Home, People, Egg, Settings, MonetizationOn,Summarize, HistoryEdu, Inventory2, ShoppingCart, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory,Kitchen } from '@mui/icons-material';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -10,6 +10,7 @@ import ManageIngredients from './ManageIngredients';
 import ManageProductsChef from './ManageProductsChef';
 import ManageFoodsChef from './ManageFoodsChef';
 import OrderTable from './componentchef/orderTable';
+import AddListfoodbuy from './AddListfoodbuy';
 
 import axios from 'axios';
 
@@ -247,6 +248,8 @@ const SidebarChef: React.FC = () => {
         {selectedPage === 'ingredient' && <ManageIngredients />}
         {selectedPage === 'product' && <ManageProductsChef />}
         {selectedPage === 'foodrecipe' && <ManageFoodsChef />}
+        {selectedPage === 'addlistfoodbuy' && <AddListfoodbuy />}
+        
         {selectedPage === 'settings' && <h1>การตั้งค่า</h1>}
 
 
@@ -278,6 +281,7 @@ const menuItems = [
   { page: 'ingredient', label: 'เตรียมวัตถุดิบ', icon: <Egg /> },
   { page: 'product', label: 'สินค้า', icon: <Inventory2 /> },
   { page: 'foodrecipe', label: 'สูตรอาหาร', icon: <HistoryEdu /> },
+  { page: 'addlistfoodbuy', label: 'สั่งสินค้า', icon: <Summarize /> },
   { page: 'settings', label: 'การตั้งค่า', icon: <Settings /> },
 
 ];

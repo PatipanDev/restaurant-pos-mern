@@ -2,7 +2,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 import React, { useState } from 'react';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Dialog, DialogActions, DialogTitle, DialogContent, Button, Collapse } from '@mui/material';
-import { Home, People, Settings, MonetizationOn, ShoppingCart, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory, Inventory2} from '@mui/icons-material';
+import { Home, People, Settings, MonetizationOn,Storefront, ShoppingCart, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory, Inventory2} from '@mui/icons-material';
 import AddEmployee from './ManageEmployee';
 import ManageEmployee from './ManageEmployee';
 import ManageCashier from './ManageCashier';
@@ -18,6 +18,7 @@ import ManageFoods from './ManageFoods';
 import ManageFoodCategories from './ManageFoodCategories';
 import ManageShopOwners from './ManageOwner';
 import ManageFoods2 from './ManageFoods2';
+import ManageSupplier from './ManageSupplier';
 
 import axios from 'axios';
 
@@ -28,6 +29,8 @@ const Sidebar: React.FC = () => {
   const [openEmployeeMenu, setOpenEmployeeMenu] = useState<boolean>(false); // สำหรับเปิด/ปิดเมนูย่อย
   const [openProductMenu, setOpenProductMenu] = useState<boolean>(false); // สำหรับเปิด/ปิดเมนูย่อยสินค้า
   const [openStoreMenu, setOpenStoreMenu] = useState<boolean>(false); //สำหรับเปิด/ปิดเมนูย่อยการขาย
+  const [openBuyProduct, setOpenBuyProduct] = useState<boolean>(false); //สำหรับเปิด/ปิดเมนูย่อยการขาย
+
 
 
   const navigate = useNavigate(); // เพิ่ม useNavigate
@@ -199,6 +202,49 @@ const Sidebar: React.FC = () => {
           </Collapse>
           <Divider sx={{ backgroundColor: '#eee', marginTop: 2, marginBottom: 2 }} />
 
+          {/* ✅ เมนูหลัก: จัดการการซื้อและเอกสาร */}
+          <ListItem onClick={() => setOpenBuyProduct(!openBuyProduct)} sx={menuStyle(false)}>
+            <ListItemIcon>
+              <Storefront/>
+            </ListItemIcon>
+            <ListItemText primary="สั่งสินค้าและเอกสาร" />
+            {openBuyProduct ? <ExpandLess /> : <ExpandMore />}
+          </ListItem>
+
+          <Collapse in={openBuyProduct} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding>
+              <ListItem onClick={() => handleItemClick('manageFood')} sx={subMenuStyle(selectedPage === 'manageFood')}>
+                <ListItemIcon sx={{ color: selectedPage === 'manageFood' ? '#FFF' : '#333' }}>
+                  <LocalDining />
+                </ListItemIcon>
+                <ListItemText primary="อาหาร" />
+              </ListItem>
+
+              <ListItem onClick={() => handleItemClick('manageDrinks')} sx={subMenuStyle(selectedPage === 'manageDrinks')}>
+                <ListItemIcon sx={{ color: selectedPage === 'manageDrinks' ? '#FFF' : '#333' }}>
+                  <LocalBar />
+                </ListItemIcon>
+                <ListItemText primary="เครื่องดื่ม" />
+              </ListItem>
+
+              <ListItem onClick={() => handleItemClick('manageTables')} sx={subMenuStyle(selectedPage === 'manageTables')}>
+                <ListItemIcon sx={{ color: selectedPage === 'manageTables' ? '#FFF' : '#333' }}>
+                  <TableRestaurant />
+                </ListItemIcon>
+                <ListItemText primary="โต๊ะ" />
+              </ListItem>
+
+              <ListItem onClick={() => handleItemClick('manageSupplier')} sx={subMenuStyle(selectedPage === 'manageSupplier')}>
+                <ListItemIcon sx={{ color: selectedPage === 'manageSupplier' ? '#FFF' : '#333' }}>
+                  <Storefront />
+                </ListItemIcon>
+                <ListItemText primary="จัดการร้านจัดหาสินค้า" />
+              </ListItem>
+
+            </List>
+          </Collapse>
+          <Divider sx={{ backgroundColor: '#eee', marginTop: 2, marginBottom: 2 }} />
+
           <List />
           {menuItems.map((item) => (
             <ListItem
@@ -266,9 +312,9 @@ const Sidebar: React.FC = () => {
 
         {selectedPage === 'manageFood' && <ManageFoods />}
         {selectedPage === 'manageShopOwner' && <ManageShopOwners />}
-
-
         {selectedPage === 'managefoods2' && <ManageFoods2 />}
+        {/* สั่งสินค้า */}
+        {selectedPage === 'manageSupplier' && <ManageSupplier/>}
 
       </div>
 
@@ -297,8 +343,6 @@ const menuItems = [
   { page: 'profile', label: 'ผู้ใช้งาน', icon: <People /> },
   { page: 'settings', label: 'การตั้งค่า', icon: <Settings /> },
   { page: 'managefoods2', label: 'จัดการอาหาร', icon: <People /> },
-
-
 ];
 
 
