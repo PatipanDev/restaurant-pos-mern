@@ -98,7 +98,7 @@ export default function HomePage() {
       const dashboardRoutes: Record<string, string> = {
         user: "/",
         chef: "/DashboardChef",
-        cashier: "/order",
+        cashier: "/DashboardCashier",
         employee: "/DashboardEmployee",
         owner: "/DashboardOwner",
       };

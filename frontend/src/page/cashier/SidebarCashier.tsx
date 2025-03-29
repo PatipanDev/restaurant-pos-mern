@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Dialog, DialogActions, DialogTitle, DialogContent, Button, Collapse } from '@mui/material';
-import { Home, People, Egg, Settings, MonetizationOn, HistoryEdu, Inventory2, ShoppingCart, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory,Kitchen } from '@mui/icons-material';
+import { Home, People, Egg, Settings, MonetizationOn, HistoryEdu,ReceiptLong, Inventory2, ShoppingCart, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory,Kitchen } from '@mui/icons-material';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 import { useNavigate } from 'react-router-dom'; // เพิ่ม useNavigate
 import SuccessAlert from '../../components/AlertSuccess';
-import ManageIngredients from './ManageIngredients';
-import ManageProductsChef from './ManageProductsChef';
-import ManageFoodsChef from './ManageFoodsChef';
-import OrderTable from './componentchef/orderTable';
+import ManageIngredients from '../chef/ManageIngredients';
+import ManageProductsChef from '../chef/ManageProductsChef';
+import ManageFoodsChef from '../chef/ManageFoodsChef';
+import PaymentPage from './CashierPayment';
 
 import axios from 'axios';
 
-const SidebarChef: React.FC = () => {
+const SidebarCashier: React.FC = () => {
   const [selectedPage, setSelectedPage] = useState<string>('home');
   const [openDialog, setOpenDialog] = useState<boolean>(false); // เพิ่ม state สำหรับ Dialog
   const [succAlertMessage, setSuccAlertMessage] = useState<React.ReactNode | null>(null); // เพิ่ม state สำหรับ Alert
@@ -242,9 +242,8 @@ const SidebarChef: React.FC = () => {
       </Drawer>
       <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100%' }}>
         {selectedPage === 'home' && <h1>หน้าหลัก</h1>}
-        {selectedPage === 'odercustomer' && <h1><OrderTable/></h1>}
     
-        {selectedPage === 'ingredient' && <ManageIngredients />}
+        {selectedPage === 'payment' && <PaymentPage />}
         {selectedPage === 'product' && <ManageProductsChef />}
         {selectedPage === 'foodrecipe' && <ManageFoodsChef />}
         {selectedPage === 'settings' && <h1>การตั้งค่า</h1>}
@@ -274,8 +273,7 @@ const SidebarChef: React.FC = () => {
 
 // เมนูใน Sidebar ที่โชว์
 const menuItems = [
-  { page: 'odercustomer', label: 'อาหารที่สั่ง', icon: <Kitchen /> },
-  { page: 'ingredient', label: 'เตรียมวัตถุดิบ', icon: <Egg /> },
+  { page: 'payment', label: 'ชำระเงิน', icon: <ReceiptLong /> },
   { page: 'product', label: 'สินค้า', icon: <Inventory2 /> },
   { page: 'foodrecipe', label: 'สูตรอาหาร', icon: <HistoryEdu /> },
   { page: 'settings', label: 'การตั้งค่า', icon: <Settings /> },
@@ -304,4 +302,4 @@ const subMenuStyle = (isSelected: boolean) => ({
 });
 
 
-export default SidebarChef;
+export default SidebarCashier;

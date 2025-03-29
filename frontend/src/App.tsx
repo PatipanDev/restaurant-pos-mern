@@ -44,6 +44,9 @@ import HomePage from './page/Homepage';
 // พนักงาน
 import DashboardEmployee from './page/employee/DashboardEmployee';
 
+//หน้าแคชเชียร์
+import DashboardCashier from './page/cashier/DashboardCashier';
+
 
 
 
@@ -126,6 +129,11 @@ const App: React.FC = () => {
 
           {/* ส่วนของพนักงาน */}
           <Route path="/DashboardEmployee" element={<ProtectedRoute requiredRole="employee"><DashboardEmployee /></ProtectedRoute>} />
+
+          {/* ส่วนของแคชเชียร์  */}
+          <Route path="/DashboardCashier" element={<ProtectedRoute requiredRole="cashier"><DashboardCashier /></ProtectedRoute>} />
+
+
 
 
 

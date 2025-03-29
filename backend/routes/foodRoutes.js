@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { upload, createFood, updateFood, deleteFood, getFoods, getFoodById} = require('../controllers/foodsController');
 const drinkController = require('../controllers/drinkController');
-const orderControllor = require('../controllers/orderController')
+const orderControllor = require('../controllers/orderController');
+const paymentControllor = require('../controllers/paymentController')
 
 // เส้นทางสำหรับเพิ่มข้อมูล (POST)
 router.post('/createFood', upload.single('food_Image'), createFood);
@@ -43,6 +44,23 @@ router.get('/getInProgressOrdersByCustomer/:id', orderControllor.getInProgressOr
 
 //ดึงข้อมูลอาหารโดยพนักงาน
 router.get('/getPendingOrdersByEmployee/:_id', orderControllor.getPendingOrdersByEmployee)
+
+// ลูกค้าชำระเงิน รอแคชเชียร์ทำการชำระเงิน
+router.post('/createPaymentOrderCustomer', orderControllor.createPaymentOrderCustomer)
+
+
+
+
+router.get('/getPaymentsByOrder/:orderId', paymentControllor.getPaymentsByOrder)
+
+
+
+//แคชเชียร์ดึงข้อมูลรายการลูกค้าที่ต้องชำระ
+router.get('/getpaymentorderByCashier', paymentControllor.getpaymentorderByCashier)
+
+//อัพเดตรายการอาหาร
+router.put('/updateQuantityFood/:_id', paymentControllor.updateQuantityFood)
+router.put('/updateQuantityDrink/:_id', paymentControllor.updateQuantityDrink)
 
 
 

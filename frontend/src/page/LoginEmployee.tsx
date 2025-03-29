@@ -56,7 +56,7 @@ const LoginEmployee: React.FC<LoginProps> = ({ setAuth }) => {
         //นำทางไป
         const dashboardRoutes: Record<string, string> = {
           chef: '/DashboardChef',
-          cashier: '/order',
+          cashier: '/DashboardCashier',
           employee: '/DashboardEmployee',
           owner: '/DashboardOwner'
         };

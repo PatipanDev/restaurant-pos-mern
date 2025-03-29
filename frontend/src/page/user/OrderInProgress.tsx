@@ -75,17 +75,7 @@ const translateEatStatus = (status: string) => {
     }
 };
 
-interface FormOrder {
-    order_Eating_status?: string | undefined;
-    table_Id: string;
-    order_Dec?: string | undefined;
-}
 
-const schema = yup.object({
-    order_Eating_status: yup.string(),
-    table_Id: yup.string().required("กรุณาเลือกโต๊ะ"), // บังคับเลือก
-    order_Dec: yup.string()
-}).required();
 
 
 function OrderDetails() {
@@ -93,15 +83,11 @@ function OrderDetails() {
     const [orderFoodDetails, setOrderFoodDetails] = useState<any[]>([]);
     const [orderDrinkDetails, setOrderDrinkDetails] = useState<any[]>([]);
     const [tables, setTables] = useState<any[]>([]);
+    const [payments, setPayment] = useState<any[]>([]);
 
     const [loading, setLoading] = useState(true);
     const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
-
-
-
-    const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormOrder>({
-        resolver: yupResolver(schema),
-    });
+    const [isPaymentPending, setIsPaymentPending] = useState(false);
 
     // const {formattedDate, formattedTime} = formatDateTime()
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -122,6 +108,11 @@ function OrderDetails() {
             setOrderFoodDetails(response.data.orderFoodDetails);
             setOrderDrinkDetails(response.data.orderDrinkDetails);
             setTables(response.data.tables);
+            if (response.data.payment) {
+                setPayment(response.data.payment);
+                setIsPaymentPending(true);
+            }
+
             console.log(response.data);
 
         } catch (error) {
@@ -131,14 +122,33 @@ function OrderDetails() {
         }
     };
 
+    const fetchPayment = async (order_Id: string) => {
+        try {
+            const response = await axios.get(`${API_URL}/api/food/getPaymentsByOrder/${order_Id}`);
+            setPayment(response.data.orders);
+            console.log(response.data);
+            if (response.data.orders && response.data.orders.length > 0) {
+                setIsPaymentPending(false)
+
+            } else {
+                setIsPaymentPending(true)
+            }
+
+        } catch (error) {
+            console.error('Error fetching order data:', error);
+        } finally {
+            setLoading(false); // ✅ โหลดเสร็จแล้ว
+        }
+    };
+
     useEffect(() => {
-        socket.connect();
-        if (id) {  // ตรวจสอบว่า customerId มีค่า
+        if (id) {  // ตรวจสอบว่า customerId มีค่   
             fetchPendingOrders();
+            // setPayment([]);
         }
     }, [id]);  // เพิ่ม customerId ใน dependency array
 
-    console.log("มีข้อมูลไหม", orderDrinkDetails)
+    console.log("มีข้อมูลไหม", payments)
     // console.log('ลง', order.orders[0]._id)
 
     const totalFoodPrice = orderFoodDetails.reduce(
@@ -156,35 +166,25 @@ function OrderDetails() {
     const totalPrice = totalFoodPrice + totalDrinkPrice;
     console.log(totalPrice)
 
-    const onSubmit = async (data: FormOrder) => {
-        if (window.confirm("คุณต้องการสั่งอาหารใช่หรือไม่ ?")) {
-            try {
-                const id = order.map((order) => order._id)[0] ?? '';
-                console.log('ไอดี', id);
-                const orderData = {
-                    ...data,
-                };
-
-                console.log('Order Data:', orderData);
-                console.log('Form Data:', data);
-
-                // ส่งข้อมูลไปยัง server ผ่าน socket.emit โดยไม่ต้องรอการตอบกลับ
-                socket.emit('putSendOrderDetail', { id, ...orderData });
-
-                // รีเซ็ตข้อมูลหรือแจ้งเตือน UI ตามที่ต้องการ
-                setAlertSuccess(<div>สั่งอาหารสำเร็จ</div>);
-                setTimeout(() => {
-                    // fetchPendingOrders();
-                    setOrders([]);
-                    setOrderDrinkDetails([]);
-                    setOrderFoodDetails([]);
-                    reset();
-                }, 2000);
-
-            } catch (error: any) {
-                console.error('Error submitting order:', error);
-                alert(error.response?.message || 'เกิดข้อผิดพลาด');
-            }
+    const handleConfirmServ = async (orderId: string) => {
+        const isConfirmed = window.confirm("คุณต้องการยืนยันว่าทำอาหารเสร็จใช่หรือไม่?");
+        if (!isConfirmed) {
+            console.log("ผู้ใช้ยกเลิกการยืนยันคำสั่งซื้อ");
+            return; // ถ้าผู้ใช้ยกเลิก ก็จะไม่ทำอะไร
+        }
+        try {
+            console.log("ชื่อ", id, "oder", orderId)
+            // ส่งข้อมูลไปที่ Server เพื่อยืนยันคำสั่งซื
+            const response = await axios.post(`${API_URL}/api/food/createPaymentOrderCustomer`, { id, orderId });
+            console.log('Update successful', response);
+            setAlertSuccess(<div>{"กรุณาไปชำระเงินที่หน้าเค้าเตอร์"}</div>);
+            setTimeout(async () => {
+                await fetchPendingOrders();
+                fetchPayment(orderId);
+            }, 2000);
+        } catch (error: any) {
+            console.log("Error data message", error);
+            setAlertSuccess(<div>{error.response?.data?.message || "เกิดข้อผิดพลาด"}</div>);
         }
     };
 
@@ -383,19 +383,28 @@ function OrderDetails() {
                 ราคารวม: {loading ? <Skeleton variant="text" width={80} /> : `${totalPrice} บาท`}
             </Typography>
             <Divider sx={{ my: 2 }} />
-            <Box display="flex" gap={2} alignItems="center" sx={{ marginBottom: 20 }}>
-                <Button
-                    fullWidth
-                    type='submit'
-                    variant="contained"
-                    color="primary"
-                    sx={{ flex: 1 }}
-                    onClick={handleSubmit(onSubmit)}
-                >
-                    {loading ? <Skeleton variant="text" width="50px" /> : "ชำระเงิน"}
-                </Button>
-                <SuccessAlert successalert={alertSuccess} />
-            </Box>
+            {order.map((item) => (
+                <Box key={item._id} display="flex" gap={2} alignItems="center" sx={{ marginBottom: 20 }}>
+                    <Button
+                        fullWidth
+                        type='submit'
+                        variant="contained"
+                        color="primary"
+                        sx={{ flex: 1 }}
+                        disabled={isPaymentPending}
+                        onClick={() => handleConfirmServ(item._id)}
+                    >
+                        {loading ? (
+                            <Skeleton variant="text" width="50px" />
+                        ) : (
+                            isPaymentPending ? "กรุณาชำระเงินที่หน้าเคาท์เตอร์ค่ะ" :  "ชำระเงิน"
+                        )}
+                    </Button>
+                    <SuccessAlert successalert={alertSuccess} />
+                </Box>
+
+            ))}
+
         </Container>
     );
 }
