@@ -1,5 +1,4 @@
 # Ignore node_modules
-node_modules/
 
 uploads/drink-images/*
 uploads/image/*
