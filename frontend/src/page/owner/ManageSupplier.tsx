@@ -3,16 +3,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, CssBaseline, Paper, Typography, Grid, Card, CardContent, Button, Tabs, Tab, Divider } from '@mui/material';
 
 import ShopSupplier from './component/ShopSupplier';
+import EmployeeSupplier from './component/EmployeeSupplier';
 
-
-const orderedItems = [
-  { name: 'สเต็ก', quantity: 2, price: 150 },
-  { name: 'ข้าวผัด', quantity: 1, price: 60 },
-  { name: 'ก๋วยเตี๋ยว', quantity: 3, price: 50 },
-];
 
 // คำนวณราคารวม
-const totalPrice = orderedItems.reduce((total, item) => total + item.quantity * item.price, 0);
 
 const ManageSupplier = () => {
   const [tabIndex, setTabIndex] = useState(0); // แท็บที่เลือก
@@ -37,7 +31,12 @@ const ManageSupplier = () => {
             <ShopSupplier/>
           </div>
 
-        ) : tabIndex === 1 }
+        ) : tabIndex === 1 ?(
+          <div>
+            <EmployeeSupplier/>
+          </div>
+        ) : null
+        }
       </>
 
     </div>

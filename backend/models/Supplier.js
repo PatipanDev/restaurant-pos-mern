@@ -1,25 +1,25 @@
 const mongoose = require('mongoose');
 
 const supplierSchema = new mongoose.Schema({
-  Supplier_Address: {
+  supplier_Address: {
     type: String,
     required: true,
     maxlength: 255
   },
-  Supplier_Name: {
+  supplier_Name: {
     type: String,
     required: true,
     maxlength: 100
   },
-  Supplier_Phone: {
+  supplier_Phone: {
     type: String,
     maxlength: 10
   },
-  Supplier_Name_Owner: {
+  supplier_Name_Owner: {
     type: String,
     maxlength: 100
   },
-  Supplier_Details: {
+  supplier_Details: {
     type: String
   }
 });

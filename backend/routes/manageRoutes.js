@@ -10,6 +10,7 @@ const ingredientsControllers = require('../controllers/ingredientsController');
 const ingrediendetailsControllers = require('../controllers/ingredientDetControoller');
 const foodrecipeControllers = require('../controllers/foodrecipeController');
 const suppilerController = require('../controllers/suppilerController')
+const EmployeeSupplierController = require('../controllers/employeeSupplierController')
 
 
 
@@ -105,6 +106,21 @@ router.delete('/deleteFoodRecipe/:id', foodrecipeControllers.deleteFoodRecipe)
 
 //ดึงข้อมูลร้านค้า
 router.get('/getSuppliers', suppilerController.getSupplier)
+
+router.post('/addSupplier', suppilerController.appSupplier)
+
+router.put('/updateSupplier/:id', suppilerController.updateSupplier)
+
+router.delete('/deleteSupplier/:id', suppilerController.deleteSupplier)
+
+//ดึงข้อมูลพนักงานร้านค้า
+router.get('/getEmployeeSuppliers', EmployeeSupplierController.getEmployeeSuppliers)
+
+router.post('/addEmployeeSupplier', EmployeeSupplierController.addEmployeeSupplier)
+
+router.put('/updateEmployeeSupplier/:id', EmployeeSupplierController.updateEmployeeSupplier)
+
+router.delete('/deleteEmployeeSupplier/:id', EmployeeSupplierController.deleteEmployeeSupplier)
 
 
 module.exports = router;
