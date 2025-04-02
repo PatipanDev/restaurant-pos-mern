@@ -2,8 +2,8 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 import React, { useState } from 'react';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Dialog, DialogActions, DialogTitle, DialogContent, Button, Collapse } from '@mui/material';
-import { Home, People, Settings, MonetizationOn,Storefront, ShoppingCart, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory, Inventory2} from '@mui/icons-material';
-import AddEmployee from './ManageEmployee';
+import { Home, People, Settings, Receipt, MonetizationOn,Storefront,ShoppingBasket, ShoppingCart, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory, Inventory2} from '@mui/icons-material';
+
 import ManageEmployee from './ManageEmployee';
 import ManageCashier from './ManageCashier';
 import ManageProducts from './ManageProducts';
@@ -19,6 +19,9 @@ import ManageFoodCategories from './ManageFoodCategories';
 import ManageShopOwners from './ManageOwner';
 import ManageFoods2 from './ManageFoods2';
 import ManageSupplier from './ManageSupplier';
+import ManageDoce from './ManageDoce';
+import AddListProductOwner from './AddOrderProductOwner';
+
 
 import axios from 'axios';
 
@@ -213,25 +216,19 @@ const Sidebar: React.FC = () => {
 
           <Collapse in={openBuyProduct} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
-              <ListItem onClick={() => handleItemClick('manageFood')} sx={subMenuStyle(selectedPage === 'manageFood')}>
-                <ListItemIcon sx={{ color: selectedPage === 'manageFood' ? '#FFF' : '#333' }}>
-                  <LocalDining />
+
+            <ListItem onClick={() => handleItemClick('addlistproductowner')} sx={subMenuStyle(selectedPage === 'addlistproductowner')}>
+                <ListItemIcon sx={{ color: selectedPage === 'addlistproductowner' ? '#FFF' : '#333' }}>
+                  <Receipt />
                 </ListItemIcon>
-                <ListItemText primary="อาหาร" />
+                <ListItemText primary="รายการซื้อสินค้า" />
               </ListItem>
 
-              <ListItem onClick={() => handleItemClick('manageDrinks')} sx={subMenuStyle(selectedPage === 'manageDrinks')}>
-                <ListItemIcon sx={{ color: selectedPage === 'manageDrinks' ? '#FFF' : '#333' }}>
-                  <LocalBar />
+              <ListItem onClick={() => handleItemClick('managedoce')} sx={subMenuStyle(selectedPage === 'managedoce')}>
+                <ListItemIcon sx={{ color: selectedPage === 'managedoce' ? '#FFF' : '#333' }}>
+                <ShoppingBasket/>
                 </ListItemIcon>
-                <ListItemText primary="เครื่องดื่ม" />
-              </ListItem>
-
-              <ListItem onClick={() => handleItemClick('manageTables')} sx={subMenuStyle(selectedPage === 'manageTables')}>
-                <ListItemIcon sx={{ color: selectedPage === 'manageTables' ? '#FFF' : '#333' }}>
-                  <TableRestaurant />
-                </ListItemIcon>
-                <ListItemText primary="โต๊ะ" />
+                <ListItemText primary="สั่งซื้อสินค้า" />
               </ListItem>
 
               <ListItem onClick={() => handleItemClick('manageSupplier')} sx={subMenuStyle(selectedPage === 'manageSupplier')}>
@@ -313,9 +310,11 @@ const Sidebar: React.FC = () => {
         {selectedPage === 'manageFood' && <ManageFoods />}
         {selectedPage === 'manageShopOwner' && <ManageShopOwners />}
         {selectedPage === 'managefoods2' && <ManageFoods2 />}
-        {/* สั่งสินค้า */}
-        {selectedPage === 'manageSupplier' && <ManageSupplier/>}
 
+        {/* สั่งสินค้า */}
+        {selectedPage === 'manageSupplier' && <ManageSupplier />}
+        {selectedPage === 'managedoce' && <ManageDoce />}
+        {selectedPage === 'addlistproductowner' && <AddListProductOwner />}
       </div>
 
       <Dialog open={openDialog} onClose={handleCloseDialog}>
@@ -332,11 +331,10 @@ const Sidebar: React.FC = () => {
       </Dialog>
 
       {succAlertMessage && <SuccessAlert successalert={succAlertMessage} />}
-    </div>
 
+    </div>
   );
 };
-
 
 // เมนูใน Sidebar ที่โชว์
 const menuItems = [
@@ -344,9 +342,6 @@ const menuItems = [
   { page: 'settings', label: 'การตั้งค่า', icon: <Settings /> },
   { page: 'managefoods2', label: 'จัดการอาหาร', icon: <People /> },
 ];
-
-
-
 
 
 // ✅ สไตล์เมนูหลัก
@@ -365,6 +360,5 @@ const subMenuStyle = (isSelected: boolean) => ({
   paddingLeft: 4,
   '&:hover': { backgroundColor: isSelected ? '#4CAF50' : '#e0e0e0' },
 });
-
 
 export default Sidebar;

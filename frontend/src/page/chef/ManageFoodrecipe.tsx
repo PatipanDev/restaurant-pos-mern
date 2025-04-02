@@ -12,9 +12,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import axios from 'axios';
 
-// import SuccessAlert from '../../../components/AlertSuccess';
-// import WarningAlert from '../../../components/AlertDivWarn';
-// import ErrorBoundary from '../../ErrorBoundary';
 
 import SuccessAlert from '../../components/AlertSuccess';
 import WarningAlert from '../../components/AlertDivWarn';

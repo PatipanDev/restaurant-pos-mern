@@ -11,6 +11,7 @@ const ingrediendetailsControllers = require('../controllers/ingredientDetControo
 const foodrecipeControllers = require('../controllers/foodrecipeController');
 const suppilerController = require('../controllers/suppilerController')
 const EmployeeSupplierController = require('../controllers/employeeSupplierController')
+const OrderProductController = require('../controllers/orderProductcontroller')
 
 
 
@@ -121,6 +122,24 @@ router.post('/addEmployeeSupplier', EmployeeSupplierController.addEmployeeSuppli
 router.put('/updateEmployeeSupplier/:id', EmployeeSupplierController.updateEmployeeSupplier)
 
 router.delete('/deleteEmployeeSupplier/:id', EmployeeSupplierController.deleteEmployeeSupplier)
+
+
+//จัดการออเดอร์สินค้า  ของเชฟ
+router.get('/getOrderProduct',OrderProductController.getOrderProduct)
+
+router.post('/createOrderProduct', OrderProductController.createOrderProduct)
+
+router.delete('/deleteOrderProduct/:id', OrderProductController.deleteOrderProduct)
+
+
+//จัดการรายละเอียดสินค้า
+router.get('/getOrderProductDetail/:id', OrderProductController.getOrderProductDetail)
+
+router.post('/createOrderProductDetails', OrderProductController.createOrderProductDetails)
+
+router.put('/updateOrderProductDetails/:id', OrderProductController.updateOrderProductDetails)
+
+router.delete('/deleteOrderProductDetail/:id', OrderProductController.deleteOrderProductDetail)
 
 
 module.exports = router;
