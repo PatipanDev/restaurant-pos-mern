@@ -16,6 +16,7 @@ import ErrorBoundary from '../ErrorBoundary';
 interface OrderProduct {
   _id: string;
   chef_Id: { chef_name: string };
+  order_Status: string;
 }
 
 
@@ -108,6 +109,26 @@ const AddListProductOwner = () => {
       ),
     },
     {
+      field: 'InProgress',
+      headerName: 'สถานะ',
+      width: 120,
+      renderCell: (params) => (
+        <Button variant="outlined" onClick={() => handleUpdateInProgress(params.id.toString())}>
+          ดำเนินการ
+        </Button>
+      ),
+    },
+    {
+      field: 'Completed',
+      headerName: 'สถานะ',
+      width: 100,
+      renderCell: (params) => (
+        <Button variant="outlined" onClick={() => handleUpdateCompleted(params.id.toString())}>
+          เสร็จสิ้น
+        </Button>
+      ),
+    },
+    {
       field: 'delete',
       headerName: 'ลบข้อมูล',
       width: 100,
@@ -118,6 +139,58 @@ const AddListProductOwner = () => {
       ),
     },
   ];
+
+  const handleUpdateInProgress = async (id: GridRowId) => {
+    const confirmDelete = window.confirm('คุณแน่ใจหรือไม่ว่าจะลบข้อมูลนี้?');
+    if (confirmDelete) {
+      try {
+        const orderId = rows.find((row) => row._id === id)?._id;
+        if (orderId) {
+          const response = await axios.put(`${API_URL}/api/data/updateStatusInProgressOrderProduct/${orderId}`);
+          if (response.status === 200) {
+            const updatedOrder = response.data.orderProduct; // รับค่าที่อัปเดตแล้วจาก API
+
+            // อัปเดต state โดยแก้ไขเฉพาะ order ที่มี orderId ตรงกัน
+            setRows(prevOrders => prevOrders.map(order =>
+              order._id === orderId ? updatedOrder : order
+            ));
+
+            // แสดงข้อความสำเร็จ
+            setAlertSuccess(<div>อัพเดตสถานะดำเนินการสำเร็จ</div>);
+          }
+        } else {
+          alert('ไม่พบข้อมูลที่จะลบ');
+        }
+      } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการลบข้อมูล:', error);
+        setAlertMessage(<div>เกิดข้อผิดพลาดในการอัพเดตสถานะรายการ</div>);
+      }
+    }
+  };
+
+  const handleUpdateCompleted = async (id: GridRowId) => {
+    const confirmDelete = window.confirm('คุณแน่ใจหรือไม่ว่าจะลบข้อมูลนี้?');
+    if (confirmDelete) {
+      try {
+        const orderId = rows.find((row) => row._id === id)?._id;
+        const response = await axios.put(`${API_URL}/api/data/updateStatusCompletedOrderProduct/${orderId}`);
+        if (response.status === 200) {
+          const updatedOrder = response.data.data; // รับค่าที่อัปเดตแล้วจาก API
+
+          // อัปเดต state โดยแก้ไขเฉพาะ order ที่มี orderId ตรงกัน
+          setRows(prevOrders => prevOrders.map(order =>
+            order._id === orderId ? updatedOrder : order
+          ));
+
+          // แสดงข้อความสำเร็จ
+          setAlertSuccess(<div>อัพเดตสถานะดำเนินการสำเร็จ</div>);
+        }
+      } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการลบข้อมูล:', error);
+        setAlertMessage(<div>เกิดข้อผิดพลาดในการอัพเดตสถานะรายการ</div>);
+      }
+    }
+  };
 
   const handleDeleteClick = async (id: GridRowId) => {
     const confirmDelete = window.confirm('คุณแน่ใจหรือไม่ว่าจะลบข้อมูลนี้?');
@@ -168,7 +241,7 @@ const AddListProductOwner = () => {
       {
         selectedOrderId ? (
           <div>
-            <AddListProductDetail id={selectedOrderId} onClose={handdlecloseDetail}/>
+            <AddListProductDetail id={selectedOrderId} onClose={handdlecloseDetail} />
           </div>
         ) : (
           <div style={{ height: '90vh', width: '80vw' }}>

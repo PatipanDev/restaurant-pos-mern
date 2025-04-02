@@ -25,7 +25,6 @@ interface Drink {
   drink_Manufacture_date: string;
   drink_Expiry_date: string;
   drink_Image: string; 
-
 }
 
 interface FormData {

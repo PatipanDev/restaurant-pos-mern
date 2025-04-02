@@ -12,6 +12,7 @@ const foodrecipeControllers = require('../controllers/foodrecipeController');
 const suppilerController = require('../controllers/suppilerController')
 const EmployeeSupplierController = require('../controllers/employeeSupplierController')
 const OrderProductController = require('../controllers/orderProductcontroller')
+const deliverrynoteController = require('../controllers/deliverrynoteController')
 
 
 
@@ -141,5 +142,15 @@ router.put('/updateOrderProductDetails/:id', OrderProductController.updateOrderP
 
 router.delete('/deleteOrderProductDetail/:id', OrderProductController.deleteOrderProductDetail)
 
+// อัพเดตข้อมูลสสถานะฝั่งเจ้าของร้าน
+router.put('/updateStatusInProgressOrderProduct/:id', OrderProductController.updateStatusInProgressOrderProduct)
+
+router.put('/updateStatusCompletedOrderProduct/:id', OrderProductController.updateStatusCompletedOrderProduct)
+
+
+//ใบส่งของ
+router.get('/getDeliveryNote', deliverrynoteController.getDeliveryNote)
+
+router.post('/postDeliveryNote', deliverrynoteController.postDeliveryNote)
 
 module.exports = router;

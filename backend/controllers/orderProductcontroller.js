@@ -2,6 +2,8 @@ const OrderProduct = require('../models/OrderProduct')
 const OrderProductDetail = require('../models/OrderProductDetail');
 const Product = require('../models/Product');
 
+////รายการที่เชฟอยากได้ ส่งมาที่ เจ้าของร้าน
+
 exports.getOrderProduct = async (req , res)=>{
     try{
         const orderproduct = await OrderProduct.find()
@@ -150,6 +152,7 @@ exports.updateOrderProductDetails = async (req, res) => {
     }
 };
 
+//
 exports.deleteOrderProductDetail = async (req, res)=>{
     const {id} = req.params
     try{
@@ -168,4 +171,59 @@ exports.deleteOrderProductDetail = async (req, res)=>{
     }
 }
 
-//
+// ปุ่มดำเนินการของ เจ้าของร้าน
+
+exports.updateStatusInProgressOrderProduct = async(req, res) =>{
+    const {id} = req.params
+    try{
+        const orderProduct = await OrderProduct.findById(id)
+        if (!orderProduct) {
+            return res.status(404).json({ message: "ไม่พบออเดอร์" }); // 🔹 return ออกไปเลย
+        }
+        
+        orderProduct.order_Status = "In Progress"
+
+        await orderProduct.save();
+        res.status(200).json({
+            message: 'อัพเดตข้อมูลสำเร็จ', 
+            orderProduct 
+        })
+    }catch(error){
+        console.log("Error update status in server", error)
+        res.status(500).json({
+            message: 'เกิดข้อผิดพลาดฝั่งเซอร์เวอร์',
+            error: error.message
+        })
+    }
+}
+
+
+exports.updateStatusCompletedOrderProduct = async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+        // ค้นหา order จาก id
+        const orderProductInstance = await OrderProduct.findById(id);
+        
+        if (!orderProductInstance) {
+            return res.status(404).json({ message: "ไม่พบออเดอร์" }); // 🔹 return ออกไปเลย
+        }
+
+        // อัปเดตสถานะเป็น Completed
+        orderProductInstance.order_Status = "Completed";
+
+        // บันทึกข้อมูล
+        await orderProductInstance.save();
+
+        res.status(200).json({
+            message: 'อัพเดตข้อมูลสำเร็จ', 
+            data: orderProductInstance // 🔹 เปลี่ยน key ให้สื่อความหมายมากขึ้น
+        });
+    } catch (error) {
+        console.error("Error update status in server", error);
+        res.status(500).json({
+            message: 'เกิดข้อผิดพลาดฝั่งเซอร์เวอร์',
+            error: error.message
+        });
+    }
+};
