@@ -15,8 +15,10 @@ import * as yup from 'yup';
 import axios from 'axios';
 import SuccessAlert from '../../components/AlertSuccess';
 import WarningAlert from '../../components/AlertDivWarn';
-import AddListProductDetail from '../chef/AddListProduct';
 import ErrorBoundary from '../ErrorBoundary';
+
+import DoceFaltur from './component/DoceFaktur';
+
 
 interface OrderProduct {
   _id: string;
@@ -193,21 +195,11 @@ const ManageDoce = () => {
     },
     {
       field: 'details',
-      headerName: 'รายละเอียดรายการ',
+      headerName: 'รายละเอียดใบส่งของ',
       minWidth: 150,
       renderCell: (params) => (
         <Button variant="outlined" startIcon={<HistoryEdu />} onClick={() => handleOpenClick(params.id.toString())}>
-          รายละเอียด
-        </Button>
-      ),
-    },
-    {
-      field: 'faktuur',
-      headerName: 'ใบส่งของ',
-      minWidth: 120,
-      renderCell: (params) => (
-        <Button variant="outlined" onClick={() => handleOpenClick(params.id.toString())}>
-          เพิ่มเติม
+          รายการ
         </Button>
       ),
     },
@@ -337,7 +329,7 @@ const ManageDoce = () => {
       {
         selectedOrderId ? (
           <div>
-            <AddListProductDetail id={selectedOrderId} onClose={handdlecloseDetail} />
+            <DoceFaltur id={selectedOrderId} onClose={handdlecloseDetail} />
           </div>
         ) : (
           <div style={{ height: '90vh', width: '80vw' }}>

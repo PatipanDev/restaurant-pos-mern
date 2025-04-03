@@ -153,4 +153,10 @@ router.get('/getDeliveryNote', deliverrynoteController.getDeliveryNote)
 
 router.post('/postDeliveryNote', deliverrynoteController.postDeliveryNote)
 
+
+//รายละเอียดใบ่สงของ
+router.get('/getDeliveryNoteDetail/:id', deliverrynoteController.getDeliveryNoteDetail)
+
+router.post('/createDeliveryNoteDetail', deliverrynoteController.createDeliveryNoteDetail)
+
 module.exports = router;
