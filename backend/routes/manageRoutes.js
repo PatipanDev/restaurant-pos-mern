@@ -159,4 +159,9 @@ router.get('/getDeliveryNoteDetail/:id', deliverrynoteController.getDeliveryNote
 
 router.post('/createDeliveryNoteDetail', deliverrynoteController.createDeliveryNoteDetail)
 
+router.put('/updateDeliveryNoteDetail/:id', deliverrynoteController.updateDeliveryNoteDetail)
+
+router.delete('/deleteDeliveryNoteDetail/:id', deliverrynoteController.deleteDeliveryNoteDetail)
+
+
 module.exports = router;

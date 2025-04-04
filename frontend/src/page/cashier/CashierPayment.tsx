@@ -27,6 +27,9 @@ import axios from "axios";
 const API_URL = import.meta.env.VITE_API_URL;
 import { number } from 'yup';
 import { formatDateTime } from "../../utils/formatDateTime";
+import { error } from "console";
+
+import Receipt from "./component/Receipt";
 
 
 const CashierPayment: React.FC = () => {
@@ -36,6 +39,10 @@ const CashierPayment: React.FC = () => {
   const [payment, setPayment] = useState<any[]>([])
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [cashReceived, setCashReceived] = useState<number | "">("");
+  const [changeAmount, setchangeAmount] = useState<number>(0);
+  const [paidAmount, setPaidAmount] = useState<number>(0);
+
+
   // เมื่อเลือกรายการอาหาร
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [searchQuery, setSearchQuery] = useState(""); // ใช้เก็บค่า query ค้นหาจากผู้ใช้ 
@@ -70,33 +77,118 @@ const CashierPayment: React.FC = () => {
   );
 
 
-  const totalFoodPrice = orderFoodDetails
-    .filter((item) => item.order_Id === selectedOrder)
-    .reduce(
-      (sum, FoodDetails) =>
-        sum + FoodDetails.orderDetail_Quantity * parseFloat(FoodDetails.food_Id.food_Price.$numberDecimal),
-      0
-    );
+  useEffect(() => {
+    const totalFoodPrice = orderFoodDetails
+      .filter((item) => item.order_Id === selectedOrder)
+      .reduce(
+        (sum, FoodDetails) =>
+          sum + FoodDetails.orderDetail_Quantity * parseFloat(FoodDetails.food_Id.food_Price.$numberDecimal || "0"),
+        0
+      );
 
-  const totalDrinkPrice = orderDrinkDetails
-    .filter((item) => item.order_Id === selectedOrder)
-    .reduce(
-      (sum, DrinkDetails) =>
-        sum + DrinkDetails.orderDetail_Quantity * parseFloat(DrinkDetails.drink_Id.drink_Price),
-      0
-    );
+    const totalDrinkPrice = orderDrinkDetails
+      .filter((item) => item.order_Id === selectedOrder)
+      .reduce(
+        (sum, DrinkDetails) =>
+          sum + DrinkDetails.orderDetail_Quantity * parseFloat(DrinkDetails.drink_Id.drink_Price || "0"),
+        0
+      );
 
-  const totalPrice = totalFoodPrice + totalDrinkPrice;
-  console.log(totalPrice)
-  const change = typeof cashReceived === "number" ? cashReceived - totalPrice : 0;
+    const totalPrice = totalFoodPrice + totalDrinkPrice;
 
-  const handlePayment = () => {
-    if (paymentMethod === "cash" && (typeof cashReceived !== "number" || cashReceived < totalPrice)) {
+    setPaidAmount(totalPrice); // อัพเดต state ด้วยค่า totalPrice ที่คำนวณ
+  }, [orderFoodDetails, orderDrinkDetails, selectedOrder]);
+
+  // setPaidAmount(totalPrice); // ตรวจสอบค่า totalPrice ก่อนใช้
+
+  useEffect(() => {
+    const change = typeof cashReceived === "number" ? cashReceived - paidAmount : 0; // ตรวจสอบ cashReceived ว่าเป็น number
+    setchangeAmount(change)
+  }, [cashReceived])
+  // setCashReceived(change);
+
+  const handlePayment = async (id: string) => {
+    if (paymentMethod === "cash" && (typeof cashReceived !== "number" || cashReceived < paidAmount)) {
       alert("กรุณารับเงินให้เพียงพอ");
       return;
+    } else {
+      const isConfirmed = window.confirm("คุณต้องการยืนยันการชำระเงิมใช่หรือไม่");
+      if (!isConfirmed) {
+        console.log("ผู้ใช้ยกเลิกการยืนยันคำสั่งซื้อ");
+        return; // ถ้าผู้ใช้ยกเลิก ก็จะไม่ทำอะไร
+      }
+
+
+      let newcashReceived: number | "" = 0
+      let newchangeAmount: number | "" = 0
+      if (paymentMethod === "cash") {
+        newcashReceived = cashReceived
+        newchangeAmount = changeAmount
+      }
+      try {
+        const newData = {
+          payment_Method: paymentMethod,
+          received_Amount: newcashReceived,
+          change_Amount: newchangeAmount,
+          paid_Amount: paidAmount
+        }
+        console.log(newData)
+        const response = await axios.put(`${API_URL}/api/food/updatePaymentCutomer/${id}`, { newData });
+        console.log(response.data)
+        if (response.status === 200) {
+          fetchListOrder();
+          alert("ชำระเงินสำเร็จ");
+        }
+      } catch (error) {
+
+      }
     }
-    alert("ชำระเงินสำเร็จ");
   };
+
+  // handlePaymentAndReceipt
+  const handlePaymentAndReceipt = async (id: string) => {
+    if (paymentMethod === "cash" && (typeof cashReceived !== "number" || cashReceived < paidAmount)) {
+      alert("กรุณารับเงินให้เพียงพอ");
+      return;
+    } else {
+      const isConfirmed = window.confirm("คุณต้องการยืนยันการชำระเงิมใช่หรือไม่");
+      if (!isConfirmed) {
+        console.log("ผู้ใช้ยกเลิกการยืนยันคำสั่งซื้อ");
+        return; // ถ้าผู้ใช้ยกเลิก ก็จะไม่ทำอะไร
+      }
+
+
+      let newcashReceived: number | "" = 0
+      let newchangeAmount: number | "" = 0
+      if (paymentMethod === "cash") {
+        newcashReceived = cashReceived
+        newchangeAmount = changeAmount
+      }
+      try {
+        const newData = {
+          payment_Method: paymentMethod,
+          received_Amount: newcashReceived,
+          change_Amount: newchangeAmount,
+          paid_Amount: paidAmount
+        }
+        console.log(newData)
+        const response = await axios.put(`${API_URL}/api/food/updatePaymentCutomer/${id}`, { newData });
+        console.log(response.data)
+        if (response.status === 200) {
+          fetchListOrder();
+          alert("ชำระเงินสำเร็จ");
+        }
+      } catch (error) {
+
+      }
+    }
+  };
+  //เมื่อเลือกรายการ
+  const handleClickSelect = (id: any) => {
+    setSelectedOrder(id)
+    setchangeAmount(0)
+    setCashReceived("")
+  }
 
   const handleRefresh = () => {
     fetchListOrder();
@@ -201,7 +293,7 @@ const CashierPayment: React.FC = () => {
           {/* แสดงรายการที่กรองแล้ว */}
           <List>
             {filteredOrders.map((item) => (
-              <ListItemButton key={item._id} onClick={() => setSelectedOrder(item._id)}>
+              <ListItemButton key={item._id} onClick={() => handleClickSelect(item._id)}>
                 <ListItemText
                   primary={`ออเดอร์ #${item?._id.substring(0, 6)} - โต๊ะหมายเลข ${item.table_Id?.number}`}
                   secondary={`ลูกค้า: ${item?.customer_Id?.customer_Name} | พนักงาน: ${item?.employee_Id?.employee_Name || "ยังไม่ยืนยันออเดอร์"}`}
@@ -221,7 +313,8 @@ const CashierPayment: React.FC = () => {
               .map((item, index) => {
                 const { formattedDate, formattedTime } = formatDateTime(item.createdAt);
                 return (
-                  <Box>
+                  <Box key={item._id}>
+
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Typography variant="h6" sx={{ margin: 2, flex: 1, textAlign: 'center' }}>
                         โต๊ะ {item?.table_Id?.number}
@@ -311,16 +404,17 @@ const CashierPayment: React.FC = () => {
             </Table>
           </TableContainer>
 
+
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
             <Box>
               <Typography variant="h6">วิธีการชำระเงิน</Typography>
               <RadioGroup row value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
                 <FormControlLabel value="cash" control={<Radio />} label="เงินสด" />
-                <FormControlLabel value="qr" control={<Radio />} label="QR Code" />
+                <FormControlLabel value="transfer" control={<Radio />} label="เงินโอน" />
               </RadioGroup>
             </Box>
 
-            <Typography variant="h6">รวมเงินทั้งหมด {totalPrice} บาท</Typography>
+            <Typography variant="h6">รวมเงินทั้งหมด {paidAmount} บาท</Typography>
           </Box>
 
 
@@ -341,16 +435,42 @@ const CashierPayment: React.FC = () => {
           {/* Change Display */}
           {paymentMethod === "cash" && cashReceived !== "" && (
 
-            <Typography variant="h6" color={change >= 0 ? "green" : "red"}>
-              เงินทอน: {change >= 0 ? change : "เงินไม่พอ"} บาท
+            <Typography variant="h6" color={changeAmount >= 0 ? "green" : "red"}>
+              เงินทอน: {changeAmount >= 0 ? changeAmount : "เงินไม่พอ"} บาท
+            </Typography>
+          )}
+
+          {selectedOrder === null && (
+            <Typography variant="h6" color="error">
+              กรุณาเลือกรายการก่อน
             </Typography>
           )}
 
 
           {/* Confirm Button */}
-          <Button variant="contained" color="primary" fullWidth sx={{ mt: 2 }} onClick={handlePayment}>
-            ยืนยันการชำระเงิน
-          </Button>
+          {orders
+            .filter((item) => item._id === selectedOrder)
+            .map((item, index) => (
+              <Box sx={{ display: "flex", gap: 2, mt: 2 }} key={item._id}>
+
+                {/* Confirm Button */}
+                <Button variant="contained" color="primary" sx={{ flex: 1 }} onClick={() => handlePaymentAndReceipt(item._id)}>
+                  ยืนยันและพิมพ์ใบเสร็จ
+                </Button>
+
+
+                <Button
+                  // เปลี่ยน ker เป็น key
+                  variant="contained"
+                  color="primary"
+                  sx={{ flex: 1 }}
+                  onClick={() => handlePayment(item._id)}
+                >
+                  ยืนยันการชำระเงิน
+                </Button>
+
+              </Box>
+            ))}
         </Box>
       </Box>
     </Container>

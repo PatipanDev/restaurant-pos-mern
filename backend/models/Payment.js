@@ -8,6 +8,7 @@ const paymentSchema = new mongoose.Schema({
     },
     payment_Method: {
         type: String,
+        enum: ['cash', 'transfer'],
         default: '' // ค่าเริ่มต้นเป็น String ว่าง
     },
     change_Amount: {

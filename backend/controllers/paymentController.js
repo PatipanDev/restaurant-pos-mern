@@ -3,6 +3,8 @@ const Order = require('../models/Order')
 const OrderFoodDetail = require('../models/OrderFoodDetail')
 const OrderDrinkDetail = require('../models/OrderDrinkDetail')
 const Table = require('../models/Table')
+const mongoose = require('mongoose');
+
 
 
 exports.getPaymentsByOrder = async (req, res) => {
@@ -53,7 +55,7 @@ exports.getpaymentorderByCashier = async (req, res) => {
             OrderDrinkDetail.find({ order_Id: { $in: orders.map(order => order._id) } })
                 .populate('drink_Id')  // Populate the drink details (drink items)
                 .populate('employee_Id'),  // Optionally, populate employee details
-            Payment.find({ order_Id: { $in: orders.map(order => order._id) } })
+            Payment.find({ order_Id: { $in: orders.map(order => order._id) }})
         ]);
 
         // ส่งข้อมูลคำสั่งซื้อพร้อมรายละเอียดอาหาร น้ำดื่ม และข้อมูลโต๊ะที่พบ
@@ -90,7 +92,7 @@ exports.updateQuantityFood = async (req, res) => {
 
         // หากจำนวนสินค้าถูกอัพเดตให้เกิน 0
         const updatedOrderDetail = await OrderFoodDetail.findOneAndUpdate(
-            { _id : _id },
+            { _id: _id },
             { $set: { orderDetail_Quantity } },
             { new: true } // คืนค่าเอกสารที่ถูกอัพเดต
         );
@@ -129,7 +131,7 @@ exports.updateQuantityDrink = async (req, res) => {
 
         // หากจำนวนสินค้าถูกอัพเดตให้เกิน 0
         const updatedOrderDetail = await OrderDrinkDetail.findOneAndUpdate(
-            { _id : _id },
+            { _id: _id },
             { $set: { orderDetail_Quantity } },
             { new: true } // คืนค่าเอกสารที่ถูกอัพเดต
         );
@@ -146,3 +148,52 @@ exports.updateQuantityDrink = async (req, res) => {
         res.status(500).json({ message: 'An error occurred while updating the order detail.', error: error.message });
     }
 };
+
+//อัพเดตโดย พนักงานแคชเชียร๋์
+exports.updatePaymentCutomer = async (req, res) => {
+    const { id } = req.params;
+    const { payment_Method, change_Amount, received_Amount, paid_Amount } = req.body.newData;
+    console.log(req.body.newData);
+
+    try {
+        const payment = await Payment.findOne({ order_Id: id });
+        console.log('payment:', payment);
+
+        if (!payment) {
+            return res.status(404).json({
+                message: 'ไม่พบข้อมูลในฐานข้อมูล',
+            });
+        }
+        const currentTime = new Date().toLocaleTimeString(); // เวลาปัจจุบัน
+        const currentDate = new Date().toLocaleDateString(); // วันที่ปัจจุบัน
+
+        // อัพเดตค่า
+        payment.payment_Method = payment_Method;
+        payment.change_Amount = change_Amount;
+        payment.received_Amount = received_Amount;
+        payment.paid_Amount = paid_Amount;
+        payment.payment_Status = "Paid"
+        payment.payment_Time = currentTime;
+        payment.payment_Date = currentDate;
+
+        await payment.save();
+        //ทำการอัพเดตสถานะออเดอร์
+        if(payment){
+            const order = await Order.findById(id);
+            order.order_Status = "Completed"
+            await order.save();
+            return res.status(200).json({
+                message: 'ยืนยันการชำระเงินสำเร็จ',
+                data: payment,
+                order: order
+            });
+        }
+    } catch (error) {
+        console.log("Error update data in server", error);
+        return res.status(500).json({
+            message: 'เกิดข้อผิดพลาดในการอัพเดตข้อมูล',
+            error: error.message || error,
+        });
+    }
+};
+

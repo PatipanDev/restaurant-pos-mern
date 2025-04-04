@@ -11,6 +11,7 @@ const authRoutes = require('./routes/authRoutes');
 const manageRoutes = require('./routes/manageRoutes');
 const userRoutes = require('./routes/userRoutes');
 const foodRoutes = require('./routes/foodRoutes');
+const graphRoutes = require('./routes/graphRouter')
 
 const cors = require('cors');
 const cookieParser = require("cookie-parser");
@@ -52,6 +53,7 @@ app.use('/api', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/data', manageRoutes);
 // เส้นทางสำหรับอัปโหลดไฟล์
+app.use('/api/graph', graphRoutes);
 app.use('/api/food', foodRoutes)
 
 const setupSocket = require("./controllers/socketController");

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Dialog, DialogActions, DialogTitle, DialogContent, Button, Collapse } from '@mui/material';
 import { Home, People, Settings, Receipt, MonetizationOn,Storefront,ShoppingBasket, ShoppingCart, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory, Inventory2} from '@mui/icons-material';
 
+import HomePageOwner from './HomePageOwner';
 import ManageEmployee from './ManageEmployee';
 import ManageCashier from './ManageCashier';
 import ManageProducts from './ManageProducts';
@@ -290,7 +291,7 @@ const Sidebar: React.FC = () => {
       </Drawer>
 
       <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100%' }}>
-        {selectedPage === 'home' && <h1>หน้าหลัก</h1>}
+        {selectedPage === 'home' && <h1><HomePageOwner/></h1>}
         {selectedPage === 'profile' && <h1>ผู้ใช้งาน</h1>}
         {selectedPage === 'settings' && <h1>การตั้งค่า</h1>}
         {selectedPage === 'manageEmployee' && <ManageEmployee />}

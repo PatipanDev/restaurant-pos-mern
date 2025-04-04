@@ -143,7 +143,7 @@ const DoceFaltur: React.FC<OrderProductDetailsProps> = ({ id, onClose }) => {
             try {
                 const deliverynotedetail = rows.find((row) => row._id === id)?._id;
                 if (deliverynotedetail) {
-                    await axios.delete(`${API_URL}/api/data/deleteOrderProductDetail/${deliverynotedetail}`);
+                    await axios.delete(`${API_URL}/api/data/deleteDeliveryNoteDetail/${deliverynotedetail}`);
 
                     const updatedRows = rows.filter((row) => row._id !== deliverynotedetail);
                     setRows(updatedRows);
@@ -174,11 +174,11 @@ const DoceFaltur: React.FC<OrderProductDetailsProps> = ({ id, onClose }) => {
                 };
 
                 await axios
-                    .put(`${API_URL}/api/data/updateOrderProductDetails/${selectedRowId}`, updatedData)
+                    .put(`${API_URL}/api/data/updateDeliveryNoteDetail/${selectedRowId}`, updatedData)
                     .then((response) => {
                         console.log('Update successful', response.data);
                         fetchData();
-                        setAlertSuccess(<div>อัปเดตข้อมูลสำเร็จ</div>);
+                        setAlertSuccess(<div>{response.data.message}</div>);
 
                         const updatedRows = rows.map((row) =>
                             row._id === selectedRowId ? { ...row, ...updatedData } : row

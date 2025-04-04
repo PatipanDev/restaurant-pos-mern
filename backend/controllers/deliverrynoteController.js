@@ -124,3 +124,52 @@ exports.createDeliveryNoteDetail = async (req, res) => {
         })
     }
 }
+
+exports.updateDeliveryNoteDetail = async (req, res) => {
+    const { id } = req.params
+    const { delivery_Quantity, delivery_Price, product_Id, delivery_Note_Id } = req.body
+    // console.log(req.body)
+    try {
+        const deliverynotedetail = await DeliveryNoteDetails.findById(id)
+        if (!deliverynotedetail) return res.status(404).json({ message: 'ไม่พบข้อมูลรายการส่งของ' });
+
+        deliverynotedetail.delivery_Quantity = delivery_Quantity
+        deliverynotedetail.delivery_Price = delivery_Price
+        deliverynotedetail.product_Id = product_Id
+       deliverynotedetail.delivery_Note_Id = delivery_Note_Id
+
+        await deliverynotedetail.save();
+        res.status(200).json({
+            message: 'อัพเดตข้อมูลสำเร็จ',
+            data: deliverynotedetail
+        })
+    } catch (error) {
+        console.log("Error uppdate deliverynote details fails", error)
+        res.status(500).json({
+            message: 'เกิดข้อผิดพลาดในการอับเดตข้อมูล server',
+            error: error.message
+        })
+    }
+}
+
+exports.deleteDeliveryNoteDetail = async (req ,res )=>{
+    const {id} = req.params
+    try{
+        const deliverynotedetail = await DeliveryNoteDetails.findByIdAndDelete(id);
+        if(!deliverynotedetail){
+            res.status(404).json({
+                message: 'ไม่พบข้อมูลรายการส่งของ'
+            })
+        }
+        res.status(200).json({
+            message: 'ลบข้อมูลสำเร็จ'
+        })
+        
+    }catch(error){
+        console.log("Error delete DeliveryNoteDeatail", error)
+        res.status(500).json({
+            message: 'เกิดข้อผิดพลาดในการลบข้อมูลใน server'
+        })
+    }
+}
+

@@ -62,6 +62,9 @@ router.get('/getpaymentorderByCashier', paymentControllor.getpaymentorderByCashi
 router.put('/updateQuantityFood/:_id', paymentControllor.updateQuantityFood)
 router.put('/updateQuantityDrink/:_id', paymentControllor.updateQuantityDrink)
 
+//แคชเชียร์ยืนยันการชำระเงิน
+router.put('/updatePaymentCutomer/:id', paymentControllor.updatePaymentCutomer)
+
 
 
 
