@@ -1,37 +1,38 @@
 const express = require('express');
 const router = express.Router();
-const OrderFoodDetail = require('../models/OrderFoodDetail');
-// const Food = require('../models/Food');
+const Payment = require('../models/Payment')
+
 const mongoose = require('mongoose');
 
-// API ดึงยอดขายรายวัน
+// routes/payment.js หรือ controller
 exports.getSalesDaily = async (req, res) => {
   try {
-    const sales = await OrderFoodDetail.aggregate([
+    // คำนวณวันที่ 30 วันล่าสุด
+    const currentDate = new Date();
+    const past30Days = new Date();
+    past30Days.setDate(currentDate.getDate() - 30); // ลบ 30 วันจากวันนี้
+
+    // ทำการ aggregate และกรองข้อมูลวันที่
+    const result = await Payment.aggregate([
       {
-        $lookup: {
-          from: "foods", // เชื่อมกับตาราง Foods
-          localField: "food_Id",
-          foreignField: "_id",
-          as: "food"
+        $match: {
+          payment_Date: { $gte: past30Days } // กรองเฉพาะข้อมูลที่มีวันที่หลังจาก 30 วันที่แล้ว
         }
       },
-      { $unwind: "$food" }, // แยก Array ออกมาเป็น Object
       {
         $group: {
           _id: {
-            date: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }
+            date: { $dateToString: { format: "%m-%d-%Y", date: "$payment_Date" } }
           },
-          totalSales: {
-            $sum: { $multiply: ["$orderDetail_Quantity", "$food.food_Price"] }
-          }
+          totalPaid: { $sum: { $toDouble: "$paid_Amount" } } // แปลง Decimal128 → number
         }
       },
-      { $sort: { "_id.date": 1 } } // เรียงตามวันที่
+      { $sort: { "_id.date": 1 } } // เรียงตามวันที่จากเก่าไปใหม่
     ]);
-    
-    res.json(sales);
+
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+

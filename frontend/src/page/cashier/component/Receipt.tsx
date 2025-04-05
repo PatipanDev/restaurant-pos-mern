@@ -1,35 +1,62 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import IconButton from '@mui/material/IconButton';
+import { Close } from '@mui/icons-material';
+import {
+    Box,
+    Container,
+    Typography,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper,
+    TextField,
+    Radio,
+    RadioGroup,
+    FormControlLabel,
+    Button,
+    Divider,
+} from "@mui/material";
+import Order from './../../user/Order';
+import { formatDateTime } from "../../../utils/formatDateTime";
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import ReceiptPDF from './ReceiptPDF';
+
 
 // กำหนดชนิดข้อมูลที่รับมาจาก API สำหรับใบเสร็จ
-interface Item {
-    name: string;
-    price: number;
-}
-
-interface OrderDetails {
-    orderId: string;
-    paymentMethod: string;
-    paymentStatus: string;
-    totalAmount: number;
-    items: Item[];
-}
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface ReceiptProps {
-    id: string; // กำหนดว่า id ต้องเป็น string
+    id: string;       // รับ id แบบ string  // รับ data เป็น array ใด ๆ
+    onClose: () => void;  // เพิ่มฟังก์ชันปิด
 }
 
-const Receipt: React.FC<ReceiptProps> = ({ id }) => {
-    const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null); // ข้อมูลใบเสร็จ
-    const [loading, setLoading] = useState<boolean>(true); // สถานะการโหลด
+const Receipt: React.FC<ReceiptProps> = ({ id, onClose }) => {
+    const [orderDetails, setOrderDetails] = useState<any[]>([]); // ข้อมูลใบเสร็จ
+    const [loading, setLoading] = useState<boolean>(true); // สCถานะการโหลด
     const [error, setError] = useState<string | null>(null); // ข้อความแสดงเมื่อเกิดข้อผิดพลาด
+
+    const [receipt, setReceipt] = useState<any[]>([]);
+    const [orderFoodDetails, setOrderFoodDetails] = useState<any[]>([]);
+    const [orderDrinkDetails, setOrderDrinkDetails] = useState<any[]>([]);
+    const [payment, setPayment] = useState<any[]>([])
+
+    const printRef = useRef<HTMLDivElement>(null);
 
     // ดึงข้อมูลใบเสร็จจาก API
     useEffect(() => {
         const fetchReceiptData = async () => {
             try {
-                const response = await axios.get("/api/getReceiptData"); // URL ของ API
-                setOrderDetails(response.data); // อัพเดตข้อมูลใบเสร็จ
+                console.log("ในคอมโพเน้น", id)
+                const response = await axios.get(`${API_URL}/api/food/getReceipt/${id}`);
+                console.log("fdfdfd", response.data)
+                setReceipt(response.data.receipt)
+                setOrderDrinkDetails(response.data.orderDrinkDetails)
+                setOrderFoodDetails(response.data.orderFoodDetails)
+
                 setLoading(false);
             } catch (err) {
                 setError("ไม่สามารถดึงข้อมูลใบเสร็จได้");
@@ -40,11 +67,22 @@ const Receipt: React.FC<ReceiptProps> = ({ id }) => {
         fetchReceiptData();
     }, []);
 
-    // ฟังก์ชันพิมพ์ใบเสร็จ
-    const handlePrint = () => {
-        window.print(); // เรียกคำสั่งพิมพ์
-    };
+    useEffect(() => {
+        // ตรวจสอบข้อมูล receipt
+        console.log("receipt =>", receipt);
+    }, [receipt]);
 
+    // ฟังก์ชันพิมพ์ใบเสร็จ
+
+
+    const handlePrint = () => {
+        if (printRef.current) {
+            const printWindow = window.open('', '', 'height=600,width=800');
+            printWindow?.document.write(printRef.current?.innerHTML);
+            printWindow?.document.close();
+            printWindow?.print();
+        }
+    };
     // เมื่อข้อมูลยังโหลด
     if (loading) return <div>กำลังโหลด...</div>;
 
@@ -53,31 +91,211 @@ const Receipt: React.FC<ReceiptProps> = ({ id }) => {
 
     return (
         <div>
-            <h1>คำสั่งซื้อของคุณ</h1>
+            <h1>ใบเสร็จ</h1>
             {orderDetails ? (
-                <div className="receipt">
-                    <h2>ใบเสร็จ</h2>
-                    <p>วันที่: {new Date().toLocaleDateString()}</p>
-                    <p>เวลา: {new Date().toLocaleTimeString()}</p>
-                    <p>หมายเลขคำสั่งซื้อ: {orderDetails.orderId}</p>
-                    <p>วิธีการชำระเงิน: {orderDetails.paymentMethod}</p>
-                    <hr />
-                    <h3>รายการสินค้า</h3>
-                    <ul>
-                        {orderDetails.items.map((item, index) => (
-                            <li key={index}>
-                                {item.name} - {item.price} บาท
-                            </li>
-                        ))}
-                    </ul>
-                    <hr />
-                    <p>รวม: {orderDetails.totalAmount} บาท</p>
-                    <p>สถานะการชำระเงิน: {orderDetails.paymentStatus}</p>
-                    <button onClick={handlePrint}>ปริ้นใบเสร็จ</button>
-                </div>
+
+                <Box sx={{ width: "30vw", p: 2 }}>
+                    {/* Table: Order List */}
+                    <TableContainer component={Paper} sx={{ maxHeight: "60%", overflowY: "auto" }}>
+
+                        {receipt
+                            .map((item, index) => {
+                                const { formattedDate, formattedTime } = formatDateTime(item?.createdAt);
+                                const receiptId = item?.Receipt_ID; // หรือ item?.order_Id?.Receipt_ID
+                                console.log("ค่าที่ได้", receiptId)
+                                return (
+                                    <Box key={item?._id}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                            <Box>
+                                                <Typography
+                                                    variant="h6"
+                                                    sx={{
+                                                        margin: 2,
+                                                        flex: 1,
+                                                        textAlign: 'center',  // แก้จาก 'left' เป็น 'center' เพื่อให้อยู่ตรงกลาง
+                                                        fontSize: '0.75rem',
+                                                        whiteSpace: 'nowrap', // ป้องกันการตัดข้อความ
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis', // เมื่อข้อความยาวเกินให้แสดง ...
+                                                    }}
+                                                >
+                                                    ออเดอร์ #{item?.Receipt_ID}
+                                                </Typography>
+                                                <Typography
+                                                    variant="h6"
+                                                    sx={{ margin: 2, flex: 1, textAlign: 'center', fontSize: '0.75rem' }} // ปรับขนาดตัวอักษรที่นี่
+                                                >
+                                                    โต๊ะ {item?.order_Id?.table_Id?.number}
+                                                </Typography>
+
+
+                                            </Box>
+
+
+                                            <Typography
+                                                variant="body2"
+                                                sx={{ margin: 2, flex: 1, textAlign: 'right', fontSize: '0.75rem' }} // ปรับขนาดตัวอักษรที่นี่
+                                            >
+                                                วันที่ {formattedDate} เวลา {formattedTime} น.
+                                            </Typography>
+                                        </Box>
+
+                                        <Typography variant="h6" sx={{ margin: 2, fontSize: '0.75rem' }}>
+                                            รายการอาหาร
+                                        </Typography>
+                                    </Box>
+
+                                )
+                            })}
+
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell sx={{ fontSize: '0.75rem' }}>ลำดับ</TableCell>
+                                    <TableCell sx={{ fontSize: '0.75rem' }}>ชื่ออาหาร</TableCell>
+                                    <TableCell sx={{ fontSize: '0.75rem' }}>ราคา (บาท)</TableCell>
+                                    <TableCell sx={{ fontSize: '0.75rem' }}>จำนวน</TableCell>
+                                    <TableCell sx={{ fontSize: '0.75rem' }}>รวม (บาท)</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {orderFoodDetails.map((item, index) => (
+                                    <TableRow key={item._id}>
+                                        <TableCell sx={{ fontSize: '0.75rem' }}>{index + 1}</TableCell>
+                                        <TableCell sx={{ fontSize: '0.75rem' }}>{item?.food_Id?.food_Name}</TableCell>
+                                        <TableCell sx={{ fontSize: '0.75rem' }}>
+                                            {parseFloat(item.food_Id.food_Price.$numberDecimal)}
+                                        </TableCell>
+                                        <TableCell sx={{ fontSize: '0.75rem' }}>{item?.orderDetail_Quantity}</TableCell>
+                                        <TableCell sx={{ fontSize: '0.75rem' }}>
+                                            {parseFloat(item.food_Id.food_Price.$numberDecimal) * parseFloat(item?.orderDetail_Quantity)}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+
+                        <Divider sx={{ my: 2 }} />
+
+                        <Typography variant="h6" sx={{ margin: 2, fontSize: '0.75rem' }}>รายเครื่องดื่ม</Typography>
+
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell sx={{ fontSize: '0.75rem' }}>ลำดับ</TableCell>
+                                    <TableCell sx={{ fontSize: '0.75rem' }}>ชื่อเครื่องดื่ม</TableCell>
+                                    <TableCell sx={{ fontSize: '0.75rem' }}>ราคา (บาท)</TableCell>
+                                    <TableCell sx={{ fontSize: '0.75rem' }}>จำนวน</TableCell>
+                                    <TableCell sx={{ fontSize: '0.75rem' }}>รวม (บาท)</TableCell>
+                                </TableRow>
+                            </TableHead>
+
+                            <TableBody>
+                                {orderDrinkDetails.map((item, index) => (
+                                    <TableRow key={item._id}>
+                                        <TableCell sx={{ fontSize: '0.75rem' }}>{index + 1}</TableCell>
+                                        <TableCell sx={{ fontSize: '0.75rem' }}>{item?.drink_Id?.drink_Name}</TableCell>
+                                        <TableCell sx={{ fontSize: '0.75rem' }}>
+                                            {parseFloat(item.drink_Id?.drink_Price)}
+                                        </TableCell>
+                                        <TableCell sx={{ fontSize: '0.75rem' }}>{item?.orderDetail_Quantity}</TableCell>
+                                        <TableCell sx={{ fontSize: '0.75rem' }}>
+                                            {parseFloat(item.drink_Id?.drink_Price) * parseFloat(item?.orderDetail_Quantity)}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+
+                        {receipt.map((item, index) => {
+                            return (
+                                <Box key={item._id}>
+                                    <Typography variant="h6" sx={{ marginLeft: 2, fontSize: '0.75rem' }}> {/* ปรับขนาดตัวอักษรที่นี่ */}
+                                        วิธีการชำระเงิน {item?.payment_Id?.payment_Method}
+                                    </Typography>
+
+                                    <Box sx={{ margin: 2, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', mt: 2 }}>
+                                        <Typography variant="h6" sx={{ fontSize: '0.75rem' }}>
+                                            เงินที่รับมา {parseFloat(item?.payment_Id?.received_Amount?.$numberDecimal)} บาท
+                                        </Typography>
+                                        <Typography variant="h6" sx={{ fontSize: '0.75rem' }}>
+                                            เงินทอน {parseFloat(item?.payment_Id?.change_Amount?.$numberDecimal)} บาท
+                                        </Typography>
+                                        <Typography variant="h6" sx={{ fontSize: '0.75rem' }}>
+                                            เงินที่ชำระ {parseFloat(item?.payment_Id?.paid_Amount?.$numberDecimal)} บาท
+                                        </Typography>
+                                    </Box>
+
+                                </Box>
+                            );
+                        })}
+
+                        {/* <div style={{ margin: 2 }}>
+                            <PDFDownloadLink
+                                document={<ReceiptPDF receipt={receipt} orderFoodDetails={orderFoodDetails} orderDrinkDetails={orderDrinkDetails} />}
+                                fileName="receipt.pdf"
+                            >
+                                {({ loading }) => (
+                                    <button style={{ padding: '10px 20px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '5px' }}>
+                                        {loading ? 'กำลังสร้างไฟล์ PDF...' : 'ดาวน์โหลด PDF'}
+                                    </button>
+                                )}
+                            </PDFDownloadLink>
+                            <button
+                                onClick={handlePrint}
+                                style={{
+                                    padding: '10px 20px',
+                                    backgroundColor: '#008CBA',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '5px',
+                                    marginLeft: '10px',
+                                }}
+                            >
+                                พิมพ์ใบเสร็จ
+                            </button>
+                        </div> */}
+
+                    </TableContainer>
+
+                </Box>
             ) : (
-                <div>ไม่พบข้อมูลใบเสร็จ</div>
+                <div>
+                    {/* <div>ไม่พบข้อมูลใบเสร็จ</div> */}
+                    <IconButton
+                        sx={{
+                            position: 'absolute',
+                            width: 50,
+                            height: 50,
+                            top: 100,
+                            right: 150,
+                            zIndex: 100,
+                            backgroundColor: '#F0FFFF'
+                        }}
+                        onClick={onClose}
+                        color="primary"
+                    >
+                        <Close />
+                    </IconButton>
+                </div>
             )}
+            <div>
+                <IconButton
+                    sx={{
+                        position: 'absolute',
+                        width: 50,
+                        height: 50,
+                        top: 100,
+                        right: 150,
+                        zIndex: 10,
+                        backgroundColor: '#F0FFFF'
+                    }}
+                    onClick={onClose}
+                    color="primary"
+                >
+                    <Close />
+                </IconButton>
+            </div>
         </div>
     );
 };

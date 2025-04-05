@@ -4,6 +4,7 @@ const { upload, createFood, updateFood, deleteFood, getFoods, getFoodById} = req
 const drinkController = require('../controllers/drinkController');
 const orderControllor = require('../controllers/orderController');
 const paymentControllor = require('../controllers/paymentController')
+const receiptControllor = require('../controllers/receiptController')
 
 // เส้นทางสำหรับเพิ่มข้อมูล (POST)
 router.post('/createFood', upload.single('food_Image'), createFood);
@@ -64,6 +65,8 @@ router.put('/updateQuantityDrink/:_id', paymentControllor.updateQuantityDrink)
 
 //แคชเชียร์ยืนยันการชำระเงิน
 router.put('/updatePaymentCutomer/:id', paymentControllor.updatePaymentCutomer)
+
+router.get('/getReceipt/:id', receiptControllor.getReceipt)
 
 
 

@@ -4,6 +4,7 @@ const OrderFoodDetail = require('../models/OrderFoodDetail')
 const OrderDrinkDetail = require('../models/OrderDrinkDetail')
 const Table = require('../models/Table')
 const mongoose = require('mongoose');
+const Receipt = require('../models/Receipt')
 
 
 
@@ -55,7 +56,7 @@ exports.getpaymentorderByCashier = async (req, res) => {
             OrderDrinkDetail.find({ order_Id: { $in: orders.map(order => order._id) } })
                 .populate('drink_Id')  // Populate the drink details (drink items)
                 .populate('employee_Id'),  // Optionally, populate employee details
-            Payment.find({ order_Id: { $in: orders.map(order => order._id) }})
+            Payment.find({ order_Id: { $in: orders.map(order => order._id) } })
         ]);
 
         // ส่งข้อมูลคำสั่งซื้อพร้อมรายละเอียดอาหาร น้ำดื่ม และข้อมูลโต๊ะที่พบ
@@ -152,7 +153,7 @@ exports.updateQuantityDrink = async (req, res) => {
 //อัพเดตโดย พนักงานแคชเชียร๋์
 exports.updatePaymentCutomer = async (req, res) => {
     const { id } = req.params;
-    const { payment_Method, change_Amount, received_Amount, paid_Amount } = req.body.newData;
+    const { payment_Method, change_Amount, received_Amount, paid_Amount, cashier_Id } = req.body.newData;
     console.log(req.body.newData);
 
     try {
@@ -175,18 +176,33 @@ exports.updatePaymentCutomer = async (req, res) => {
         payment.payment_Status = "Paid"
         payment.payment_Time = currentTime;
         payment.payment_Date = currentDate;
+        payment.cashier_Id = cashier_Id;
 
         await payment.save();
         //ทำการอัพเดตสถานะออเดอร์
-        if(payment){
+        if (payment) {
             const order = await Order.findById(id);
             order.order_Status = "Completed"
             await order.save();
-            return res.status(200).json({
-                message: 'ยืนยันการชำระเงินสำเร็จ',
-                data: payment,
-                order: order
-            });
+            if (order) {
+                //ทำการเพิ่มบิล
+                let receipt = new Receipt({
+                    payment_Id: payment._id,
+                    cashier_Id: cashier_Id,
+                    order_Id: order._id
+                });
+
+                await receipt.save(); // บันทึกข้อมูล
+                if(receipt){
+                    return res.status(200).json({
+                        message: 'ยืนยันการชำระเงินสำเร็จ',
+                        data: payment,
+                        order: order,
+                        receipt_Id: receipt._id
+                    });
+                }   // จัดรูปแบบ Receipt_ID ให้เป็น 7 หลัก
+            }
+
         }
     } catch (error) {
         console.log("Error update data in server", error);

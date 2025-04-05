@@ -9,6 +9,7 @@ interface SalesChartProps {
 }
 
 const SalesChart: React.FC<SalesChartProps> = ({ data }) => {
+  console.log("ค่าในคอมโพเน้น", data)
   return (
     <div style={{ width: "100%" }}>
       <ResponsiveChartContainer

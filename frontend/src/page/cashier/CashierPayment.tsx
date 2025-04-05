@@ -19,7 +19,8 @@ import {
   ListItem,
   ListItemText,
   ListItemButton,
-  Divider, IconButton
+  Divider, IconButton,
+  dividerClasses
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import axios from "axios";
@@ -30,17 +31,25 @@ import { formatDateTime } from "../../utils/formatDateTime";
 import { error } from "console";
 
 import Receipt from "./component/Receipt";
+import { getEmployeeId } from "../../utils/userUtils";
+import SuccessAlertCashier from "../../components/AlertSussessCashier";
 
+const cashier_Id = getEmployeeId()
 
 const CashierPayment: React.FC = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [orderFoodDetails, setOrderFoodDetails] = useState<any[]>([]);
   const [orderDrinkDetails, setOrderDrinkDetails] = useState<any[]>([]);
   const [payment, setPayment] = useState<any[]>([])
+  const [datarecipt, setDatarecipt] = useState<any>()
+  const [idrecipt, setIdrecipt] = useState<string>("")
+
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [cashReceived, setCashReceived] = useState<number | "">("");
   const [changeAmount, setchangeAmount] = useState<number>(0);
   const [paidAmount, setPaidAmount] = useState<number>(0);
+
+  const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
 
 
   // เมื่อเลือกรายการอาหาร
@@ -54,6 +63,7 @@ const CashierPayment: React.FC = () => {
   const fetchListOrder = async () => {
     try {
       const response = await axios.get(`${API_URL}/api/food/getpaymentorderByCashier`);
+      setDatarecipt(response.data)
       setOrders(response.data.orders);
       setOrderFoodDetails(response.data.orderFoodDetails);
       setOrderDrinkDetails(response.data.orderDrinkDetails);
@@ -130,14 +140,17 @@ const CashierPayment: React.FC = () => {
           payment_Method: paymentMethod,
           received_Amount: newcashReceived,
           change_Amount: newchangeAmount,
-          paid_Amount: paidAmount
+          paid_Amount: paidAmount,
+          cashier_Id: cashier_Id
         }
         console.log(newData)
         const response = await axios.put(`${API_URL}/api/food/updatePaymentCutomer/${id}`, { newData });
         console.log(response.data)
         if (response.status === 200) {
-          fetchListOrder();
-          alert("ชำระเงินสำเร็จ");
+          setAlertSuccess(<div>ชำระเงินสำเร็จ</div>)
+          setTimeout(()=>{
+            fetchListOrder();
+          }, 2000)
         }
       } catch (error) {
 
@@ -169,14 +182,19 @@ const CashierPayment: React.FC = () => {
           payment_Method: paymentMethod,
           received_Amount: newcashReceived,
           change_Amount: newchangeAmount,
-          paid_Amount: paidAmount
+          paid_Amount: paidAmount,
+          cashier_Id: cashier_Id
         }
         console.log(newData)
         const response = await axios.put(`${API_URL}/api/food/updatePaymentCutomer/${id}`, { newData });
         console.log(response.data)
         if (response.status === 200) {
-          fetchListOrder();
-          alert("ชำระเงินสำเร็จ");
+          setAlertSuccess(<div>ชำระเงินสำเร็จ</div>)
+          setTimeout(()=>{
+            fetchListOrder();
+          }, 2000)
+          setIdrecipt(response.data.receipt_Id)
+          console.log("รหัสไอดี", response.data.receipt_Id)
         }
       } catch (error) {
 
@@ -192,6 +210,10 @@ const CashierPayment: React.FC = () => {
 
   const handleRefresh = () => {
     fetchListOrder();
+  };
+
+  const handdlecloseDetail = () => {
+    setIdrecipt(""); // ปิด Modal
   };
 
   //จะทำการบันทึค่าทุกครั้งที่มีการเปลี่ยน
@@ -271,208 +293,214 @@ const CashierPayment: React.FC = () => {
 
   return (
     <Container maxWidth={false} sx={{ height: "100vh", width: "80vw", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <Box sx={{ width: "100%", height: "90%", display: "flex" }}>
-        {/* Order List on the Left */}
-        <Box sx={{ width: "30%", overflowY: "auto", p: 2, bgcolor: "background.paper", borderRadius: 2, boxShadow: 3 }}>
-          <Typography variant="h6" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            รายการที่ต้องชำระเงิน
-            <IconButton onClick={handleRefresh}>
-              <RefreshIcon />
-            </IconButton>
-          </Typography>
-          {/* คอมโพเนนต์ TextField สำหรับการค้นหา */}
-          <TextField
-            label="ค้นหาออเดอร์"
-            variant="outlined"
-            fullWidth
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)} // เมื่อผู้ใช้กรอกข้อความจะอัพเดตค่า searchQuery
-            sx={{ mb: 2 }}
-          />
+      {idrecipt ? (
+        <div>
+          {idrecipt && <Receipt id={idrecipt} onClose={handdlecloseDetail} />}
+        </div>
+      ) : (
+        <Box sx={{ width: "100%", height: "90%", display: "flex" }}>
+          {/* Order List on the Left */}
+          <Box sx={{ width: "30%", overflowY: "auto", p: 2, bgcolor: "background.paper", borderRadius: 2, boxShadow: 3 }}>
+            <Typography variant="h6" sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              รายการที่ต้องชำระเงิน
+              <IconButton onClick={handleRefresh}>
+                <RefreshIcon />
+              </IconButton>
+            </Typography>
+            {/* คอมโพเนนต์ TextField สำหรับการค้นหา */}
+            <TextField
+              label="ค้นหาออเดอร์"
+              variant="outlined"
+              fullWidth
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)} // เมื่อผู้ใช้กรอกข้อความจะอัพเดตค่า searchQuery
+              sx={{ mb: 2 }}
+            />
 
-          {/* แสดงรายการที่กรองแล้ว */}
-          <List>
-            {filteredOrders.map((item) => (
-              <ListItemButton key={item._id} onClick={() => handleClickSelect(item._id)}>
-                <ListItemText
-                  primary={`ออเดอร์ #${item?._id.substring(0, 6)} - โต๊ะหมายเลข ${item.table_Id?.number}`}
-                  secondary={`ลูกค้า: ${item?.customer_Id?.customer_Name} | พนักงาน: ${item?.employee_Id?.employee_Name || "ยังไม่ยืนยันออเดอร์"}`}
-                />
-              </ListItemButton>
-            ))}
+            {/* แสดงรายการที่กรองแล้ว */}
+            <List>
+              {filteredOrders.map((item) => (
+                <ListItemButton key={item._id} onClick={() => handleClickSelect(item._id)}>
+                  <ListItemText
+                    primary={`ออเดอร์ #${item?._id.substring(0, 6)} - โต๊ะหมายเลข ${item.table_Id?.number}`}
+                    secondary={`ลูกค้า: ${item?.customer_Id?.customer_Name} | พนักงาน: ${item?.employee_Id?.employee_Name || "ยังไม่ยืนยันออเดอร์"}`}
+                  />
+                </ListItemButton>
+              ))}
 
-          </List>
-        </Box>
-
-        {/* Table and Payment on the Right */}
-        <Box sx={{ width: "70%", p: 2 }}>
-          {/* Table: Order List */}
-          <TableContainer component={Paper} sx={{ maxHeight: "60%", overflowY: "auto" }}>
-            {orders
-              .filter((item) => item._id === selectedOrder)
-              .map((item, index) => {
-                const { formattedDate, formattedTime } = formatDateTime(item.createdAt);
-                return (
-                  <Box key={item._id}>
-
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="h6" sx={{ margin: 2, flex: 1, textAlign: 'center' }}>
-                        โต๊ะ {item?.table_Id?.number}
-                      </Typography>
-                      <Typography variant="h6" sx={{ margin: 2, flex: 1, textAlign: 'left' }}>
-                        ออเดอร์ #{item?._id.substring(0, 6)}
-                      </Typography>
-
-                      <Typography
-                        variant="body2"
-                        sx={{ margin: 2, flex: 1, textAlign: 'right', fontSize: '0.875rem' }}
-                      >
-                        วันที่ {formattedDate} เวลา {formattedTime} น.
-                      </Typography>
-                    </Box>
-
-                    <Typography variant="h6" sx={{ margin: 2 }}>รายการอาหาร</Typography>
-                  </Box>
-                )
-              })}
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>ลำดับ</TableCell>
-                  <TableCell>ชื่ออาหาร</TableCell>
-                  <TableCell>ราคา (บาท)</TableCell>
-                  <TableCell>จำนวน</TableCell>
-                  <TableCell>รวม (บาท)</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {orderFoodDetails
-                  .filter((item) => item.order_Id === selectedOrder)
-                  .map((item, index) => (
-                    <TableRow key={item._id}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>{item?.food_Id?.food_Name}</TableCell>
-                      <TableCell>{parseFloat(item.food_Id.food_Price.$numberDecimal)}</TableCell>
-                      <TableCell>
-                        <TextField
-                          type="number"
-                          size="small"
-                          value={item?.orderDetail_Quantity}
-                          onChange={(e) => handleQuantityChangelistfood(item._id, Number(e.target.value))}
-                        // inputProps={{ min: 1 }}
-                        />
-                      </TableCell>
-                      <TableCell>{parseFloat(item.food_Id.food_Price.$numberDecimal) * parseFloat(item?.orderDetail_Quantity)}</TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-            <Divider sx={{ my: 2 }} />
-            <Typography variant="h6" sx={{ margin: 2 }}>รายเครื่องดื่ม</Typography>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>ลำดับ</TableCell>
-                  <TableCell>ชื่อเครื่องดื่ม</TableCell>
-                  <TableCell>ราคา (บาท)</TableCell>
-                  <TableCell>จำนวน</TableCell>
-                  <TableCell>รวม (บาท)</TableCell>
-                </TableRow>
-              </TableHead>
-
-              <TableBody>
-                {orderDrinkDetails
-                  .filter((item) => item.order_Id === selectedOrder)
-                  .map((item, index) => (
-                    <TableRow key={item._id}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>{item?.drink_Id?.drink_Name}</TableCell>
-                      <TableCell>{parseFloat(item.drink_Id?.drink_Price)}</TableCell>
-                      <TableCell>
-                        <TextField
-                          type="number"
-                          size="small"
-                          value={item?.orderDetail_Quantity}
-                          onChange={(e) => handleQuantityChangelistdrink(item._id, Number(e.target.value))}
-                        // inputProps={{ min: 1 }}
-                        />
-                      </TableCell>
-                      <TableCell>{parseFloat(item.drink_Id?.drink_Price) * parseFloat(item?.orderDetail_Quantity)}</TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-
-
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
-            <Box>
-              <Typography variant="h6">วิธีการชำระเงิน</Typography>
-              <RadioGroup row value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
-                <FormControlLabel value="cash" control={<Radio />} label="เงินสด" />
-                <FormControlLabel value="transfer" control={<Radio />} label="เงินโอน" />
-              </RadioGroup>
-            </Box>
-
-            <Typography variant="h6">รวมเงินทั้งหมด {paidAmount} บาท</Typography>
+            </List>
           </Box>
 
+          {/* Table and Payment on the Right */}
+          <Box sx={{ width: "70%", p: 2 }}>
+            {/* Table: Order List */}
+            <TableContainer component={Paper} sx={{ maxHeight: "60%", overflowY: "auto" }}>
+              {orders
+                .filter((item) => item._id === selectedOrder)
+                .map((item, index) => {
+                  const { formattedDate, formattedTime } = formatDateTime(item.createdAt);
+                  return (
+                    <Box key={item._id}>
+
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="h6" sx={{ margin: 2, flex: 1, textAlign: 'center' }}>
+                          โต๊ะ {item?.table_Id?.number}
+                        </Typography>
+                        <Typography variant="h6" sx={{ margin: 2, flex: 1, textAlign: 'left' }}>
+                          ออเดอร์ #{item?._id.substring(0, 6)}
+                        </Typography>
+
+                        <Typography
+                          variant="body2"
+                          sx={{ margin: 2, flex: 1, textAlign: 'right', fontSize: '0.875rem' }}
+                        >
+                          วันที่ {formattedDate} เวลา {formattedTime} น.
+                        </Typography>
+                      </Box>
+
+                      <Typography variant="h6" sx={{ margin: 2 }}>รายการอาหาร</Typography>
+                    </Box>
+                  )
+                })}
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>ลำดับ</TableCell>
+                    <TableCell>ชื่ออาหาร</TableCell>
+                    <TableCell>ราคา (บาท)</TableCell>
+                    <TableCell>จำนวน</TableCell>
+                    <TableCell>รวม (บาท)</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {orderFoodDetails
+                    .filter((item) => item.order_Id === selectedOrder)
+                    .map((item, index) => (
+                      <TableRow key={item._id}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{item?.food_Id?.food_Name}</TableCell>
+                        <TableCell>{parseFloat(item.food_Id.food_Price.$numberDecimal)}</TableCell>
+                        <TableCell>
+                          <TextField
+                            type="number"
+                            size="small"
+                            value={item?.orderDetail_Quantity}
+                            onChange={(e) => handleQuantityChangelistfood(item._id, Number(e.target.value))}
+                          // inputProps={{ min: 1 }}
+                          />
+                        </TableCell>
+                        <TableCell>{parseFloat(item.food_Id.food_Price.$numberDecimal) * parseFloat(item?.orderDetail_Quantity)}</TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="h6" sx={{ margin: 2 }}>รายเครื่องดื่ม</Typography>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>ลำดับ</TableCell>
+                    <TableCell>ชื่อเครื่องดื่ม</TableCell>
+                    <TableCell>ราคา (บาท)</TableCell>
+                    <TableCell>จำนวน</TableCell>
+                    <TableCell>รวม (บาท)</TableCell>
+                  </TableRow>
+                </TableHead>
+
+                <TableBody>
+                  {orderDrinkDetails
+                    .filter((item) => item.order_Id === selectedOrder)
+                    .map((item, index) => (
+                      <TableRow key={item._id}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{item?.drink_Id?.drink_Name}</TableCell>
+                        <TableCell>{parseFloat(item.drink_Id?.drink_Price)}</TableCell>
+                        <TableCell>
+                          <TextField
+                            type="number"
+                            size="small"
+                            value={item?.orderDetail_Quantity}
+                            onChange={(e) => handleQuantityChangelistdrink(item._id, Number(e.target.value))}
+                          // inputProps={{ min: 1 }}
+                          />
+                        </TableCell>
+                        <TableCell>{parseFloat(item.drink_Id?.drink_Price) * parseFloat(item?.orderDetail_Quantity)}</TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
 
 
-
-          {/* Cash Input */}
-          {paymentMethod === "cash" && (
-            <TextField
-              label="รับเงิน (บาท)"
-              type="number"
-              fullWidth
-              value={cashReceived}
-              onChange={(e) => setCashReceived(e.target.value ? Number(e.target.value) : "")}
-              sx={{ my: 2 }}
-            />
-          )}
-
-          {/* Change Display */}
-          {paymentMethod === "cash" && cashReceived !== "" && (
-
-            <Typography variant="h6" color={changeAmount >= 0 ? "green" : "red"}>
-              เงินทอน: {changeAmount >= 0 ? changeAmount : "เงินไม่พอ"} บาท
-            </Typography>
-          )}
-
-          {selectedOrder === null && (
-            <Typography variant="h6" color="error">
-              กรุณาเลือกรายการก่อน
-            </Typography>
-          )}
-
-
-          {/* Confirm Button */}
-          {orders
-            .filter((item) => item._id === selectedOrder)
-            .map((item, index) => (
-              <Box sx={{ display: "flex", gap: 2, mt: 2 }} key={item._id}>
-
-                {/* Confirm Button */}
-                <Button variant="contained" color="primary" sx={{ flex: 1 }} onClick={() => handlePaymentAndReceipt(item._id)}>
-                  ยืนยันและพิมพ์ใบเสร็จ
-                </Button>
-
-
-                <Button
-                  // เปลี่ยน ker เป็น key
-                  variant="contained"
-                  color="primary"
-                  sx={{ flex: 1 }}
-                  onClick={() => handlePayment(item._id)}
-                >
-                  ยืนยันการชำระเงิน
-                </Button>
-
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+              <Box>
+                <Typography variant="h6">วิธีการชำระเงิน</Typography>
+                <RadioGroup row value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
+                  <FormControlLabel value="cash" control={<Radio />} label="เงินสด" />
+                  <FormControlLabel value="transfer" control={<Radio />} label="เงินโอน" />
+                </RadioGroup>
               </Box>
-            ))}
-        </Box>
-      </Box>
+
+              <Typography variant="h6">รวมเงินทั้งหมด {paidAmount} บาท</Typography>
+            </Box>
+
+
+
+
+            {/* Cash Input */}
+            {paymentMethod === "cash" && (
+              <TextField
+                label="รับเงิน (บาท)"
+                type="number"
+                fullWidth
+                value={cashReceived}
+                onChange={(e) => setCashReceived(e.target.value ? Number(e.target.value) : "")}
+                sx={{ my: 2 }}
+              />
+            )}
+
+            {/* Change Display */}
+            {paymentMethod === "cash" && cashReceived !== "" && (
+
+              <Typography variant="h6" color={changeAmount >= 0 ? "green" : "red"}>
+                เงินทอน: {changeAmount >= 0 ? changeAmount : "เงินไม่พอ"} บาท
+              </Typography>
+            )}
+
+            {selectedOrder === null && (
+              <Typography variant="h6" color="error">
+                กรุณาเลือกรายการก่อน
+              </Typography>
+            )}
+
+
+            {/* Confirm Button */}
+            {orders
+              .filter((item) => item._id === selectedOrder)
+              .map((item, index) => (
+                <Box sx={{ display: "flex", gap: 2, mt: 2 }} key={item._id}>
+
+                  {/* Confirm Button */}
+                  <Button variant="contained" color="primary" sx={{ flex: 1 }} onClick={() => handlePaymentAndReceipt(item._id)}>
+                    ใบเสร็จ
+                  </Button>
+
+
+                  <Button
+                    // เปลี่ยน ker เป็น key
+                    variant="contained"
+                    color="primary"
+                    sx={{ flex: 1 }}
+                    onClick={() => handlePayment(item._id)}
+                  >
+                    ยืนยันการชำระเงิน
+                  </Button>
+                  <SuccessAlertCashier successalert={alertSuccess} />
+
+                </Box>
+              ))}
+          </Box>
+        </Box>)}
     </Container>
   );
 };
