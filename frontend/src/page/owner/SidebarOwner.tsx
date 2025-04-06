@@ -2,7 +2,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 import React, { useState } from 'react';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Dialog, DialogActions, DialogTitle, DialogContent, Button, Collapse } from '@mui/material';
-import { Home, People, Settings, Receipt, MonetizationOn,Storefront,ShoppingBasket, ShoppingCart, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory, Inventory2} from '@mui/icons-material';
+import { Home, People, Settings, Receipt, MonetizationOn,Storefront,ShoppingBasket, SettingsApplications, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory, Inventory2} from '@mui/icons-material';
 
 import HomePageOwner from './HomePageOwner';
 import ManageEmployee from './ManageEmployee';
@@ -22,6 +22,7 @@ import ManageFoods2 from './ManageFoods2';
 import ManageSupplier from './ManageSupplier';
 import ManageDoce from './ManageDoce';
 import AddListProductOwner from './AddOrderProductOwner';
+import SettingWebside from './SettingWebside';
 
 
 import axios from 'axios';
@@ -293,7 +294,7 @@ const Sidebar: React.FC = () => {
       <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100%' }}>
         {selectedPage === 'home' && <h1><HomePageOwner/></h1>}
         {selectedPage === 'profile' && <h1>ผู้ใช้งาน</h1>}
-        {selectedPage === 'settings' && <h1>การตั้งค่า</h1>}
+        {/* {selectedPage === 'settings' && <h1>การตั้งค่า</h1>} */}
         {selectedPage === 'manageEmployee' && <ManageEmployee />}
         {selectedPage === 'manageCashier' && <ManageCashier />}
         {selectedPage === 'manageProducts' && <ManageProducts />}
@@ -316,6 +317,8 @@ const Sidebar: React.FC = () => {
         {selectedPage === 'manageSupplier' && <ManageSupplier />}
         {selectedPage === 'managedoce' && <ManageDoce />}
         {selectedPage === 'addlistproductowner' && <AddListProductOwner />}
+        {selectedPage === 'settingsweb' && <SettingWebside />}
+
       </div>
 
       <Dialog open={openDialog} onClose={handleCloseDialog}>
@@ -339,8 +342,8 @@ const Sidebar: React.FC = () => {
 
 // เมนูใน Sidebar ที่โชว์
 const menuItems = [
+  { page: 'settingsweb', label: 'ตั้งค่าร้านค้า', icon: <SettingsApplications /> },
   { page: 'profile', label: 'ผู้ใช้งาน', icon: <People /> },
-  { page: 'settings', label: 'การตั้งค่า', icon: <Settings /> },
   { page: 'managefoods2', label: 'จัดการอาหาร', icon: <People /> },
 ];
 

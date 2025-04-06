@@ -49,8 +49,8 @@ const ManageShopOwners: React.FC = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(`${API_URL}/api/auth/getShopowner`);
-        setRows(response.data); 
-        console.log(response.data); 
+        setRows(response.data);
+        console.log(response.data);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -123,21 +123,21 @@ const ManageShopOwners: React.FC = () => {
     setSelectedRowId(id);
     setOpen(true);
   };
-  
+
   const handleAddClick = () => {
     setSelectedRowId(null);
     reset();
     setOpen(true);
   };
-  
+
   const handleClose = () => {
     setOpen(false);
     reset();
   };
-  
+
   const onSubmit = async (data: FormData) => {
     console.log("Form Data:", data);
-  
+
     try {
       if (selectedRowId !== null) {
         const updatedData = {
@@ -145,13 +145,13 @@ const ManageShopOwners: React.FC = () => {
           owner_Password: data.owner_Password,
           owner_Details: data.owner_Details,
         };
-  
+
         await axios
           .put(`${API_URL}/api/auth/updateShopowner/${selectedRowId}`, updatedData)
           .then((response) => {
             console.log("Update successful", response.data);
             setAlertSuccess(<div>{response.data.message}</div>);
-  
+
             // อัปเดตข้อมูลที่แสดงใน UI
             const updatedRows = rows.map((row) =>
               row._id === selectedRowId ? { ...row, ...updatedData } : row
@@ -194,22 +194,22 @@ const ManageShopOwners: React.FC = () => {
       // setAlertMessage(<div>เกิดข้อผิดพลาดในการดำเนินการ</div>);
     }
   };
-  
+
   return (
     <div style={{ height: '90vh', width: '100%' }}>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{selectedRowId ? 'แก้ไขข้อมูลเจ้าของร้าน' : 'เพิ่มข้อมูลเจ้าของร้าน'}</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit(onSubmit)}>
-          <Controller
-  name="owner_Name"
-  control={control}
-  defaultValue=""
-  render={({ field }) => (
-    <TextField {...field} label="ชื่อเจ้าของร้าน" fullWidth margin="dense" 
-      error={!!errors.owner_Name} helperText={errors.owner_Name?.message} />
-  )}
-/>
+            <Controller
+              name="owner_Name"
+              control={control}
+              defaultValue=""
+              render={({ field }) => (
+                <TextField {...field} label="ชื่อเจ้าของร้าน" fullWidth margin="dense"
+                  error={!!errors.owner_Name} helperText={errors.owner_Name?.message} />
+              )}
+            />
             <Controller
               name="owner_Password"
               control={control}
