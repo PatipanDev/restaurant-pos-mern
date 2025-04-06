@@ -97,6 +97,19 @@ const DoceFaltur: React.FC<OrderProductDetailsProps> = ({ id, onClose }) => {
         },
         { field: 'product_Id', headerName: 'ชื่อสินค้า', flex: 1, minWidth: 180, renderCell: (params) => params.row?.product_Id?.product_Name },
         { field: 'delivery_Quantity', headerName: 'จำนวน', flex: 1, minWidth: 100, renderCell: (params) => params.row?.delivery_Quantity },
+        { field: 'delivery_price', headerName: 'ราคา/หน่วย', flex: 1, minWidth: 100, renderCell: (params) => params.row?.delivery_Price },
+        {
+            field: 'total',
+            headerName: 'ราคารวม',
+            flex: 1,
+            minWidth: 120,
+            renderCell: (params) => {
+              const quantity = params.row?.delivery_Quantity || 0;
+              const price = params.row?.delivery_Price || 0;
+              const total = quantity * price;
+              return total.toLocaleString(); // แสดงแบบมี comma เช่น 1,200
+            }
+          },
         { field: 'unit_Id', headerName: 'หน่วย', flex: 1, minWidth: 100, renderCell: (params) => params.row?.product_Id?.unitId?.unit_Name }, // เพิ่มคอลัมน์ราคา
         {
             field: 'actions',

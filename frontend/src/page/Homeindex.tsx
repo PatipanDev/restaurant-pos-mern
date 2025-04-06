@@ -1,12 +1,14 @@
-import React from "react";
 import { Button, Container, Grid, Typography, Card, CardContent, CardMedia,Box} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 import Login from "./Login";
 import Register from "./Register";
 import LoginIcon from '@mui/icons-material/Login';
+const API_URL = import.meta.env.VITE_API_URL;
 
-
+import React, { Suspense, useState, useEffect } from 'react';
+import axios from "axios";
+import { getUserId } from "../utils/userUtils";
 
 const bannerImage = "/images/banner.jpg";
 
@@ -18,10 +20,16 @@ const foods = [
 
 const HomeIndex = () => {
   const navigate = useNavigate();
+  const [userId, setUserId] = useState<string>("");
+
+  const id = getUserId();
+ 
+
   return (
+    
     <Container>
-      {/* Header */}
-      <Grid container justifyContent="space-between" alignItems="center" sx={{ my: 2 }}>
+      {(!id) ? (
+        <Grid container justifyContent="space-between" alignItems="center" sx={{ my: 2 }}>
         <Typography variant="h4">ร้านอาหารแนะนำ</Typography>
         <div>
           <Button variant="contained" color="primary" startIcon={<LoginIcon />} sx={{ mx: 1 }} onClick={() => navigate("/login")}>
@@ -32,8 +40,8 @@ const HomeIndex = () => {
           </Button>
         </div>
       </Grid>
-
-  
+      ):null}
+      {/* Header */}
       {/* Banner Image */}
       <Box sx={{ width: '100%', height: '300px', overflow: 'hidden' }}>
         <img 
