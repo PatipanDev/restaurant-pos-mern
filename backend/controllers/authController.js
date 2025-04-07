@@ -5,7 +5,7 @@ const Cashier = require('../models/Cashier');
 const Chef = require('../models/Chef');
 // const Chef = require('../models/Chef')
 
- 
+
 const express = require('express'); // เพิ่มบรรทัดนี้
 const router = express.Router();
 
@@ -22,9 +22,9 @@ exports.register = async (req, res) => {
 
     try {
         // หาว่ามีอีเมลเดิมหรือป่าว
-        let customer = await Customer.findOne({customer_Email });
+        let customer = await Customer.findOne({ customer_Email });
         if (customer) return res.status(400).json({ message: 'อีเมลนี้ถูกใช้ไปแล้ว' });
-        
+
 
         // เข้ารหัสรหัสผ่าน
         const hashedPassword = await bcrypt.hash(customer_Password, 10);
@@ -35,7 +35,7 @@ exports.register = async (req, res) => {
         res.status(201).json({ message: 'สมัครสมาชิกสำเร็จ' });
     } catch (error) {
         console.error("Error during registration:", error); // log ข้อความ error ลงใน console
-        res.status(500).json({ 
+        res.status(500).json({
             message: error.message,
             error: error.message || error // ส่งข้อมูลข้อผิดพลาดกลับไป
         });
@@ -66,7 +66,7 @@ exports.login = async (req, res) => {
         const payload = {
             customer_Id: customer._id,
             customer_Name: customer.customer_Name,
-            role: "user",  
+            role: "user",
         };
 
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '3h' });
@@ -155,7 +155,7 @@ exports.loginemployee = async (req, res) => {
         const payload = {
             customer_Id: user._id,
             customer_Name: employee_Name,
-            role: role,  
+            role: role,
         };
 
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '3h' });
@@ -206,7 +206,7 @@ exports.registershopowner = async (req, res) => {
 
     try {
         // ตรวจสอบว่ามีอีเมลซ้ำหรือไม่
-        let owner = await ShopOwner.findOne({ owner_Name});
+        let owner = await ShopOwner.findOne({ owner_Name });
         if (owner) {
             return res.status(400).json({ message: 'อีเมลนี้ถูกใช้ไปแล้ว' });
         }
@@ -241,6 +241,66 @@ exports.registershopowner = async (req, res) => {
 
 //******************************************************************************************************************************************/
 //เพิ่มข้อมูลพนักงา
+
+exports.getAccoutCustomer = async (req, res) => {
+    const { user_id } = req.params; // หรือ req.query.user_id ถ้าใช้ query
+    try {
+        const customer = await Customer.findOne({ user_id })
+            .select('customer_Email customer_Name customer_Telnum createdAt'); // เลือกฟิลด์ที่ต้องการดึง
+
+        if (!customer) {
+            return res.status(404).json({
+                message: 'ไม่พบข้อมูลลูกค้า'
+            });
+        }
+
+        res.status(200).json({
+            message: 'ดึงข้อมูลสำเร็จ',
+            customer
+        });
+    } catch (error) {
+        console.log("Error fetching data Customer", error);
+        res.status(500).json({
+            message: "เกิดข้อผิดพลาดในการดึงข้อมูล",
+            error: error.message || error
+        });
+    }
+};
+
+
+exports.updateAccoutCustomeer = async (req, res) => {
+    const {user_id} = req.params;
+    console.log(user_id)
+    const {
+        customer_Name,
+        customer_Email,
+        customer_Telnum
+    } = req.body
+    try{
+        const customer = await Customer.findById(user_id)
+        if(!customer){
+            return res.status(404).json({
+                message:'ไม่พบข้อมูลในการอัพเดต'
+            })
+        }
+
+        customer.customer_Name = customer_Name
+        // customer.customer_Email = customer_Email
+        customer.customer_Telnum = customer_Telnum
+
+        await customer.save();
+        res.status(200).json({
+            message: 'อัพเดตข้อมูลสำเร็จ',
+            customer
+        })
+    }  catch (error) {
+        console.log("Error Update data Customer", error);
+        res.status(500).json({
+            message: "เกิดข้อผิดพลาดในการดึงข้อมูล",
+            error: error.message || error
+        });
+    }
+}
 
 
 

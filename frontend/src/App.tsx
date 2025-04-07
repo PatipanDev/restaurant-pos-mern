@@ -1,4 +1,4 @@
-
+const API_URL = import.meta.env.VITE_API_URL;
 import React, { Suspense, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { Box } from '@mui/material';
@@ -12,6 +12,7 @@ import DrinkDetail from './page/DrinkDetail';
 import Order from './page/user/Order';
 import Login from './page/Login';
 import Register from './page/Register';
+import axios from 'axios';
 
 
 import ProtectedRoute from './ProtectedRoute';
@@ -50,13 +51,8 @@ import DashboardCashier from './page/cashier/DashboardCashier';
 
 
 
-// const HomePage = React.lazy(() => import('./page/Homepage'));
-// const Listfood = React.lazy(() => import('./page/Listfood'))
-
-
 const App: React.FC = () => {
   const [isAuthenticated, setAuth] = useState<boolean>(false);
-
 
   return (
     <Router>

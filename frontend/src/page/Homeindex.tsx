@@ -54,6 +54,38 @@ const HomeIndex = () => {
 
   }, []); // ใช้ location ใน useEffect เพื่อให้ค่า tabIndex อัพเดตตาม URL
 
+  const [websiteName, setWebsiteName] = useState<string>('Food Shop');
+
+  useEffect(() => {
+    // ดึงข้อมูลการตั้งค่าจาก API
+    axios.get(`${API_URL}/api/setting/getDataShow`)
+      .then((res) => {
+        const setting = res.data.settingweb;
+        console.log('มีข้อมูลไหม', res.data.settingweb);
+
+        // เปลี่ยน favicon ถ้ามี logoName
+        if (setting.logoName) {
+          const faviconLink = document.getElementById('dynamic-favicon') as HTMLLinkElement;
+          faviconLink.href = `${API_URL}/imagesetting/${setting.logoName}`;
+          console.log("icon", setting.logoName)
+        }
+
+        // แสดงชื่อเว็บไซต์
+       // แสดงชื่อเว็บไซต์
+       setWebsiteName(setting.websiteName || 'ไม่มีชื่อเว็บ');
+
+       // เปลี่ยนชื่อแท็บ (title)
+       document.title = setting.websiteName || 'Food Shop';
+
+       // เปลี่ยนคำอธิบายเว็บ (description)
+       const metaDescription = document.querySelector('meta[name="description"]');
+       if (metaDescription) {
+         metaDescription.setAttribute('content', setting.websiteDescription || 'เว็บไซต์ร้านอาหารออนไลน์');
+       }
+      })
+      .catch((err) => console.error('โหลด setting ไม่สำเร็จ:', err));
+  }, []);
+
   console.log(dataweb?.bannerImage)
 
 

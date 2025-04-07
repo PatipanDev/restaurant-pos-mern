@@ -13,6 +13,11 @@ router.post('/login', authController.login)
 
 router.post('/registershopowner', authController.registershopowner)
 
+//ดึงข้อมูลลูกค้า
+router.get('/getAccoutCustomer/:id', authController.getAccoutCustomer);
+//อัพเดตข้อมูลลูกค้า 
+router.put('/updateAccoutCustomeer/:user_id',  authController.updateAccoutCustomeer)
+
 
 //ล็อคอินรวมทั้งหมด
 router.post('/loginemployee',authController.loginemployee)
