@@ -305,4 +305,21 @@ exports.postImageBanner = async (req, res) => {
       return res.status(500).json({ message: 'เกิดข้อผิดพลาดบนเซิร์ฟเวอร์', error });
     }
   };
+
+
+
+  exports.getDataShow = async (req, res)=>{
+    try{
+      const settingweb = await SettingWeb.findById("singleton-setting");
+      res.status(200).json({
+        message:'ดึงข้อมูลสำเร็จ',
+        settingweb
+      })
+    }catch(error){
+      console.log("Error fetching data settingweb")
+      res.status(500).json({
+        message: 'ดึงข้อมูลผิดพลาดใน server'
+      })
+    }
+  }
   

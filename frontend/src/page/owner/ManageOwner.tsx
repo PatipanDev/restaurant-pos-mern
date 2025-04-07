@@ -13,6 +13,8 @@ import axios from 'axios';
 import SuccessAlert from '../../components/AlertSuccess';
 import WarningAlert from '../../components/AlertDivWarn';
 import ErrorBoundary from '../ErrorBoundary';
+import { getEmployeeId } from '../../utils/userUtils';
+const employee_id = getEmployeeId();
 
 
 interface ShopOwner {
@@ -79,14 +81,13 @@ const ManageShopOwners: React.FC = () => {
       renderCell: (params) => rows.indexOf(params.row) + 1,
     },
     { field: 'owner_Name', headerName: 'ชื่อเจ้าของร้าน', flex: 1, minWidth: 180 },
-    { field: 'owner_Password', headerName: 'รหัสผ่าน', flex: 2, minWidth: 200 },
     { field: 'owner_Details', headerName: 'รายละเอียด', flex: 2, minWidth: 200 },
     {
       field: 'actions',
       headerName: 'แก้ไขข้อมูล',
       width: 100,
       renderCell: (params) => (
-        <Button variant="outlined" startIcon={<ModeEditIcon />} onClick={() => handleEditClick(params.id)}>แก้ไข</Button>
+        <Button variant="outlined" startIcon={<ModeEditIcon />} onClick={() => handleEditClick(params.id)} disabled={params.id === employee_id}>แก้ไข</Button>
       ),
     },
     {
@@ -94,12 +95,16 @@ const ManageShopOwners: React.FC = () => {
       headerName: 'ลบข้อมูล',
       width: 100,
       renderCell: (params) => (
-        <Button variant="outlined" startIcon={<DeleteIcon />} color="error" onClick={() => handleDeleteClick(params.id)}>ลบ</Button>
+        <Button variant="outlined" startIcon={<DeleteIcon />} color="error" onClick={() => handleDeleteClick(params.id)} disabled={params.id === employee_id}>ลบ</Button>
       ),
     },
   ];
 
   const handleDeleteClick = async (id: GridRowId) => {
+    if (id === employee_id) {
+      alert("ไม่สามารถลบบัญชีตนเองได้")
+      return
+    }
     const confirmDelete = window.confirm('คุณแน่ใจหรือไม่ว่าจะลบข้อมูลนี้?');
     if (confirmDelete) {
       try {
@@ -196,7 +201,7 @@ const ManageShopOwners: React.FC = () => {
   };
 
   return (
-    <div style={{ height: '90vh', width: '100%' }}>
+    <div style={{ height: '90vh', width: '80vw' }}>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{selectedRowId ? 'แก้ไขข้อมูลเจ้าของร้าน' : 'เพิ่มข้อมูลเจ้าของร้าน'}</DialogTitle>
         <DialogContent>

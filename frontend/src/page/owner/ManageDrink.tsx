@@ -2,7 +2,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId, GridCellParams } from '@mui/x-data-grid';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl,Typography } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl, Typography } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 
@@ -24,7 +24,7 @@ interface Drink {
   drink_Stock_quantity: number;
   drink_Manufacture_date: string;
   drink_Expiry_date: string;
-  drink_Image: string; 
+  drink_Image: string;
 }
 
 interface FormData {
@@ -48,16 +48,16 @@ const schema = yup.object({
   drink_Manufacture_date: yup.string().required('กรุณาใส่วันที่ผลิต'),
   drink_Expiry_date: yup.string().required('กรุณาใส่วันหมดอายุ'),
   drink_Image: yup
-      .mixed<File>()
-      .nullable()
-      .default(null)
-      .required('กรุณาเลือกรูปภาพ')
-      .test('fileSize', 'ไฟล์ต้องมีขนาดไม่เกิน 2MB', (value) => {
-        return value && value.size <= MAX_FILE_SIZE;
-      })
-      .test('fileFormat', 'ไฟล์ต้องเป็น JPG, PNG หรือ WEBP', (value) => {
-        return value && SUPPORTED_FORMATS.includes(value.type);
-      }),
+    .mixed<File>()
+    .nullable()
+    .default(null)
+    .required('กรุณาเลือกรูปภาพ')
+    .test('fileSize', 'ไฟล์ต้องมีขนาดไม่เกิน 2MB', (value) => {
+      return value && value.size <= MAX_FILE_SIZE;
+    })
+    .test('fileFormat', 'ไฟล์ต้องเป็น JPG, PNG หรือ WEBP', (value) => {
+      return value && SUPPORTED_FORMATS.includes(value.type);
+    }),
 }).required();
 
 const ManageDrinks: React.FC = () => {
@@ -68,7 +68,7 @@ const ManageDrinks: React.FC = () => {
   const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null); //เพิ่มที่เก็บรูปภาพ
-  
+
 
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
     resolver: yupResolver(schema),
@@ -85,7 +85,7 @@ const ManageDrinks: React.FC = () => {
   };
 
   useEffect(() => {
-    
+
     fetchData();
   }, []);
 
@@ -97,8 +97,15 @@ const ManageDrinks: React.FC = () => {
         setValue('drink_Price', selectedRow.drink_Price);
         setValue('drink_Quantity', selectedRow.drink_Quantity);
         setValue('drink_Stock_quantity', selectedRow.drink_Stock_quantity);
-        setValue('drink_Manufacture_date', selectedRow.drink_Manufacture_date);
-        setValue('drink_Expiry_date', selectedRow.drink_Expiry_date);
+        const rawDate = new Date(selectedRow.drink_Manufacture_date);
+        const formattedDate: any = rawDate.toISOString().split('T')[0]; // ได้รูปแบบ "2025-03-20"
+
+        setValue('drink_Manufacture_date', formattedDate);
+        // setValue('drink_Manufacture_date', selectedRow.drink_Manufacture_date);
+        const rawDateEx = new Date(selectedRow.drink_Expiry_date);
+        const formattedDateEx: any = rawDate.toISOString().split('T')[0]; // ได้รูปแบบ "2025-03-20"
+
+        setValue('drink_Expiry_date', formattedDateEx);
         setSelectedImage(selectedRow.drink_Image || null);
       }
     }
@@ -129,8 +136,33 @@ const ManageDrinks: React.FC = () => {
     { field: 'drink_Price', headerName: 'ราคา', flex: 1, minWidth: 120 },
     { field: 'drink_Quantity', headerName: 'ปริมาณ', flex: 1, minWidth: 100 },
     { field: 'drink_Stock_quantity', headerName: 'จำนวนคงเหลือ', flex: 1, minWidth: 150 },
-    { field: 'drink_Manufacture_date', headerName: 'วันที่ผลิต', flex: 1, minWidth: 150 },
-    { field: 'drink_Expiry_date', headerName: 'วันหมดอายุ', flex: 1, minWidth: 150 },
+    {
+      field: 'drink_Manufacture_date',
+      headerName: 'วันที่ผลิต',
+      flex: 1, minWidth: 150,
+      renderCell: (params) => {
+        const rawDate = params.row.drink_Manufacture_date;
+        const date = new Date(rawDate);
+
+        return date.toLocaleDateString('th-TH', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        });
+      },
+    },
+    { field: 'drink_Expiry_date', headerName: 'วันหมดอายุ', flex: 1, minWidth: 150 ,
+        renderCell: (params) => {
+          const rawDate = params.row.drink_Expiry_date;
+          const date = new Date(rawDate);
+
+          return date.toLocaleDateString('th-TH', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          });
+        },
+    },
     {
       field: 'actions',
       headerName: 'แก้ไขข้อมูล',
@@ -152,7 +184,7 @@ const ManageDrinks: React.FC = () => {
       ),
     },
   ];
-  
+
   const handleDeleteClick = async (id: GridRowId) => {
     const confirmDelete = window.confirm('คุณแน่ใจหรือไม่ว่าจะลบข้อมูลนี้?');
     if (confirmDelete) {
@@ -161,11 +193,11 @@ const ManageDrinks: React.FC = () => {
         if (drinkId) {
           // Call the delete API with the drinkId
           await axios.delete(`${API_URL}/api/food/deleteDrink/${drinkId}`); // ใช้ endpoint ที่ถูกต้อง
-  
+
           // Filter out the deleted row from the state
           const updatedRows = rows.filter((row) => row._id !== drinkId);
           setRows(updatedRows);
-  
+
           setAlertSuccess(<div>ลบข้อมูลสำเร็จ</div>);
         } else {
           alert('ไม่พบข้อมูลที่จะลบ');
@@ -178,35 +210,35 @@ const ManageDrinks: React.FC = () => {
       // User cancelled deletion
     }
   };
-  
+
   const handleEditClick = (id: GridRowId) => {
     // Set the selected row and open the dialog for editing
     setSelectedRowId(id);
     setOpen(true);
   };
-  
+
   const handleAddClick = () => {
     // Reset and open the dialog for adding a new drink
     setSelectedRowId(null);
     reset(); // Reset the form values
     setOpen(true);
   };
-  
+
   const handleClose = () => {
     // Close the dialog and reset form
     setOpen(false);
     reset();
   };
-  
+
   // On form submission, either create a new drink or update an existing one
   const onSubmit = async (data: any) => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-  
+
     if (!user._id || !user.role) {
       setAlertMessage(<div>ไม่พบข้อมูลผู้ใช้หรือผู้ใช้ไม่ได้ล็อกอิน</div>);
       return;
     }
-  
+
     try {
       const formData = new FormData();
       formData.append("drink_Name", data.drink_Name);
@@ -218,11 +250,11 @@ const ManageDrinks: React.FC = () => {
       if (data.drink_Image) {
         formData.append("drink_Image", data.drink_Image);
       }
-  
+
       // ไม่ต้องเพิ่ม owner_Id และ chef_Id เนื่องจากไม่มีใน drinkSchema
-  
+
       console.log(formData);
-  
+
       let response;
       if (selectedRowId) {
         // อัปเดตข้อมูล (PUT)
@@ -235,7 +267,7 @@ const ManageDrinks: React.FC = () => {
           headers: { "Content-Type": "multipart/form-data" },
         });
       }
-  
+
       console.log("Response:", response.data);
       setAlertSuccess(<div>เพิ่มข้อมูลเครื่องดื่มสำเร็จ</div>);
       handleClose(); // ปิด Dialog
@@ -248,7 +280,7 @@ const ManageDrinks: React.FC = () => {
 
 
   return (
-    <div style={{ height: '90vh', width: '100%' }}>
+    <div style={{ height: '90vh', width: '80vw' }}>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{selectedRowId ? 'แก้ไขข้อมูลเครื่องดื่ม' : 'เพิ่มข้อมูลเครื่องดื่ม'}</DialogTitle>
         <DialogContent>
@@ -320,7 +352,7 @@ const ManageDrinks: React.FC = () => {
                   {...field}
                   label="วันที่ผลิต"
                   type="date"
-                  InputLabelProps={{ shrink: true }} 
+                  InputLabelProps={{ shrink: true }}
                   fullWidth
                   margin="dense"
                   error={!!errors.drink_Manufacture_date}
@@ -336,7 +368,7 @@ const ManageDrinks: React.FC = () => {
                   {...field}
                   label="วันหมดอายุ"
                   type="date"
-                  InputLabelProps={{ shrink: true }} 
+                  InputLabelProps={{ shrink: true }}
                   fullWidth
                   margin="dense"
                   error={!!errors.drink_Expiry_date}
@@ -384,11 +416,11 @@ const ManageDrinks: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-  
+
       <ErrorBoundary>
         <DataGrid rows={rows} columns={columns} getRowId={(row) => row._id} />
       </ErrorBoundary>
-  
+
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20 }}>
         <Button variant="contained" onClick={handleAddClick}>เพิ่มข้อมูล</Button>
         <WarningAlert messagealert={alertMessage} />

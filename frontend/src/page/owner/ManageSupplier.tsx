@@ -19,7 +19,7 @@ const ManageSupplier = () => {
   return (
     <div>
       <>
-        <Typography variant="h4" gutterBottom>จัดการร้านค้าจัดหาสินค้า</Typography>
+        <Typography variant="h4" gutterBottom sx={{margin: 1, marginLeft: 2}}>จัดการร้านค้าจัดหาสินค้า</Typography>
         {/* Tabs */}
         <Tabs value={tabIndex} onChange={handleTabChange}>
           <Tab label="จัดการร้านค้าจัดหาสินค้า" />

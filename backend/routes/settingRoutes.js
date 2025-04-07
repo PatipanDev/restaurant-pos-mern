@@ -26,5 +26,7 @@ router.get('/getFormSetting', settingsWebController.getFormSetting)
 
 router.post('/postFormSetting', settingsWebController.postFormSetting)
 
+router.get('/getDataShow', settingsWebController.getDataShow)
+
 
 module.exports = router; // ส่ง router ออกมา

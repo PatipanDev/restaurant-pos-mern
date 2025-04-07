@@ -22,7 +22,7 @@ import { Home, ManageAccounts, ListAlt, RamenDining, FactCheck, TableBar } from 
 import axios from "axios";
 
 // นำเข้าหน้า
-import Order from '../user/Order';
+import OrderEmployee from './OrderEmployee';
 import Profile from '../user/Profile';
 import Listfood from '../Listfood';
 import LoginReminder from '../../components/LoginReminder';
@@ -146,7 +146,7 @@ export default function DashboardEmployee() {
 
       {/* Content */}
       <Box sx={{ flexGrow: 2, p: 1 }}>
-        {value === 1 && (isUser ? <Order /> : <LoginReminder />)}
+        {value === 1 && (isUser ? <OrderEmployee /> : <LoginReminder />)}
         {value === 0 && <Listfood />}
         {value === 2 && (isUser ? <OrderCheck /> : <LoginReminder />)}
         {value === 3 && (isUser ? <ServFood /> : <LoginReminder />)}

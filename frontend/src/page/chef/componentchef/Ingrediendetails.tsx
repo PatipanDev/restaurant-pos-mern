@@ -19,13 +19,13 @@ import ErrorBoundary from '../../ErrorBoundary';
 interface IngredientDetail {
   _id: string;
   IngredientDt_Qua: number;
-  ingredient_id: any; // Assuming ingredient_id is an object with _id and name
-  product_id: any; // Assuming product_id is an object with _id and name
+  ingredient_Id: any; // Assuming ingredient_id is an object with _id and name
+  product_Id: any; // Assuming product_id is an object with _id and name
 }
 
 interface FormData {
   IngredientDt_Qua: number;
-  product_id: string;
+  product_Id: string;
 }
 
 interface IngrediendetailsProps {
@@ -38,7 +38,7 @@ const schema = yup.object({
   IngredientDt_Qua: yup.number().required('กรุณาใส่ปริมาณ'),
   // IngredientDt_Unit: yup.string().required('กรุณาใส่หน่วย'),
   // ingredient_id: yup.string().required('กรุณาเลือกส่วนผสม'),
-  product_id: yup.string().required('กรุณาเลือกสินค้า'),
+  product_Id: yup.string().required('กรุณาเลือกสินค้า'),
 }).required();
 
 const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }) => {
@@ -64,7 +64,7 @@ const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }
       setRows(ingredientDetailsResponse.data);
 
 
-      
+
 
       console.log('Ingredient Details:', ingredientDetailsResponse.data);
       console.log('Products:', productsResponse.data);
@@ -85,18 +85,18 @@ const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }
       const selectedRow = rows.find((row) => row._id === selectedRowId);
       if (selectedRow) {
         setValue('IngredientDt_Qua', selectedRow.IngredientDt_Qua);
-        setValue('product_id', selectedRow.product_id._id);
+        setValue('product_Id', selectedRow.product_Id._id);
       }
     }
   }, [selectedRowId, rows, setValue]);
 
   const columns: GridColDef[] = [
     { field: 'index', headerName: 'ลำดับ', flex: 0.9, width: 30, renderCell: (params) => rows.indexOf(params.row) + 1 },
-    { field: 'product_id', headerName: 'สินค้า', flex: 1, minWidth: 180, renderCell: (params) => params.row.product_id?.product_Name },
+    { field: 'product_id', headerName: 'สินค้า', flex: 1, minWidth: 180, renderCell: (params) => params.row.product_Id?.product_Name },
     { field: 'IngredientDt_Qua', headerName: 'ปริมาณ', flex: 1, minWidth: 100 },
-    { field: 'product_Quantity', headerName: 'ปริมาณวัตถุดิบที่เตรียม', flex: 1, minWidth: 100, renderCell: (params) => params.row.product_id?.product_Quantity},
-    { field: 'product_Stock', headerName: 'ปริมาณวัตถุดิบคงเหลือ', flex: 1, minWidth: 100, renderCell: (params) => params.row.product_id?.product_Stock},
-    { field: 'product_unit', headerName: 'หน่วย', flex: 1, minWidth: 100, renderCell: (params) => params.row.product_id?.unitId?.unit_Name},
+    { field: 'product_Quantity', headerName: 'ปริมาณวัตถุดิบที่เตรียมทั้งหมด', flex: 1, minWidth: 100, renderCell: (params) => params.row.product_Id?.product_Quantity },
+    { field: 'product_Stock', headerName: 'ปริมาณวัตถุดิบคงเหลือ', flex: 1, minWidth: 100, renderCell: (params) => params.row.product_Id?.product_Stock },
+    { field: 'product_unit', headerName: 'หน่วย', flex: 1, minWidth: 100, renderCell: (params) => params.row.product_Id?.unitId?.unit_Name },
     {
       field: 'actions',
       headerName: 'แก้ไขข้อมูล',
@@ -123,7 +123,7 @@ const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }
     const ingredientDetail = rows.find((row) => row._id === id);
     if (ingredientDetail) {
       setValue('IngredientDt_Qua', ingredientDetail.IngredientDt_Qua);
-      setValue('product_id', ingredientDetail.product_id._id);
+      setValue('product_Id', ingredientDetail.product_Id._id);
       setSelectedRowId(id);
       setOpen(true);
     }
@@ -139,8 +139,9 @@ const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }
           await axios.delete(`${API_URL}/api/data/deleteIngredientDetail/${ingredientDetailId}`);
 
           // Filter out the deleted row from the state
-          const updatedRows = rows.filter((row) => row._id !== ingredientDetailId);
-          setRows(updatedRows);
+          // const updatedRows = rows.filter((row) => row._id !== ingredientDetailId);
+          // setRows(updatedRows);
+          fetchData();
 
           setAlertSuccess(<div>ลบข้อมูลสำเร็จ</div>);
         } else {
@@ -172,16 +173,17 @@ const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }
   // On form submission, either create a new product or update an existing one
   const onSubmit = async (data: FormData) => {
     console.log("Form Data:", data);
-  
+
     try {
       if (selectedRowId !== null) {
         // Update an existing product
         const updatedData = {
           IngredientDt_Qua: data.IngredientDt_Qua,
-          ingredient_id: id, // Assuming `id` is available and valid
-          product_id: data.product_id,
+          ingredient_Id: id, // Assuming `id` is available and valid
+          product_Id: data.product_Id,
         };
-  
+        console.log("ทดสอบ", updatedData)
+
         // Correct the URL and data for update
         await axios
           .put(`${API_URL}/api/data/updateIngredientDetail/${selectedRowId}`, updatedData) // Correct URL format
@@ -189,34 +191,30 @@ const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }
             console.log("Update successful", response.data);
             fetchData();
             setAlertSuccess(<div>อัปเดตข้อมูลสำเร็จ</div>);
-  
+
             // Update the rows in the state with the new data
-            const updatedRows = rows.map((row) =>
-              row._id === selectedRowId ? { ...row, ...updatedData } : row
-            );
-            setRows(updatedRows);
           })
-          .catch((error:any) => {
+          .catch((error: any) => {
             console.error("Error updating data:", error);
             setAlertMessage(<div>{error.response.data.message}</div>);
           });
-      } else { 
+      } else {
         const newData = {
           IngredientDt_Qua: data.IngredientDt_Qua,
-          ingredient_id: id, // Assuming `id` is available and valid for adding
-          product_id: data.product_id,
+          ingredient_Id: id, // Assuming `id` is available and valid for adding
+          product_Id: data.product_Id,
         };
-  
+
         const response = await axios.post(
           `${API_URL}/api/data/addIngredientDetail`, // Correct URL for adding a new ingredient detail
           newData
         );
+        if(response.status === 200){
+          console.log(response.data)
+          fetchData();
+          setAlertSuccess(<div>เพิ่มข้อมูลสำเร็จ</div>);
 
-
-        fetchData();
-
-        setRows([...rows, response.data]);
-        setAlertSuccess(<div>เพิ่มข้อมูลสำเร็จ</div>);
+        }   
       }
       handleClose(); // Close the form dialog
     } catch (error: any) {
@@ -224,7 +222,7 @@ const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }
       setAlertMessage(<div>{error.response.data.message}</div>);
     }
   };
-  
+
 
   return (
     <div style={{ height: '90vh', width: '100%', marginBottom: 70 }}>
@@ -232,27 +230,10 @@ const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }
         <DialogTitle>{selectedRowId ? 'แก้ไขรายละเอียดส่วนผสม' : 'เพิ่มรายละเอียดส่วนผสม'}</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <Controller
-              name="IngredientDt_Qua"
-              control={control}
-              rules={{ required: "กรุณากรอกปริมาณ" }}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="ปริมาณ"
-                  type="number"
-                  fullWidth
-                  margin="dense"
-                  error={!!errors.IngredientDt_Qua}
-                  helperText={errors.IngredientDt_Qua?.message}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} // แปลงค่าเป็นตัวเลข
-                  value={field.value || 0} // ถ้าไม่มีค่าให้ใช้ค่าเริ่มต้นเป็น 0
-                />
-              )}
-            />
+           
 
             <Controller
-              name="product_id"
+              name="product_Id"
               control={control}
               rules={{ required: "กรุณาเลือกสินค้า" }}
               render={({ field }) => (
@@ -262,17 +243,46 @@ const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }
                   label="สินค้า"
                   fullWidth
                   margin="dense"
-                  error={!!errors.product_id}
-                  helperText={errors.product_id?.message}
+                  error={!!errors.product_Id}
+                  helperText={errors.product_Id?.message}
                   value={field.value || ""}
                   onChange={field.onChange}
                 >
-                  {products.map((product) => (
+                  {Array.isArray(products) && products.length > 0 ? (
+                    products.map((product) => (
+                      <MenuItem key={product._id} value={product._id}>
+                        {product?.product_Name} คงเหลือ {product.product_Stock} {product?.unitId?.unit_Name}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled value="">
+                      กรุณาเพิ่มข้อมูล product ก่อน
+                    </MenuItem>
+                  )}
+                  {/* {products.map((product) => (
                     <MenuItem key={product._id} value={product._id}>
                       {product.product_Name}
                     </MenuItem>
-                  ))}
+                  ))} */}
                 </TextField>
+              )}
+            />
+             <Controller
+              name="IngredientDt_Qua"
+              control={control}
+              rules={{ required: "กรุณากรอกปริมาณ" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label={`ปริมาณ` }
+                  type="number"
+                  fullWidth
+                  margin="dense"
+                  error={!!errors.IngredientDt_Qua}
+                  helperText={errors.IngredientDt_Qua?.message}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} // แปลงค่าเป็นตัวเลข
+                  value={field.value || 0} // ถ้าไม่มีค่าให้ใช้ค่าเริ่มต้นเป็น 0
+                />
               )}
             />
           </form>
@@ -286,12 +296,12 @@ const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }
       </Dialog>
 
       <ErrorBoundary>
-      
+
         <DataGrid rows={rows} columns={columns} getRowId={(row) => row._id} />
       </ErrorBoundary>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20, gap: 10 }}>
-      <Button color="primary">{name}</Button>
+        <Button color="primary">{name}</Button>
         <Button onClick={onClose} variant="contained" startIcon={<CloseIcon />}>
           ปิดหน้ารายละเอียด
         </Button>

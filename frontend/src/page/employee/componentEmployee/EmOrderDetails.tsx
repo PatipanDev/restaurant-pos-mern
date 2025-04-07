@@ -11,18 +11,40 @@ import {
     TableRow,
     Divider,
     MenuItem,
+    Button,
     Box,
+    TextField,
     Menu,
     Skeleton
 } from '@mui/material';
-import { Close } from '@mui/icons-material';
 
 import IconButton from '@mui/material/IconButton';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { formatDateTime } from '../../utils/formatDateTime';
+import { useForm, Controller } from 'react-hook-form';
+
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+
+import SuccessAlert from '../../../components/AlertSuccess';
+import { getEmployeeId } from '../../../utils/userUtils';
+import { formatDateTime } from '../../../utils/formatDateTime';
+
+import socket from '../../../utils/socket';
 
 
 const API_URL = import.meta.env.VITE_API_URL;
+const id: string = getEmployeeId();
+console.log(id)
+
+
+interface Order {
+    createdAt: Date;
+    order_Status: string;
+    order_Eating_status: string;
+    _id: string;
+
+}
+
 
 
 
@@ -58,21 +80,27 @@ interface FormOrder {
     order_Dec?: string | undefined;
 }
 
-interface DrinkDetailProps {
-    _id: string | null;
-    onClose: () => void;  // เพิ่มฟังก์ชันปิด
-}
+const schema = yup.object({
+    order_Eating_status: yup.string(),
+    table_Id: yup.string().required("กรุณาเลือกโต๊ะ"), // บังคับเลือก
+    order_Dec: yup.string()
+}).required();
 
 
-const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
-    const [order, setOrders] = useState<any[]>([]);
+function EmOrderDetails() {
+    const [order, setOrders] = useState<Order[]>([]);
     const [orderFoodDetails, setOrderFoodDetails] = useState<any[]>([]);
     const [orderDrinkDetails, setOrderDrinkDetails] = useState<any[]>([]);
+    const [tables, setTables] = useState<any[]>([]);
 
     const [loading, setLoading] = useState(true);
+    const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
 
 
 
+    const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormOrder>({
+        resolver: yupResolver(schema),
+    });
 
     // const {formattedDate, formattedTime} = formatDateTime()
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -88,10 +116,11 @@ const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
 
     const fetchPendingOrders = async () => {
         try {
-            const response = await axios.get(`${API_URL}/api/food/getPendingOrdersByEmployee/${_id}`);
+            const response = await axios.get(`${API_URL}/api/food/getPendingOrdersByCustomerOrEmployee/${id}`);
             setOrders(response.data.orders);
             setOrderFoodDetails(response.data.orderFoodDetails);
             setOrderDrinkDetails(response.data.orderDrinkDetails);
+            setTables(response.data.tables);
             console.log(response.data);
 
         } catch (error) {
@@ -102,14 +131,13 @@ const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
     };
 
     useEffect(() => {
-        if (_id) {  // ตรวจสอบว่า customerId มีค่า
+        socket.connect();
+        if (id) {  // ตรวจสอบว่า customerId มีค่า
             fetchPendingOrders();
         }
-    }, [_id]);  // เพิ่ม customerId ใน dependency array
+    }, [id]);  // เพิ่ม customerId ใน dependency array
 
-    console.log("มีข้อมูลไหม", order)
-    console.log("ข้อมูล", _id)
-
+    console.log("มีข้อมูลไหม", orderDrinkDetails)
     // console.log('ลง', order.orders[0]._id)
 
     const totalFoodPrice = orderFoodDetails.reduce(
@@ -126,22 +154,43 @@ const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
 
     const totalPrice = totalFoodPrice + totalDrinkPrice;
     console.log(totalPrice)
+
+    const onSubmit = async (data: FormOrder) => {
+        if (window.confirm("คุณต้องการสั่งอาหารใช่หรือไม่ ?")) {
+            try {
+                const id = order.map((order) => order._id)[0] ?? '';
+                const employee_Id = getEmployeeId();
+                console.log('ไอดี', id);
+                const orderData = {
+                    ...data,
+                    employee_Id: employee_Id
+                };
+
+                console.log('Order Data:', orderData);
+                console.log('Form Data:', data);
+
+                // ส่งข้อมูลไปยัง server ผ่าน socket.emit โดยไม่ต้องรอการตอบกลับ
+                socket.emit('putSendOrderDetail', { id, ...orderData });
+
+                // รีเซ็ตข้อมูลหรือแจ้งเตือน UI ตามที่ต้องการ
+                setAlertSuccess(<div>สั่งอาหารสำเร็จ</div>);
+                setTimeout(() => {
+                    // fetchPendingOrders();
+                    setOrders([]);
+                    setOrderDrinkDetails([]);
+                    setOrderFoodDetails([]);
+                    reset();
+                }, 2000);
+
+            } catch (error: any) {
+                console.error('Error submitting order:', error);
+                alert(error.response?.message || 'เกิดข้อผิดพลาด');
+            }
+        }
+    };
+
     if (order.length === 0) {
         return (
-            <div>
-                <IconButton
-            sx={{
-              position: 'absolute',
-              top: 120,
-              left: 10,
-              zIndex: 10,
-              backgroundColor: '#F0FFFF'
-            }}
-            onClick={onClose}
-            color="primary"
-          >
-            <Close />
-          </IconButton>
             <Box
                 display="flex"
                 justifyContent="center"
@@ -152,8 +201,26 @@ const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
                     ไม่มีรายการ
                 </Typography>
             </Box>
-            </div>
         )
+    }
+
+    const onCancelled = async (order_id: string) => {
+        if (window.confirm("คุณต้องการสั่งอาหารใช่หรือไม่ ?")) {
+            try {
+                socket.emit('CancelledOrderDetail', {order_id});
+
+                setAlertSuccess(<div>ยกเลิกออเดอร์สำเร็จ</div>);
+                setTimeout(() => {
+                    // fetchPendingOrders();
+                    setOrders([]);
+                    setOrderDrinkDetails([]);
+                    setOrderFoodDetails([]);
+                    reset();
+                }, 2000);
+            } catch (error) {
+
+            };
+        }
     }
 
     return (
@@ -167,15 +234,16 @@ const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
                 >
                     <MoreVertIcon />
                 </IconButton>
-                <Menu
-                    anchorEl={anchorEl}
-                    open={open}
-                    onClose={handleClose}
-                >
-                    <MenuItem onClick={handleClose}>ดูรายละเอียด</MenuItem>
-                    <MenuItem onClick={handleClose}>แก้ไข</MenuItem>
-                    <MenuItem onClick={handleClose}>ลบ</MenuItem>
-                </Menu>
+                {order.map((item) => (
+                    <Menu
+                    key={item._id}
+                        anchorEl={anchorEl}
+                        open={open}
+                        onClose={handleClose}
+                    >
+                        <MenuItem onClick={() => onCancelled(item._id)}>ยกเลิกรายการ</MenuItem>
+                    </Menu>
+                ))}
             </Box>
             {/* แสดง Skeleton ขณะโหลดข้อมูล */}
             {loading ? (
@@ -201,7 +269,6 @@ const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
                             <Divider sx={{ my: 2 }} />
                             <Typography variant="body1">สถานะออเดอร์: {translateStatus(item.order_Status)}</Typography>
                             <Typography variant="body1">สถานะการกิน: {translateEatStatus(item.order_Eating_status)}</Typography>
-                            <Typography variant="body1">โต๊ะ: หมายเลข {item.table_Id.number} จำนวน {item.table_Id.seat_count} ที่นั่ง</Typography>
                         </div>
                     );
                 })
@@ -241,7 +308,7 @@ const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
                                     <TableCell>{index + 1}</TableCell>
                                     <TableCell>{FoodDetails.food_Id.food_Name} </TableCell>
                                     <TableCell>{FoodDetails.orderDetail_More}</TableCell>
-                                    <TableCell>x{FoodDetails.orderDetail_Quantity}</TableCell>
+                                    <TableCell>{FoodDetails.orderDetail_Quantity}</TableCell>
                                     <TableCell>{parseFloat(FoodDetails.food_Id.food_Price.$numberDecimal)}</TableCell>
                                     <TableCell>{FoodDetails.orderDetail_Quantity * parseFloat(FoodDetails.food_Id.food_Price.$numberDecimal)} บาท</TableCell>
                                 </TableRow>
@@ -282,7 +349,7 @@ const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
                                     <TableCell>{index + 1}</TableCell>
                                     <TableCell>{DrinkDetails.drink_Id.drink_Name}</TableCell>
                                     <TableCell>{DrinkDetails.orderDetail_More}</TableCell>
-                                    <TableCell>x{DrinkDetails.orderDetail_Quantity}</TableCell>
+                                    <TableCell>{DrinkDetails.orderDetail_Quantity}</TableCell>
                                     <TableCell>{DrinkDetails.drink_Id.drink_Price}</TableCell>
                                     <TableCell>{DrinkDetails.orderDetail_Quantity * parseFloat(DrinkDetails.drink_Id.drink_Price)} บาท</TableCell>
                                 </TableRow>
@@ -291,25 +358,102 @@ const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
                 </Table>
             </TableContainer>
             <Divider sx={{ my: 2 }} />
-            <Typography variant="h6" align="right" marginBottom={6}>
+            <Typography variant="h6" align="right">
                 ราคารวม: {loading ? <Skeleton variant="text" width={80} /> : `${totalPrice} บาท`}
             </Typography>
             <Divider sx={{ my: 2 }} />
-            <IconButton
-            sx={{
-              position: 'absolute',
-              top: 120,
-              left: 10,
-              zIndex: 10,
-              backgroundColor: '#F0FFFF'
-            }}
-            onClick={onClose}
-            color="primary"
-          >
-            <Close />
-          </IconButton>
+            <form onSubmit={handleSubmit(onSubmit)}>
+                <Box display="flex" gap={2} alignItems="center" sx={{ marginBottom: 2 }}>
+                    {loading ? (
+                        <Skeleton variant="rectangular" width="100%" height={80} />
+                    ) : (
+                        <Controller
+                            name="order_Dec"
+                            control={control}
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    type="string"
+                                    label="รายละเอียดเพิ่มเติม"
+                                    variant="outlined"
+                                    fullWidth
+                                    multiline
+                                    rows={4}
+                                    error={!!errors.order_Dec}
+                                    helperText={errors.order_Dec?.message}
+                                />
+                            )}
+                        />
+                    )}
+                </Box>
+                <Box display="flex" gap={2} alignItems="center" sx={{ marginBottom: 6 }}>
+                    <Controller
+                        name="order_Eating_status"
+                        control={control}
+
+                        defaultValue="Dine-in" // กำหนดค่าเริ่มต้น
+                        render={({ field }) => (
+                            <TextField
+                                select
+                                defaultValue="Dine-in"
+                                label="ตัวเลือกรับประมาน"
+                                fullWidth
+                                margin="dense"
+                                error={!!errors.order_Dec}
+                                helperText={errors.order_Dec?.message}
+                                value={field.value || "Dine-in"} // ✅ ป้องกัน undefined
+                                onChange={field.onChange}
+                            >
+                                <MenuItem value="Dine-in">รับประทานที่ร้าน</MenuItem>
+                                <MenuItem value="Takeout">สั่งกลับบ้าน</MenuItem>
+                            </TextField>
+                        )}
+                    />
+
+                    <Controller
+                        name="table_Id"
+                        control={control}
+                        rules={{ required: "กรุณาเลือกโต๊ะ" }}
+                        render={({ field }) => (
+                            <TextField
+                                {...field}
+                                select
+                                label="โต๊ะ"
+                                fullWidth
+                                margin="dense"
+                                error={!!errors.table_Id}
+                                helperText={errors.table_Id?.message}
+                                value={field.value || ""}
+                                onChange={field.onChange}
+                            >
+                                {tables.map((table) => (
+                                    <MenuItem
+                                        key={table._id}
+                                        value={table._id}
+                                        disabled={table.status !== "Available"} // ถ้าสถานะไม่ใช่ Available จะไม่สามารถเลือกได้
+                                    >
+                                        โต๊ะ {table.number}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        )}
+                    />
+
+                    <Button
+                        fullWidth
+                        type='submit'
+                        variant="contained"
+                        color="primary"
+                        sx={{ flex: 1 }}
+                    >
+                        {loading ? <Skeleton variant="text" width="50px" /> : "สั่งซื้อ"}
+                    </Button>
+                    <SuccessAlert successalert={alertSuccess} />
+                </Box>
+            </form>
         </Container>
     );
 }
 
-export default OrderDetailsCheck;
+
+export default EmOrderDetails;

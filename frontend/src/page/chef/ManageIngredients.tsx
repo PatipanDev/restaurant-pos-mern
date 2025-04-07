@@ -85,8 +85,11 @@ const ManageIngredients: React.FC = () => {
                 setValue('ingredient_Name', selectedRow.ingredient_Name);
                 setValue('ingredient_Quantity', selectedRow.ingredient_Quantity);
                 setValue('ingredient_Steps', selectedRow.ingredient_Steps);
-                setValue('ingredient_Exdate', selectedRow.ingredient_Exdate);
-                // setValue('chef_Id', selectedRow.chef_Id);
+                const rawDate = new Date(selectedRow.ingredient_Exdate);
+                const formattedDate: any = rawDate.toISOString().split('T')[0]; // ได้รูปแบบ "2025-03-20"
+
+                setValue('ingredient_Exdate', formattedDate);
+
             }
         }
     }, [selectedRowId, rows, setValue]);
@@ -100,9 +103,24 @@ const ManageIngredients: React.FC = () => {
             renderCell: (params) => rows.indexOf(params.row) + 1,
         },
         { field: 'ingredient_Name', headerName: 'ชื่อการเตรียม', flex: 1, minWidth: 180 },
-        { field: 'ingredient_Quantity', headerName: 'ปริมาณ', flex: 1, minWidth: 100 },
+        { field: 'ingredient_Quantity', headerName: 'ปริมาณ(กิโลกรัม)', flex: 1, minWidth: 100 },
         { field: 'ingredient_Steps', headerName: 'ขั้นตอนการเตรียม รายละเอียด', flex: 1, minWidth: 200 },
-        { field: 'ingredient_Exdate', headerName: 'วันหมดอายุ', flex: 1, minWidth: 120 },
+        {
+            field: 'ingredient_Exdate',
+            headerName: 'วันหมดอายุ',
+            flex: 1,
+            minWidth: 120,
+            renderCell: (params) => {
+                const rawDate = params.row.ingredient_Exdate;
+                const date = new Date(rawDate);
+
+                return date.toLocaleDateString('th-TH', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                });
+            },
+        },
         {
             field: 'chef_Id',
             headerName: 'เชฟที่ทำการเตรียม',
@@ -251,7 +269,7 @@ const ManageIngredients: React.FC = () => {
 
 
     return (
-        <div style={{ height: '90vh', width: '100%' }}>
+        <div style={{ height: '90vh', width: '80vw' }}>
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>{selectedRowId ? 'แก้ไขข้อมูลส่วนผสม' : 'เพิ่มข้อมูลส่วนผสม'}</DialogTitle>
                 <DialogContent>
@@ -342,7 +360,7 @@ const ManageIngredients: React.FC = () => {
             {/* <Ingrediendetails/> */}
             {showModal && selectedIngredient && (
                 <Ingrediendetails
-                    key={selectedIngredient.id} 
+                    key={selectedIngredient.id}
                     id={selectedIngredient.id}
                     name={selectedIngredient.name}
                     onClose={() => setShowModal(false)}

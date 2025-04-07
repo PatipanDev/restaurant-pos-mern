@@ -10,7 +10,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 
 import axios from 'axios';
 
-import { getUserId } from '../utils/userUtils';
+import { getUserId, getEmployeeId } from '../utils/userUtils';
 const API_URL = import.meta.env.VITE_API_URL;
 
 interface FoodDetailProps {
@@ -27,7 +27,8 @@ const schema = yup.object({
 }).required();
 
 
-const user_id: string = getUserId()
+const user_id: string = getUserId();
+const employee_id: string = getEmployeeId();
 
 
 const FoodDetail: React.FC<FoodDetailProps> = ({ _id, onClose }) => {
@@ -75,8 +76,14 @@ const FoodDetail: React.FC<FoodDetailProps> = ({ _id, onClose }) => {
 
   const onSubmit = async (data: FormDetail) => {
     try {
+      console.log("user",user_id, "em",employee_id)
+      if((!user_id) && (!employee_id)){
+        alert("กรุณาทำการล็อกอินก่อนสั่งซื้อ")
+        return
+      }
       const orderData = {
         customer_Id: user_id,
+        employee_Id: employee_id,
         ...data,
         food_Id: foodDetails._id,
         orderDetail_Quantity: quantity,

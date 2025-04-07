@@ -1,30 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Box, CssBaseline, Paper, Typography, Grid, Card, CardContent, Button, Tabs, Tab, Divider } from '@mui/material';
+import { Box, CssBaseline, Paper, Typography, Grid, Card, CardContent, Button, Tabs, Tab } from '@mui/material';
 
-import OrderDetailsCard from './componentEmployee/OrderDetailsCard';
 
-const OrderCheck = () => {
+import EmOrderDetails from './componentEmployee/EmOrderDetails';
+import EmOrderDetailsInprogress from './componentEmployee/EmOrderInProgress';
+import EmOrderCompleted from './componentEmployee/EmOrderCompleted';
+import EmOrderCancelled from './componentEmployee/EmOrderCancelled';
+
+const OrderEmployee = () => {
   const [tabIndex, setTabIndex] = useState(0); // แท็บที่เลือก
   const navigate = useNavigate();
-
-  // const protection = useProtectedPage(getUserRole());  // เรียกใช้งานฟังก์ชัน
-  // console.log('ระดับผู้ใช้',getUserRole())
-
-
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
     // ลบส่วนที่เกี่ยวข้องกับการอัปเดต URL ออก
   };
 
+
+  // }
   return (
     <div>
       <>
-        <Typography variant="h4" gutterBottom>รายการที่ต้องตรวจสอบ</Typography>
+        <Typography variant="h4" gutterBottom>รายการอาหารที่สั่งแล้ว</Typography>
         {/* Tabs */}
         <Tabs value={tabIndex} onChange={handleTabChange}>
-          <Tab label="ตรวจสอบรายการอาหาร" />
+          <Tab label="สั่งอาหาร" />
           <Tab label="กำลังดำเนินการ" />
           <Tab label="รายการที่สำเร็จ" />
           <Tab label="รายการที่ยกเลิก" />
@@ -32,27 +33,27 @@ const OrderCheck = () => {
 
         {tabIndex === 0 ? (
           <div>
-            <OrderDetailsCard/>
+            <EmOrderDetails />
           </div>
-
         ) : tabIndex === 1 ? (
           <div>
-
+            <EmOrderDetailsInprogress/>
           </div>
         ) : tabIndex === 2 ? (
-          <div>เนื้อหาสำหรับ tab 3</div>
+          <div>
+            <EmOrderCompleted/>
+          </div>
         ) : tabIndex === 3 ? (
-          <div>เนื้อหาสำหรับ tab 4</div>
+          <div>
+            <EmOrderCancelled/>
+          </div>
         ) : (
           <div>ไม่มีเนื้อหา</div>
         )}
-
-
       </>
-
     </div>
   );
 };
 
-export default OrderCheck;
+export default OrderEmployee;
 

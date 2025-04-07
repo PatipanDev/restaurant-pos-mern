@@ -1,8 +1,10 @@
 const Product = require('../models/Product');
 const IngredienDetails = require('../models/IngredientDetail')
+const ProductCategory = require('../models/productCategory')
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const Unit = require('../models/Unit');
 require('dotenv').config();
 
 // เพิ่มสินค้าใหม่
@@ -54,8 +56,16 @@ exports.getProducts = async (req, res) => {
         const products = await Product.find()
         .populate('unitId')
         .populate('categoryId');  // ดึงข้อมูลหมวดหมู่และหน่วยสินค้า
+        const category = await ProductCategory.find();
 
-        res.status(200).json(products);
+        const unit = await Unit.find();
+
+        res.status(200).json({
+            message: 'ดึงข้อมูลสำเร็จ',
+            products,
+            category,
+            unit
+        })
     } catch (error) {
         console.error("Error fetching products:", error);
         res.status(500).json({ message: 'เกิดข้อผิดพลาด', error: error.message });

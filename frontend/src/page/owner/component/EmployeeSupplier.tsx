@@ -72,7 +72,9 @@ const EmployeeSupplier: React.FC = () => {
         setValue('bio', selectedRow.bio);
         setValue('address', selectedRow.address);
         setValue('job_Title', selectedRow.job_Title);
-        setValue('date_Of_Birth', selectedRow.date_Of_Birth);
+        const rawDate = new Date(selectedRow.date_Of_Birth);
+        const formattedDate: any = rawDate.toISOString().split('T')[0]; // ได้รูปแบบ "2025-03-20"
+        setValue('date_Of_Birth', formattedDate);
         setValue('national_Id', selectedRow.national_Id);
         setValue('supplier_Id', selectedRow.supplier_Id?._id);
       }
@@ -82,17 +84,30 @@ const EmployeeSupplier: React.FC = () => {
   const columns: GridColDef[] = [
     { field: 'index', headerName: 'ลำดับ', flex: 0.9 ,minWidth: 30, renderCell: (params) => rows.indexOf(params.row) + 1 },
     { field: 'employee_Sub_Name', headerName: 'ชื่อพนักงาน', flex: 1 ,minWidth: 150},
-    { field: 'bio', headerName: 'ข้อมูลเพิ่มเติม', flex: 1 ,minWidth: 200},
-    { field: 'address', headerName: 'ที่อยู่', flex: 1 , minWidth: 250},
-    { field: 'job_Title', headerName: 'ตำแหน่งงาน', flex: 1, minWidth: 100},
-    { field: 'date_Of_Birth', headerName: 'วันเกิด', flex: 1 ,minWidth: 100},
-    { field: 'national_Id', headerName: 'เลขบัตรประชาชน', flex: 1 ,minWidth: 130},
     {
       field: 'supplier_Id',
       headerName: 'ร้านที่สังกัด',
       flex: 1,
+      minWidth: 100,
       renderCell: (params) => params.row.supplier_Id?.supplier_Name,
     },
+    { field: 'bio', headerName: 'ข้อมูลเพิ่มเติม', flex: 1 ,minWidth: 100},
+    { field: 'address', headerName: 'ที่อยู่', flex: 1 , minWidth: 200},
+    { field: 'job_Title', headerName: 'ตำแหน่งงาน', flex: 1, minWidth: 100},
+    { field: 'date_Of_Birth', headerName: 'วันเกิด', flex: 1 ,minWidth: 100,
+      renderCell: (params) => {
+        const rawDate = params.row.date_Of_Birth;
+        const date = new Date(rawDate);
+
+        return date.toLocaleDateString('th-TH', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+        });
+    },
+    },
+    { field: 'national_Id', headerName: 'เลขบัตรประชาชน', flex: 1 ,minWidth: 130},
+   
     {
       field: 'actions',
       headerName: 'แก้ไข',

@@ -63,7 +63,7 @@ const ManageFoodsChef: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const foodsResponse = await axios.get(`${API_URL}/api/data/getfoods`);
+      const foodsResponse = await axios.get(`${API_URL}/api/food/getfoods`);
       setRows(foodsResponse.data);
 
       const categoriesResponse = await axios.get(`${API_URL}/api/data/getfoodcategory`);
@@ -71,9 +71,6 @@ const ManageFoodsChef: React.FC = () => {
 
       const chefResponse = await axios.get(`${API_URL}/api/auth/getChefs`);
       setChefs(chefResponse.data);
-
-      const ownerResponse = await axios.get(`${API_URL}/api/data/getfoodcategory`);
-      setChefs(ownerResponse.data);
 
       console.log('Foods:', foodsResponse.data);
       console.log('Categories:', categoriesResponse.data);
@@ -105,67 +102,93 @@ const ManageFoodsChef: React.FC = () => {
 
   const columns: GridColDef[] = [
     {
-      field: 'index',
-      headerName: 'ลำดับ',
-      flex: 0.9,
-      width: 30,
-      renderCell: (params) => rows.indexOf(params.row) + 1,
+        field: 'index',
+        headerName: 'ลำดับ',
+        flex: 0.9,
+        width: 30,
+        renderCell: (params) => rows.indexOf(params.row) + 1,
+        align: 'center',  // ข้อความชิดขวา
     },
-    { field: 'food_Name', headerName: 'ชื่ออาหาร', flex: 1, minWidth: 180 },
-    { field: 'food_Stock', headerName: 'จำนวนคงเหลือ', flex: 1, minWidth: 100 },
-    { field: 'food_Price', headerName: 'ราคาอาหาร', flex: 1, minWidth: 120 },
-    {
-      field: 'product_Category',
-      headerName: 'ประเภทอาหาร',
-      flex: 1,
-      minWidth: 150,
-      renderCell: (params) => params.row.product_Category_Id?.category_name,
+    { 
+        field: 'food_Name', 
+        headerName: 'ชื่ออาหาร', 
+        flex: 1, 
+        minWidth: 180,
+        align: 'left', // ข้อความชิดขวา
     },
-    {
-      field: 'chef_Id',
-      headerName: 'เชฟ',
-      flex: 1,
-      minWidth: 150,
-      renderCell: (params) => params.row.chef_Id?.chef_Name,
+    { 
+        field: 'food_Stock', 
+        headerName: 'จำนวนคงเหลือ', 
+        flex: 1, 
+        minWidth: 100,
+        align: 'right', // ข้อความชิดขวา
     },
-    {
-      field: 'owner_Id',
-      headerName: 'เจ้าของร้าน',
-      flex: 1,
-      minWidth: 150,
-      renderCell: (params) => params.row.owner_Id?.owner_Name,
+    { 
+        field: 'food_Price', 
+        headerName: 'ราคาอาหาร', 
+        flex: 1, 
+        minWidth: 120,
+        align: 'right', // ข้อความชิดขวา
     },
     {
-      field: 'details',
-      headerName: 'รายละเอียดสูตรอาหาร',
-      minWidth: 150,
-      renderCell: (params) => (
-        <Button variant="outlined" startIcon={<HistoryEdu />} onClick={() => handleShowFoodrecipeClick(params.id, params.row.food_Name)}>
-          รายละเอียด
-        </Button>
-      ),
+        field: 'product_Category',
+        headerName: 'ประเภทอาหาร',
+        flex: 1,
+        minWidth: 150,
+        renderCell: (params) => params.row.product_Category_Id?.category_name,
+        align: 'right', // ข้อความชิดขวา
     },
     {
-      field: 'actions',
-      headerName: 'แก้ไขข้อมูล',
-      width: 100,
-      renderCell: (params) => (
-        <Button variant="outlined" startIcon={<ModeEditIcon />} onClick={() => handleEditClick(params.id)}>
-          แก้ไข
-        </Button>
-      ),
+        field: 'chef_Id',
+        headerName: 'เชฟ',
+        flex: 1,
+        minWidth: 150,
+        renderCell: (params) => params.row.chef_Id?.chef_Name,
+        align: 'right', // ข้อความชิดขวา
     },
     {
-      field: 'delete',
-      headerName: 'ลบข้อมูล',
-      width: 100,
-      renderCell: (params) => (
-        <Button variant="outlined" startIcon={<DeleteIcon />} color="error" onClick={() => handleDeleteClick(params.id)}>
-          ลบ
-        </Button>
-      ),
+        field: 'owner_Id',
+        headerName: 'เจ้าของร้าน',
+        flex: 1,
+        minWidth: 150,
+        renderCell: (params) => params.row.owner_Id?.owner_Name,
+        align: 'left', // ข้อความชิดขวา
     },
-  ];
+    {
+        field: 'details',
+        headerName: 'รายละเอียดสูตรอาหาร',
+        minWidth: 150,
+        renderCell: (params) => (
+            <Button variant="outlined" startIcon={<HistoryEdu />} onClick={() => handleShowFoodrecipeClick(params.id, params.row.food_Name)}>
+                รายละเอียด
+            </Button>
+        ),
+        align: 'right', // ข้อความชิดขวา
+    },
+    {
+        field: 'actions',
+        headerName: 'แก้ไขข้อมูล',
+        width: 100,
+        renderCell: (params) => (
+            <Button variant="outlined" startIcon={<ModeEditIcon />} onClick={() => handleEditClick(params.id)}>
+                แก้ไข
+            </Button>
+        ),
+        align: 'right', // ข้อความชิดขวา
+    },
+    {
+        field: 'delete',
+        headerName: 'ลบข้อมูล',
+        width: 100,
+        renderCell: (params) => (
+            <Button variant="outlined" startIcon={<DeleteIcon />} color="error" onClick={() => handleDeleteClick(params.id)}>
+                ลบ
+            </Button>
+        ),
+        align: 'right', // ข้อความชิดขวา
+    },
+];
+
 
   const handleDeleteClick = async (id: GridRowId) => {
     const confirmDelete = window.confirm('คุณแน่ใจหรือไม่ว่าจะลบข้อมูลนี้?');
@@ -231,7 +254,7 @@ const ManageFoodsChef: React.FC = () => {
         food_Price: data.food_Price,
         product_Category_Id: data.product_Category_Id,
       };
-      
+
       if (user.role === "chef") {
         updatedData.chef_Id = user._id; // ถ้าผู้ใช้เป็น chef ให้ใช้ chef_Id
         updatedData.owner_Id = null; // ให้ owner_Id เป็นค่าว่าง
@@ -279,7 +302,7 @@ const ManageFoodsChef: React.FC = () => {
   };
 
   return (
-    <div style={{ height: '90vh', width: '100%' }}>
+    <div style={{ height: '90vh', width: '80vw' }}>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{selectedRowId ? 'แก้ไขข้อมูลอาหาร' : 'เพิ่มข้อมูลอาหาร'}</DialogTitle>
         <DialogContent>
@@ -350,11 +373,17 @@ const ManageFoodsChef: React.FC = () => {
                   value={field.value || ""}
                   onChange={field.onChange}
                 >
-                  {categories.map((category) => (
+                  {Array.isArray(categories) && categories.length > 0 ? (
+                  categories.map((category) => (
                     <MenuItem key={category._id} value={category._id}>
                       {category.category_name}
                     </MenuItem>
-                  ))}
+                  ))
+                ) : (
+                  <MenuItem disabled value="">
+                    กรุณาเพิ่มข้อมูล product ก่อน
+                  </MenuItem>
+                )}
                 </TextField>
               )}
             />

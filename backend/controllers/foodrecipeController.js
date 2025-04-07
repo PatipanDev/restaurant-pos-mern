@@ -8,46 +8,46 @@ require('dotenv').config();
 // เพิ่มสูตรอาหารใหม่
 // เพิ่มสูตรอาหารใหม่
 exports.addFoodRecipe = async (req, res) => {
-    const { recipes_Quantity, recipes_Price, food_Id, product_Id } = req.body;
-  
-    try {
-      // ตรวจสอบว่าใน food_Id นี้มี product_Id ที่เหมือนกันหรือไม่
-      const existingRecipe = await Foodrecipe.findOne({ food_Id, product_Id });
-  
-      if (existingRecipe) {
-        return res.status(400).json({
-          message: 'ไม่สามารถเพิ่มสูตรอาหารได้ เนื่องจากมีอยู่แล้วใน',
-        });
-      }
-  
-      // สร้างสูตรอาหารใหม่
-      const foodRecipe = new Foodrecipe({
-        recipes_Quantity,
-        recipes_Price,
-        food_Id,
-        product_Id,
-      });
-  
-      // บันทึกสูตรอาหารในฐานข้อมูล
-      await foodRecipe.save();
-  
-      res.status(201).json({
-        _id: foodRecipe._id,
-        recipes_Quantity: foodRecipe.recipes_Quantity,
-        recipes_Price: foodRecipe.recipes_Price,
-        food_Id: foodRecipe.food_Id,
-        product_Id: foodRecipe.product_Id,
-        message: 'เพิ่มสูตรอาหารใหม่สำเร็จ',
-      });
-    } catch (error) {
-      console.error('Error during Foodrecipe registration:', error);
-      res.status(500).json({
-        message: 'เกิดข้อผิดพลาดขณะเพิ่มสูตรอาหาร',
-        error: error.message || error,
+  const { recipes_Quantity, recipes_Price, food_Id, product_Id } = req.body;
+
+  try {
+    // ตรวจสอบว่าใน food_Id นี้มี product_Id ที่เหมือนกันหรือไม่
+    const existingRecipe = await Foodrecipe.findOne({ food_Id, product_Id });
+
+    if (existingRecipe) {
+      return res.status(400).json({
+        message: 'ไม่สามารถเพิ่มสูตรอาหารได้ เนื่องจากมีอยู่แล้วใน',
       });
     }
-  };
-  
+
+    // สร้างสูตรอาหารใหม่
+    const foodRecipe = new Foodrecipe({
+      recipes_Quantity,
+      recipes_Price,
+      food_Id,
+      product_Id,
+    });
+
+    // บันทึกสูตรอาหารในฐานข้อมูล
+    await foodRecipe.save();
+
+    res.status(201).json({
+      _id: foodRecipe._id,
+      recipes_Quantity: foodRecipe.recipes_Quantity,
+      recipes_Price: foodRecipe.recipes_Price,
+      food_Id: foodRecipe.food_Id,
+      product_Id: foodRecipe.product_Id,
+      message: 'เพิ่มสูตรอาหารใหม่สำเร็จ',
+    });
+  } catch (error) {
+    console.error('Error during Foodrecipe registration:', error);
+    res.status(500).json({
+      message: 'เกิดข้อผิดพลาดขณะเพิ่มสูตรอาหาร',
+      error: error.message || error,
+    });
+  }
+};
+
 
 // ดึงข้อมูลสูตรอาหารทั้งหมด
 exports.getFoodRecipes = async (req, res) => {
@@ -114,24 +114,31 @@ exports.deleteFoodRecipe = async (req, res) => {
 
 
 exports.getFoodRecipesByFoodId = async (req, res) => {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    try {
-        // ใช้ find แทน findOne เพื่อดึงข้อมูลหลายอัน
-        const foodRecipes = await Foodrecipe.find({ food_Id: id })
-            .populate('food_Id')  // เชื่อมโยงกับข้อมูลใน food_Id
-            .populate('product_Id'); // เชื่อมโยงกับข้อมูลใน product_Id
-
-        if (!foodRecipes || foodRecipes.length === 0) {
-            return res.status(404).json({ message: 'ไม่พบข้อมูลสูตรอาหาร' });
+  try {
+    // ใช้ find แทน findOne เพื่อดึงข้อมูลหลายอัน
+    const foodRecipes = await Foodrecipe.find({ food_Id: id })
+      .populate('food_Id')  // เชื่อมโยงกับข้อมูลใน food_Id
+      .populate({
+        path: 'product_Id',
+        populate: {
+          path: 'unitId',
+          select: 'unit_Name' // เลือกเฉพาะ field ที่ต้องการ เช่น unit_Name
         }
+      });
+    const product = await Product.find()
+      .populate('unitId')
+      .populate('categoryId')
 
-        res.status(200).json(foodRecipes);
-    } catch (error) {
-        console.error('Error fetching food recipes by foodId:', error);
-        res.status(500).json({ message: 'เกิดข้อผิดพลาด', error: error.message });
-    }
+    res.status(200).json({
+      foodRecipes,
+      product
+    });
+  } catch (error) {
+    console.error('Error fetching food recipes by foodId:', error);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาด', error: error.message });
+  }
 };
 
-  
-  
+

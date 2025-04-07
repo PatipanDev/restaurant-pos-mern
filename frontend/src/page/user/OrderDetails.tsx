@@ -202,6 +202,25 @@ function OrderDetails() {
         )
     }
 
+    const onCancelled = async (order_id: string) => {
+        if (window.confirm("คุณต้องการสั่งอาหารใช่หรือไม่ ?")) {
+            try {
+                socket.emit('CancelledOrderDetail', {order_id});
+
+                setAlertSuccess(<div>ยกเลิกออเดอร์สำเร็จ</div>);
+                setTimeout(() => {
+                    // fetchPendingOrders();
+                    setOrders([]);
+                    setOrderDrinkDetails([]);
+                    setOrderFoodDetails([]);
+                    reset();
+                }, 2000);
+            } catch (error) {
+
+            };
+        }
+    }
+
     return (
         <Container maxWidth="sm" sx={{ mt: 4, p: 3, bgcolor: '#fff', boxShadow: 3, borderRadius: 2 }}>
             {/* ส่วนหัวที่มีไอคอนเมนูและราคารวม */}
@@ -213,15 +232,16 @@ function OrderDetails() {
                 >
                     <MoreVertIcon />
                 </IconButton>
-                <Menu
-                    anchorEl={anchorEl}
-                    open={open}
-                    onClose={handleClose}
-                >
-                    <MenuItem onClick={handleClose}>ดูรายละเอียด</MenuItem>
-                    <MenuItem onClick={handleClose}>แก้ไข</MenuItem>
-                    <MenuItem onClick={handleClose}>ลบ</MenuItem>
-                </Menu>
+                {order.map((item) => (
+                    <Menu
+                    key={item._id}
+                        anchorEl={anchorEl}
+                        open={open}
+                        onClose={handleClose}
+                    >
+                        <MenuItem onClick={() => onCancelled(item._id)}>ยกเลิกรายการ</MenuItem>
+                    </Menu>
+                ))}
             </Box>
             {/* แสดง Skeleton ขณะโหลดข้อมูล */}
             {loading ? (
@@ -432,5 +452,6 @@ function OrderDetails() {
         </Container>
     );
 }
+
 
 export default OrderDetails;

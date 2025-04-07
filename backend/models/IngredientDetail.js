@@ -4,11 +4,11 @@ const IngredientDetailSchema = new mongoose.Schema({
   IngredientDt_Qua: {
     type: Number,
   },
-  ingredient_id: {
+  ingredient_Id: {
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Ingredient',
   },
-  product_id: {
+  product_Id: {
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Product',
   },

@@ -106,7 +106,6 @@ const OrderTable = () => {
     // ฟังผลลัพธ์จาก Server
     socket.once('startConfirmed', (cooking) => {
       console.log('Cooking confirmed successfully:', cooking);
-      alert('ยืนยันคำสั่งซื้อสำเร็จ!');
 
       socket.emit('getOrderFoodDetails');
 
@@ -144,8 +143,6 @@ const OrderTable = () => {
     // ฟังผลลัพธ์จาก Server
     socket.once('FinishConfirmed', (cooking) => {
       console.log('Cooking Finish fconfirmed successfully 👌👌:', cooking);
-      alert('ยืนยันคำสั่งซื้อสำเร็จ!');
-
       socket.emit('getOrderFoodDetails');
 
       socket.on('orderFoodDetails', (orderDetails) => {

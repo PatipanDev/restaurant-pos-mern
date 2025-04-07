@@ -91,6 +91,10 @@ const DrinkDetail: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
 
   const onSubmit = async (data: FormDetail) => {
       try {
+        if(!user_id){
+          alert("กรุณาทำการล็อกอินก่อนสั่งซื้อ")
+          return
+        }
         const orderData = {
           customer_Id: user_id,
           ...data,

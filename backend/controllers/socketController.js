@@ -95,6 +95,42 @@ module.exports = function (io) {
     });
 
 
+    socket.on('CancelledOrderDetail', async ({order_id}) => {
+      try {
+        console.log(order_id);
+    
+        // ค้นหาคำสั่งจากฐานข้อมูล
+        const order = await Order.findById(order_id);  // ต้องใช้ await เพื่อให้การค้นหาทำงานเสร็จก่อน
+      
+        if (order) {
+          // อัปเดตสถานะคำสั่งเป็น "Cancelled"
+          order.order_Status = "Cancelled";
+    
+          // บันทึกการเปลี่ยนแปลง
+          await order.save();  // ใช้ await เพื่อให้การบันทึกข้อมูลสำเร็จ
+    
+          // ตอบกลับข้อมูลคำสั่งที่ถูกยกเลิกกลับไปยังผู้ใช้
+          socket.emit('OrderCancelled', {
+            message: `คำสั่ง ${order_id} ถูกยกเลิกแล้ว`,
+            orderDetails: order,  // ส่งข้อมูลของคำสั่งที่ถูกยกเลิก
+          });
+        } else {
+          // ถ้าไม่พบคำสั่ง ส่งข้อความกลับไปแจ้งให้ทราบ
+          socket.emit('OrderCancelled', {
+            message: 'ไม่พบคำสั่งที่ระบุ',
+          });
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        // ส่งข้อความกลับไปแจ้งให้ทราบว่าเกิดข้อผิดพลาด
+        socket.emit('OrderCancelled', {
+          message: 'เกิดข้อผิดพลาดในการยกเลิกคำสั่ง',
+        });
+      }
+    });
+
+
+
     //ดึงข้อมูลอาหารที่เชฟต้องทำ
     socket.on('getOrderFoodDetails', async () => {
       try {

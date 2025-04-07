@@ -297,7 +297,7 @@ const ManageFoods: React.FC = () => {
   };
 
   return (
-    <div style={{ height: '90vh', width: '100%' }}>
+    <div style={{ height: '90vh', width: '80vw' }}>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{selectedRowId ? 'แก้ไขข้อมูลอาหาร' : 'เพิ่มข้อมูลอาหาร'}</DialogTitle>
         <DialogContent>

@@ -42,12 +42,23 @@ router.post('/createOrderDrinkDetail', orderControllor.createOrderDrinkDetail)
 router.get('/getPendingOrdersByCustomer/:id', orderControllor.getPendingOrdersByCustomer)
 //ดึงข้อมูลรายการอาหารที่กำลังดำเนินการ
 router.get('/getInProgressOrdersByCustomer/:id', orderControllor.getInProgressOrdersByCustomer)
+router.get('/getCompletedOrdersByCustomer/:id', orderControllor.getCompletedOrdersByCustomer)
+router.get('/getCancelledByCustomer/:id', orderControllor.getCancelledByCustomer)
+
+router.get('/getPendingOrdersByCustomerOrEmployee/:id', orderControllor.getPendingOrdersByCustomerOrEmployee)
+router.get('/getInProgressOrdersByCustomerOrEmployee/:id', orderControllor.getInProgressOrdersByCustomerOrEmployee)
+router.get('/getCompletedOrdersByCustomerOrEmployee/:id', orderControllor.getCompletedOrdersByCustomerOrEmployee)
+router.get('/getCancelledByCustomerOrEmployee/:id', orderControllor.getCancelledByCustomerOrEmployee)
+
+
 
 //ดึงข้อมูลอาหารโดยพนักงาน
 router.get('/getPendingOrdersByEmployee/:_id', orderControllor.getPendingOrdersByEmployee)
 
 // ลูกค้าชำระเงิน รอแคชเชียร์ทำการชำระเงิน
 router.post('/createPaymentOrderCustomer', orderControllor.createPaymentOrderCustomer)
+//ลูกค้าดึงรายการที่สำเร็จ
+
 
 
 
@@ -58,6 +69,7 @@ router.get('/getPaymentsByOrder/:orderId', paymentControllor.getPaymentsByOrder)
 
 //แคชเชียร์ดึงข้อมูลรายการลูกค้าที่ต้องชำระ
 router.get('/getpaymentorderByCashier', paymentControllor.getpaymentorderByCashier)
+router.get('/getpaymentorderByCashierFinish', paymentControllor.getpaymentorderByCashierFinish)
 
 //อัพเดตรายการอาหาร
 router.put('/updateQuantityFood/:_id', paymentControllor.updateQuantityFood)

@@ -95,7 +95,10 @@ const ManageDoce = () => {
         setValue('sender_Name', selectedRow.sender_Name);
         setValue('receiver_Name', selectedRow.receiver_Name);
         setValue('description', selectedRow.description);
-        setValue('shipment_Date', selectedRow.shipment_Date);
+        const rawDate = new Date(selectedRow.shipment_Date);
+        const formattedDate: any = rawDate.toISOString().split('T')[0]; // ได้รูปแบบ "2025-03-20"
+
+        setValue('shipment_Date', formattedDate);
         setValue('delivery_Status', selectedRow.delivery_Status);
         setValue('supplier_Id', selectedRow.supplier_Id);
         setValue('orderproduct_id', selectedRow.orderproduct_id);
@@ -170,7 +173,16 @@ const ManageDoce = () => {
       headerName: 'วันที่ส่ง',
       flex: 1,
       minWidth: 100,
-      renderCell: (params) => params.row?.shipment_Date,
+      renderCell: (params) => {
+        const rawDate = params.row.shipment_Date;
+        const date = new Date(rawDate);
+
+        return date.toLocaleDateString('th-TH', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+        });
+    },
     },
     {
       field: 'description',

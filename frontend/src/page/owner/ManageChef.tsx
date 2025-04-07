@@ -75,7 +75,10 @@ const ManageChefs: React.FC = () => {
         setValue('chef_Details', selectedRow.chef_Details);
         setValue('chef_Weight', selectedRow.chef_Weight);
         setValue('chef_Height', selectedRow.chef_Height);
-        setValue('chef_Birthday', selectedRow.chef_Birthday);
+        const rawDate = new Date(selectedRow.chef_Birthday);
+        const formattedDate: any = rawDate.toISOString().split('T')[0]; // ได้รูปแบบ "2025-03-20"
+
+        setValue('chef_Birthday', formattedDate);
       }
     }
   }, [selectedRowId, rows, setValue]);
@@ -89,11 +92,23 @@ const ManageChefs: React.FC = () => {
       renderCell: (params) => rows.indexOf(params.row) + 1,
     },
     { field: 'chef_Name', headerName: 'ชื่อ', flex: 1, minWidth: 180 },
-    { field: 'chef_Password', headerName: 'รหัสผ่าน', flex: 2, minWidth: 200 },
-    { field: 'chef_Details', headerName: 'รายละเอียด', flex: 2, minWidth: 200 },
     { field: 'chef_Weight', headerName: 'น้ำหนัก', flex: 1, minWidth: 100 },
     { field: 'chef_Height', headerName: 'ส่วนสูง', flex: 1, minWidth: 100 },
-    { field: 'chef_Birthday', headerName: 'วันเกิด', flex: 1, minWidth: 150 },
+    {
+      field: 'chef_Birthday', headerName: 'วันเกิด', flex: 1,
+      minWidth: 150,
+      renderCell: (params) => {
+        const rawDate = params.row?.chef_Birthday;
+        const date = new Date(rawDate);
+
+        return date.toLocaleDateString('th-TH', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        });
+      },
+    },
+    { field: 'chef_Details', headerName: 'รายละเอียด', flex: 2, minWidth: 200 },
     {
       field: 'actions',
       headerName: 'แก้ไขข้อมูล',
@@ -152,7 +167,7 @@ const ManageChefs: React.FC = () => {
 
   const onSubmit = async (data: FormData) => {
     console.log("Form Data:", data);
-  
+
     try {
       if (selectedRowId !== null) {
         const updatedData = {
@@ -163,13 +178,13 @@ const ManageChefs: React.FC = () => {
           chef_Details: data.chef_Details,
           chef_Birthday: data.chef_Birthday,
         };
-  
+
         await axios
           .put(`${API_URL}/api/auth/updateChef/${selectedRowId}`, updatedData) // เปลี่ยน endpoint เป็น /api/chefs
           .then((response) => {
             console.log("Update successful", response.data);
             setAlertSuccess(<div>อัปเดตข้อมูลสำเร็จ</div>);
-  
+
             // อัปเดตข้อมูลที่แสดงใน UI
             const updatedRows = rows.map((row) =>
               row._id === selectedRowId ? { ...row, ...updatedData } : row
@@ -197,7 +212,7 @@ const ManageChefs: React.FC = () => {
   };
 
   return (
-    <div style={{ height: '90vh', width: '100%' }}>
+    <div style={{ height: '90vh', width: '80vw' }}>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{selectedRowId ? 'แก้ไขข้อมูลเชฟ' : 'เพิ่มข้อมูลเชฟ'}</DialogTitle>
         <DialogContent>

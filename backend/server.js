@@ -64,6 +64,7 @@ setupSocket(io);
 
 app.use('/images', express.static(path.join(__dirname, 'uploads' ,'image')));
 app.use('/imagesdrink', express.static(path.join(__dirname, 'uploads' ,'drink-images')));
+app.use('/imagesetting', express.static(path.join(__dirname, 'uploads' ,'image-setting')));
 
 
 // สร้าง Route (หน้าหลัก)

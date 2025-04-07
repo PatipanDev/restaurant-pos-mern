@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, CssBaseline, Paper, Typography, Grid, Card, CardContent, Button, Tabs, Tab, Divider } from '@mui/material';
 
-import OrderDetailsCard from './componentEmployee/OrderDetailsCard';
+import CashierPayment from '../CashierPayment';
+import CashierPaymentFinish from '../CashierPaymentfinish';
 
-const OrderCheck = () => {
+const TabReceipt = () => {
   const [tabIndex, setTabIndex] = useState(0); // แท็บที่เลือก
   const navigate = useNavigate();
 
@@ -21,28 +22,25 @@ const OrderCheck = () => {
   return (
     <div>
       <>
-        <Typography variant="h4" gutterBottom>รายการที่ต้องตรวจสอบ</Typography>
+        <Box sx={{margin: 1 ,marginLeft: 4 }}>
+        <Typography variant="h4" >หน้าขาย</Typography>
+
+        </Box>
         {/* Tabs */}
         <Tabs value={tabIndex} onChange={handleTabChange}>
-          <Tab label="ตรวจสอบรายการอาหาร" />
-          <Tab label="กำลังดำเนินการ" />
-          <Tab label="รายการที่สำเร็จ" />
-          <Tab label="รายการที่ยกเลิก" />
+          <Tab label="ตรวจสอบรายการ" />
+          <Tab label="ประวัติรายการ" />
         </Tabs>
 
         {tabIndex === 0 ? (
           <div>
-            <OrderDetailsCard/>
+            <CashierPayment/>
           </div>
 
         ) : tabIndex === 1 ? (
           <div>
-
+            <CashierPaymentFinish/>
           </div>
-        ) : tabIndex === 2 ? (
-          <div>เนื้อหาสำหรับ tab 3</div>
-        ) : tabIndex === 3 ? (
-          <div>เนื้อหาสำหรับ tab 4</div>
         ) : (
           <div>ไม่มีเนื้อหา</div>
         )}
@@ -54,5 +52,5 @@ const OrderCheck = () => {
   );
 };
 
-export default OrderCheck;
+export default TabReceipt;
 

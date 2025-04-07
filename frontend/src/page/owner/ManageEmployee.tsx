@@ -58,8 +58,8 @@ const ManageEmployee: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<GridRowId | null>(null);
   //ส่วนของการแจ้งเตือน
-    const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
-    const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
+  const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
+  const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
 
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
     resolver: yupResolver(schema),
@@ -73,7 +73,7 @@ const ManageEmployee: React.FC = () => {
         console.log(response.data)
       } catch (error) {
         console.error('Error fetching data:', error);
-      } 
+      }
     };
 
     fetchData();
@@ -89,7 +89,10 @@ const ManageEmployee: React.FC = () => {
       setValue('employee_Height', selectedRow.employee_Height);
       setValue('employee_Address', selectedRow.employee_Address);
       setValue('employee_Details', selectedRow.employee_Details);
-      setValue('employee_Birthday', selectedRow.employee_Birthday);
+      const rawDate = new Date(selectedRow.employee_Birthday);
+      const formattedDate: any = rawDate.toISOString().split('T')[0]; // ได้รูปแบบ "2025-03-20"
+
+      setValue('employee_Birthday', formattedDate);
     }
   }, [selectedRowId, rows, setValue]);
 
@@ -102,12 +105,27 @@ const ManageEmployee: React.FC = () => {
       renderCell: (params) => rows.indexOf(params.row) + 1,
     },
     { field: 'employee_Name', headerName: 'ชื่อ', flex: 1, minWidth: 180 },
-    { field: 'employee_Citizen_id', headerName: 'เลขบัตรประชาชน', flex: 1, minWidth: 200 },
-    { field: 'employee_Weight', headerName: 'น้ำหนัก', flex: 1, minWidth: 100 },
-    { field: 'employee_Height', headerName: 'ส่วนสูง', flex: 1, minWidth: 100 },
-    { field: 'employee_Address', headerName: 'ที่อยู่', flex: 2, minWidth: 200 }, // flex: 2 ให้คอลัมน์นี้ใช้พื้นที่มากกว่าคอลัมน์อื่น
-    { field: 'employee_Details', headerName: 'รายละเอียด', flex: 2, minWidth: 200 }, // flex: 2 ให้คอลัมน์นี้ใช้พื้นที่มากกว่าคอลัมน์อื่น
-    { field: 'employee_Birthday', headerName: 'วันเกิด', flex: 1, minWidth: 150 },
+    { field: 'employee_Citizen_id', headerName: 'เลขบัตรประชาชน', flex: 1, minWidth: 100 },
+    { field: 'employee_Weight', headerName: 'น้ำหนัก (Kg)', flex: 1, minWidth: 100 },
+    { field: 'employee_Height', headerName: 'ส่วนสูง (cm)', flex: 1, minWidth: 100 },
+    { field: 'employee_Address', headerName: 'ที่อยู่', flex: 2, minWidth: 100 }, // flex: 2 ให้คอลัมน์นี้ใช้พื้นที่มากกว่าคอลัมน์อื่น
+    { field: 'employee_Details', headerName: 'รายละเอียด', flex: 2, minWidth: 100 }, // flex: 2 ให้คอลัมน์นี้ใช้พื้นที่มากกว่าคอลัมน์อื่น
+    {
+      field: 'employee_Birthday',
+      headerName: 'วันเกิด',
+      flex: 1,
+      minWidth: 100,
+      renderCell: (params) => {
+        const rawDate = params.row.employee_Birthday;
+        const date = new Date(rawDate);
+
+        return date.toLocaleDateString('th-TH', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        });
+      },
+    },
     {
       field: 'actions',
       headerName: 'แก้ไขข้อมูล',
@@ -121,10 +139,10 @@ const ManageEmployee: React.FC = () => {
       headerName: 'ลบข้อมูล',
       width: 100,
       renderCell: (params) => (
-        <Button variant="outlined" startIcon={<DeleteIcon />}color="error" onClick={() => handleDeleteClick(params.id)}>ลบ</Button>
+        <Button variant="outlined" startIcon={<DeleteIcon />} color="error" onClick={() => handleDeleteClick(params.id)}>ลบ</Button>
       ),
     },
-    
+
   ];
 
 
@@ -132,30 +150,30 @@ const ManageEmployee: React.FC = () => {
     // console.log(id)
     const confirmDelete = window.confirm('คุณแน่ใจหรือไม่ว่าจะลบข้อมูลนี้?');
     if (confirmDelete) {
-        try {
-            // ใช้ params.row._id แทน params.id ถ้าต้องการใช้ _id ใน MongoDB
-            const employeeId = rows.find((row) => row._id === id)?._id;
-            if (employeeId) {
-                // ส่งคำขอ DELETE ไปยัง API โดยใช้ 'employeeId' ที่ตรงกับ _id ของข้อมูล
-                await axios.delete(`${API_URL}/api/auth/deleteemployee/${employeeId}`);
-                // console.log(employeeId)
+      try {
+        // ใช้ params.row._id แทน params.id ถ้าต้องการใช้ _id ใน MongoDB
+        const employeeId = rows.find((row) => row._id === id)?._id;
+        if (employeeId) {
+          // ส่งคำขอ DELETE ไปยัง API โดยใช้ 'employeeId' ที่ตรงกับ _id ของข้อมูล
+          await axios.delete(`${API_URL}/api/auth/deleteemployee/${employeeId}`);
+          // console.log(employeeId)
 
-                // อัพเดต state ของแถวใน local หลังจากลบสำเร็จ
-                const updatedRows = rows.filter((row) => row._id !== employeeId);
-                setRows(updatedRows);
+          // อัพเดต state ของแถวใน local หลังจากลบสำเร็จ
+          const updatedRows = rows.filter((row) => row._id !== employeeId);
+          setRows(updatedRows);
 
-                setAlertSuccess(<div>ลบข้อมูลสำเร็จ</div>)
-            } else {
-                alert('ไม่พบข้อมูลที่จะลบ');
-            }
-        } catch (error) {
-            console.error('เกิดข้อผิดพลาดในการลบข้อมูล:', error);
-            // alert('ไม่สามารถลบข้อมูลได้');
+          setAlertSuccess(<div>ลบข้อมูลสำเร็จ</div>)
+        } else {
+          alert('ไม่พบข้อมูลที่จะลบ');
         }
+      } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการลบข้อมูล:', error);
+        // alert('ไม่สามารถลบข้อมูลได้');
+      }
     } else {
-        // ผู้ใช้ยกเลิกการลบ
+      // ผู้ใช้ยกเลิกการลบ
     }
-};
+  };
 
 
 
@@ -194,16 +212,16 @@ const ManageEmployee: React.FC = () => {
           `${API_URL}/api/auth/updateemployee/${selectedRowId}`,
           updatedData
         )
-        .then(response => {
-          console.log('Update successful', response.data);
-        setAlertSuccess(<div>อัตเดตข้อมูลสำเร็จ</div>)
+          .then(response => {
+            console.log('Update successful', response.data);
+            setAlertSuccess(<div>อัตเดตข้อมูลสำเร็จ</div>)
 
-          // อัปเดตข้อมูลที่แสดงใน UI
-          const updatedRows = rows.map((row) =>
-            row._id === selectedRowId ? { ...row, ...updatedData } : row
-          );
-          setRows(updatedRows);
-        })
+            // อัปเดตข้อมูลที่แสดงใน UI
+            const updatedRows = rows.map((row) =>
+              row._id === selectedRowId ? { ...row, ...updatedData } : row
+            );
+            setRows(updatedRows);
+          })
       } else {
         // เพิ่มข้อมูลใหม่
         const response = await axios.post(`${API_URL}/api/auth/registeremployee`, data); // แทนที่ด้วย endpoint ของคุณ
@@ -218,7 +236,7 @@ const ManageEmployee: React.FC = () => {
 
   return (
 
-    <div style={{ height: '90vh', width: '100%' }}>
+    <div style={{ height: '90vh', width: '80vw' }}>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{selectedRowId ? 'แก้ไขข้อมูล' : 'เพิ่มข้อมูล'}</DialogTitle>
         <DialogContent>
@@ -288,7 +306,7 @@ const ManageEmployee: React.FC = () => {
       </Dialog>
 
       <ErrorBoundary>
-      <DataGrid rows={rows} columns={columns} getRowId={(row) => row._id} />
+        <DataGrid rows={rows} columns={columns} getRowId={(row) => row._id} />
 
       </ErrorBoundary>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20 }}>
@@ -299,7 +317,7 @@ const ManageEmployee: React.FC = () => {
           เพิ่มข้อมูล
         </Button>
         <WarningAlert messagealert={alertMessage} />
-        <SuccessAlert successalert={alertSuccess}/>
+        <SuccessAlert successalert={alertSuccess} />
       </div>
       {/* ... (Dialog) */}
     </div>

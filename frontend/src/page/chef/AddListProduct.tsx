@@ -183,11 +183,6 @@ const AddListProductDetail: React.FC<OrderProductDetailsProps> = ({ id, onClose 
                         console.log('Update successful', response.data);
                         fetchData();
                         setAlertSuccess(<div>อัปเดตข้อมูลสำเร็จ</div>);
-
-                        const updatedRows = rows.map((row) =>
-                            row._id === selectedRowId ? { ...row, ...updatedData } : row
-                        );
-                        setRows(updatedRows);
                     })
                     .catch((error: any) => {
                         console.error('Error updating data:', error);
@@ -208,7 +203,6 @@ const AddListProductDetail: React.FC<OrderProductDetailsProps> = ({ id, onClose 
 
                 if (response.status === 200) {
                     fetchData();
-                    setRows([...rows, response.data]);
                     setAlertSuccess(<div>เพิ่มข้อมูลสำเร็จ</div>);
                 } else {
                     setAlertMessage(<div>เกิดข้อผิดพลาดในการเพิ่มข้อมูล</div>)

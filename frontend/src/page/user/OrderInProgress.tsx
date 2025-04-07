@@ -108,11 +108,16 @@ function OrderDetails() {
             setOrderFoodDetails(response.data.orderFoodDetails);
             setOrderDrinkDetails(response.data.orderDrinkDetails);
             setTables(response.data.tables);
-            if (response.data.payment) {
+            // console.log('fsdfdsf',response.data.payment)
+            if (response.data.payment && response.data.payment.length > 0) {
                 setPayment(response.data.payment);
+                // อาจจะตั้งค่า isPaymentPending เป็น false ในกรณีที่มีข้อมูลแล้ว
                 setIsPaymentPending(true);
+            } else {
+                // กรณีไม่มีข้อมูลการชำระเงิน (อาเรย์ว่างเปล่า หรือ payment เป็น null/undefined)
+                setPayment([]); // หรือค่าเริ่มต้นอื่น ๆ ที่เหมาะสม
+                // setIsPaymentPending(true); // หรือคงค่าเดิมไว้ ขึ้นอยู่กับ logic
             }
-
             console.log(response.data);
 
         } catch (error) {
@@ -126,7 +131,7 @@ function OrderDetails() {
         try {
             const response = await axios.get(`${API_URL}/api/food/getPaymentsByOrder/${order_Id}`);
             setPayment(response.data.orders);
-            console.log(response.data);
+            console.log('dsdsds',response.data);
             if (response.data.orders && response.data.orders.length > 0) {
                 setIsPaymentPending(false)
 
@@ -144,7 +149,6 @@ function OrderDetails() {
     useEffect(() => {
         if (id) {  // ตรวจสอบว่า customerId มีค่   
             fetchPendingOrders();
-            // setPayment([]);
         }
     }, [id]);  // เพิ่ม customerId ใน dependency array
 
@@ -206,7 +210,7 @@ function OrderDetails() {
     return (
         <Container maxWidth="sm" sx={{ mt: 4, p: 3, bgcolor: '#fff', boxShadow: 3, borderRadius: 2, }}>
             {/* ส่วนหัวที่มีไอคอนเมนูและราคารวม */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            {/* <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Typography variant="h6">เมนูอาหาร</Typography>
                 <IconButton
                     aria-label="menu"
@@ -223,7 +227,7 @@ function OrderDetails() {
                     <MenuItem onClick={handleClose}>แก้ไข</MenuItem>
                     <MenuItem onClick={handleClose}>ลบ</MenuItem>
                 </Menu>
-            </Box>
+            </Box> */}
             {/* แสดง Skeleton ขณะโหลดข้อมูล */}
             {loading ? (
                 <>
@@ -366,7 +370,7 @@ function OrderDetails() {
                                     <TableCell>{index + 1}</TableCell>
                                     <TableCell>{DrinkDetails.drink_Id.drink_Name}</TableCell>
                                     <TableCell>{DrinkDetails.orderDetail_More}</TableCell>
-                                    <TableCell>{DrinkDetails.orderDetail_Quantity}</TableCell>
+                                    <TableCell>x{DrinkDetails.orderDetail_Quantity}</TableCell>
                                     <TableCell>{DrinkDetails.drink_Id.drink_Price}</TableCell>
                                     <TableCell>{DrinkDetails.orderDetail_Quantity * parseFloat(DrinkDetails.drink_Id.drink_Price)} บาท</TableCell>
                                 </TableRow>

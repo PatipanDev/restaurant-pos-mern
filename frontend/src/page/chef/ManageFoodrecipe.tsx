@@ -55,15 +55,14 @@ const ManageFoodRecipe: React.FC<FoodRecipeDetailsProps> = ({ id, name, onClose 
 
   const fetchData = async () => {
     try {
-      const productsResponse = await axios.get(`${API_URL}/api/data/getproducts`);
-      setProducts(productsResponse.data);
+ 
 
-      const foodRecipeResponse = await axios.get(`${API_URL}/api/data/getFoodRecipes/${id}`);
-      setRows(foodRecipeResponse.data);
+      const Response = await axios.get(`${API_URL}/api/data/getFoodRecipes/${id}`);
+      setRows(Response.data.foodRecipes);
+      setProducts(Response.data.product)
 
-      console.log('Food Recipes:', foodRecipeResponse.data);
+      console.log('Food Recipes:', Response.data);
       console.log('Food id:', id);
-      console.log('Products:', productsResponse.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -88,7 +87,16 @@ const ManageFoodRecipe: React.FC<FoodRecipeDetailsProps> = ({ id, name, onClose 
     { field: 'index', headerName: 'ลำดับ', flex: 0.9, width: 30, renderCell: (params) => rows.indexOf(params.row) + 1 },
     { field: 'product_Id', headerName: 'สินค้า', flex: 1, minWidth: 180, renderCell: (params) => params.row.product_Id?.product_Name },
     { field: 'recipes_Quantity', headerName: 'ปริมาณ', flex: 1, minWidth: 100 },
-    { field: 'recipes_Price', headerName: 'ราคา', flex: 1, minWidth: 100 }, // เพิ่มคอลัมน์ราคา
+    { 
+      field: 'recipes_unit', 
+      headerName: 'หน่วย', 
+      flex: 1, 
+      minWidth: 100,
+      renderCell: (params) => params.row.product_Id?.unitId?.unit_Name
+    },
+    { field: 'recipes_Price', headerName: 'ราคา', flex: 1, minWidth: 100, 
+      align: 'center', // ข้อความชิดขวา
+    }, // เพิ่มคอลัมน์ราคา
     {
       field: 'actions',
       headerName: 'แก้ไขข้อมูล',
@@ -212,11 +220,41 @@ const ManageFoodRecipe: React.FC<FoodRecipeDetailsProps> = ({ id, name, onClose 
   };
 
   return (
-    <div style={{ height: '90vh', width: '100%', marginBottom: 70 }}>
+    <div style={{ height: '90vh', width: '80vw', marginBottom: 70 }}>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{selectedRowId ? 'แก้ไขรายละเอียดสูตรอาหาร' : 'เพิ่มรายละเอียดสูตรอาหาร'}</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit(onSubmit)}>
+          <Controller
+              name="product_Id"
+              control={control}
+              rules={{ required: 'กรุณาเลือกสินค้า' }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  select
+                  label="สินค้า"
+                  fullWidth
+                  margin="dense"
+                  error={!!errors.product_Id}
+                  helperText={errors.product_Id?.message}
+                  value={field.value || ''}
+                  onChange={field.onChange}
+                >
+                  {Array.isArray(products) && products.length > 0 ? (
+                    products.map((product) => (
+                      <MenuItem key={product._id} value={product._id}>
+                        {product?.product_Name} {product?.unitId?.unit_Name}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled value="">
+                      กรุณาเพิ่มข้อมูล สินค้า ก่อน
+                    </MenuItem>
+                  )}
+                </TextField>
+              )}
+            />
             <Controller
               name="recipes_Quantity"
               control={control}
@@ -243,7 +281,7 @@ const ManageFoodRecipe: React.FC<FoodRecipeDetailsProps> = ({ id, name, onClose 
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="ราคาอาหาร"
+                  label="ราคา/ปริมาณ"
                   type="number"
                   fullWidth
                   margin="dense"
@@ -252,31 +290,6 @@ const ManageFoodRecipe: React.FC<FoodRecipeDetailsProps> = ({ id, name, onClose 
                   onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} // แปลงค่าเป็นตัวเลข
                   value={field.value || 0} // ถ้าไม่มีค่าให้ใช้ค่าเริ่มต้นเป็น 0
                 />
-              )}
-            />
-
-            <Controller
-              name="product_Id"
-              control={control}
-              rules={{ required: 'กรุณาเลือกสินค้า' }}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  select
-                  label="สินค้า"
-                  fullWidth
-                  margin="dense"
-                  error={!!errors.product_Id}
-                  helperText={errors.product_Id?.message}
-                  value={field.value || ''}
-                  onChange={field.onChange}
-                >
-                  {products.map((product) => (
-                    <MenuItem key={product._id} value={product._id}>
-                      {product.product_Name}
-                    </MenuItem>
-                  ))}
-                </TextField>
               )}
             />
           </form>

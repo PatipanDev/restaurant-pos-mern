@@ -3,9 +3,7 @@ const IngredientDetail = require('../models/IngredientDetail'); // แก้ไ�
 const Product = require('../models/Product'); // หากต้องการดึงข้อมูล Product
 const express = require('express');
 const router = express.Router();
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
-// const Product = require('../models/Product');
+
 
 // เพิ่ม IngredientDetail ใหม่
 const mongoose = require("mongoose");
@@ -14,42 +12,42 @@ const mongoose = require("mongoose");
 
 // เพิ่ม IngredientDetail และอัปเดต Product ด้วย Transaction
 exports.addIngredientDetail = async (req, res) => {
-  const { IngredientDt_Qua, ingredient_id, product_id } = req.body;
+  const { IngredientDt_Qua, ingredient_Id, product_Id } = req.body;
 
   try {
-    // ✅ 1. ค้นหา Product ที่ต้องอัปเดต
-    const product = await Product.findById(product_id);
+    // ค้นหา Product ที่ต้องอัปเดต
+    const product = await Product.findById(product_Id);
     if (!product) {
       return res.status(404).json({ message: "ไม่พบสินค้าในระบบ" });
     }
 
-    // ✅ 2. ตรวจสอบว่า IngredientDt_Qua มากกว่าจำนวน stock หรือไม่
+    // ตรวจสอบว่า IngredientDt_Qua มากกว่าจำนวน stock หรือไม่
     if (IngredientDt_Qua > product.product_Stock) {
       return res.status(400).json({
         message: `ไม่สามารถเพิ่ม Ingredient ได้ เนื่องจากมี Stock เพียง ${product.product_Stock}`,
       });
     }
 
-    // ✅ 3. เพิ่มข้อมูล IngredientDetail ใหม่
+    // เพิ่มข้อมูล IngredientDetail ใหม่
     const ingredientDetail = new IngredientDetail({
       IngredientDt_Qua,
-      ingredient_id,
-      product_id,
+      ingredient_Id,
+      product_Id,
     });
     await ingredientDetail.save();
 
-    // ✅ 4. คำนวณค่าใหม่
+    // คำนวณค่าใหม่
     product.product_Quantity += IngredientDt_Qua;
     product.product_Stock -= IngredientDt_Qua;
 
-    // ✅ 5. บันทึกค่าใหม่กลับไปในฐานข้อมูล
+    // บันทึกค่าใหม่กลับไปในฐานข้อมูล
     await product.save();
 
-    res.status(201).json({
+    res.status(200).json({
       _id: ingredientDetail._id,
       IngredientDt_Qua: ingredientDetail.IngredientDt_Qua,
-      ingredient_id: ingredientDetail.ingredient_id,
-      product_id: ingredientDetail.product_id,
+      ingredient_Id: ingredientDetail.ingredient_Id,
+      product_Id: ingredientDetail.product_Id,
       updatedProduct: {
         product_Quantity: product.product_Quantity,
         product_Stock: product.product_Stock,
@@ -71,33 +69,35 @@ exports.addIngredientDetail = async (req, res) => {
 
 // ดึงข้อมูล IngredientDetail ทั้งหมด
 exports.getIngredientDetailsByIngredientId = async (req, res) => {
-    try {
-        const { id } = req.params; // รับค่า ingredient_id จาก URL parameter
+  try {
+      const { id } = req.params; // รับค่า ingredient_id จาก URL parameter
+      console.log(id);
 
-        // ค้นหาข้อมูล IngredientDetail ที่มี ingredient_id ตรงกับ id ที่ส่งมา
-        const ingredientDetails = await IngredientDetail.find({ ingredient_id: id })
-            .populate('ingredient_id')
-            .populate({
-                path: 'product_id',
-                populate: { path: 'unitId', select: 'unit_Name' } // ✅ ดึง unit_name จาก unitId ที่อยู่ใน product_id
-            });
+      // ค้นหา ingredient detail ด้วย ID เดียว
+      const ingredientDetails = await IngredientDetail.find({ingredient_Id:id})
+          .populate('ingredient_Id')
+          .populate({
+              path: 'product_Id',
+              populate: { path: 'unitId', select: 'unit_Name' } // ดึง unit_Name จาก unitId
+          });
 
-        if (!ingredientDetails || ingredientDetails.length === 0) {
-            return res.status(404).json({ message: 'ไม่พบข้อมูล' }); // ถ้าไม่พบข้อมูล
-        }
+      // ตรวจสอบว่าเจอข้อมูลหรือไม่
+      if (!ingredientDetails) {
+          return res.status(404).json({ message: 'ไม่พบข้อมูล' });
+      }
 
-        res.status(200).json(ingredientDetails); // ส่งข้อมูลกลับเป็น array
-    } catch (error) {
-        console.error('Error fetching ingredient details:', error);
-        res.status(500).json({ message: 'เกิดข้อผิดพลาด', error: error.message });
-    }
+      res.status(200).json(ingredientDetails); // ส่งข้อมูลกลับ
+  } catch (error) {
+      console.error('Error fetching ingredient details:', error);
+      res.status(500).json({ message: 'เกิดข้อผิดพลาด', error: error.message });
+  }
 };
   
 
 // อัปเดต IngredientDetail
 exports.updateIngredientDetail = async (req, res) => {
   const { id } = req.params;
-  const { IngredientDt_Qua, ingredient_id, item_id, product_id } = req.body;
+  const { IngredientDt_Qua, ingredient_Id, item_Id, product_Id } = req.body;
 
   try {
     // ค้นหาข้อมูล IngredientDetail ที่จะอัปเดต
@@ -109,13 +109,13 @@ exports.updateIngredientDetail = async (req, res) => {
     const quantityDifference = IngredientDt_Qua - previousQuantity;
 
     // ค้นหาข้อมูล Product ที่เกี่ยวข้อง
-    const product = await Product.findById(product_id);
+    const product = await Product.findById(product_Id);
     if (!product) return res.status(404).json({ message: 'ไม่พบสินค้าในระบบ' });
 
     // อัปเดต IngredientDetail
     ingredientDetail.IngredientDt_Qua = IngredientDt_Qua;
-    ingredientDetail.ingredient_id = ingredient_id;
-    ingredientDetail.item_id = item_id;
+    ingredientDetail.ingredient_Id = ingredient_Id;
+    ingredientDetail.item_id = item_Id;
 
     // คำนวณค่าใหม่ของ Product
     product.product_Quantity += quantityDifference;
@@ -159,7 +159,7 @@ exports.deleteIngredientDetail = async (req, res) => {
     }
 
     // ค้นหา Product ที่เกี่ยวข้อง (ถ้ายังมีอยู่)
-    const product = await Product.findById(ingredientDetail.product_id);
+    const product = await Product.findById(ingredientDetail.product_Id);
 
     if (product) {
       // ตรวจสอบว่าค่าที่ลบออกจะไม่ทำให้ product_Quantity ติดลบ

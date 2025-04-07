@@ -8,9 +8,15 @@ const Payment = require('../models/Payment')
 
 exports.createOrderFoodDetail = async (req, res) => {
     try {
-        const { customer_Id, orderDetail_More, food_Id, orderDetail_Quantity } = req.body;
+        const { customer_Id, orderDetail_More, food_Id, orderDetail_Quantity, employee_Id } = req.body;
 
-        if (!customer_Id || !food_Id || !orderDetail_Quantity) {
+        console.log(employee_Id+"fdsfdsf")
+
+        if(employee_Id){
+            return await employeeOrderGiveCutomer(req, res); 
+        }
+
+        if (!food_Id || !orderDetail_Quantity) {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
@@ -18,9 +24,10 @@ exports.createOrderFoodDetail = async (req, res) => {
         let latestOrder = await Order.findOne({ customer_Id }).sort({ createdAt: -1 });
 
         // If latest order exists and has status 'In Progress', create a new order instead
-        if (latestOrder && latestOrder.order_Status === 'In Progress') {
+        if (latestOrder && (latestOrder.order_Status === 'In Progress' || latestOrder.order_Status === 'Cancelled' || latestOrder.order_Status === 'Completed')) {
             latestOrder = null; // Ignore this order and proceed with creating a new one
         }
+
 
         if (latestOrder) {
             // Check if there is an existing order detail for the same food in the latest order
@@ -76,6 +83,79 @@ exports.createOrderFoodDetail = async (req, res) => {
 };
 
 
+const employeeOrderGiveCutomer = async (req,res) =>{
+    try{
+        const { customer_Id, orderDetail_More, food_Id, orderDetail_Quantity, employee_Id } = req.body;
+        console.log('ไอดีพนักงาน',employee_Id)
+
+        if (!food_Id || !orderDetail_Quantity) {
+            return res.status(400).json({ message: "Missing required fields" });
+        }
+
+        // Find the latest order for the given customer
+        let latestOrder = await Order.findOne({ employee_Id }).sort({ createdAt: -1 });
+
+        // If latest order exists and has status 'In Progress', create a new order instead
+        if (latestOrder && (latestOrder.order_Status === 'In Progress' || latestOrder.order_Status === 'Cancelled' || latestOrder.order_Status === 'Completed')) {
+            latestOrder = null; // Ignore this order and proceed with creating a new one
+        }
+
+
+        if (latestOrder) {
+            // Check if there is an existing order detail for the same food in the latest order
+            const existingOrderDetail = await OrderFoodDetail.findOne({
+                order_Id: latestOrder._id,
+                food_Id: food_Id,
+            });
+
+            if (existingOrderDetail) {
+                // If the food item already exists in the order, update the quantity
+                existingOrderDetail.orderDetail_Quantity += orderDetail_Quantity;
+                await existingOrderDetail.save();
+                return res.status(200).json(existingOrderDetail);
+            } else {
+                // If the food item doesn't exist, create a new order detail
+                const newOrderDetail = new OrderFoodDetail({
+                    orderDetail_Quantity,
+                    orderDetail_Cooking: 'Pending',
+                    orderDetail_Serving: 'Not Served',
+                    order_Id: latestOrder._id,
+                    food_Id,
+                    orderDetail_More,
+                });
+
+                await newOrderDetail.save();
+                return res.status(201).json(newOrderDetail);
+            }
+        }
+
+        // If no valid order exists (or latest order was 'In Progress'), create a new order
+        const newOrder = new Order({
+            employee_Id,
+            order_Status: 'Pending', // Default order status
+        });
+
+        await newOrder.save();
+
+        const newOrderDetail = new OrderFoodDetail({
+            orderDetail_Quantity,
+            orderDetail_Cooking: 'Pending',
+            orderDetail_Serving: 'Not Served',
+            order_Id: newOrder._id,
+            food_Id,
+            orderDetail_More,
+        });
+
+        await newOrderDetail.save();
+        return res.status(201).json({ order: newOrder, orderDetail: newOrderDetail });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "An error occurred while processing the order.", error: err.message });
+    }
+
+}
+
+
 
 exports.createOrderDrinkDetail = async (req, res) => {
     try {
@@ -87,6 +167,10 @@ exports.createOrderDrinkDetail = async (req, res) => {
 
         // Find the latest order for the given customer
         const latestOrder = await Order.findOne({ customer_Id }).sort({ createdAt: -1 });
+
+        if (latestOrder && (latestOrder.order_Status === 'In Progress' || latestOrder.order_Status === 'Cancelled' || latestOrder.order_Status === 'Completed')) {
+            latestOrder = null; // Ignore this order and proceed with creating a new one
+        }
 
         if (latestOrder) {
             // Check if there is an existing order detail for the same drink in the latest order
@@ -253,6 +337,258 @@ exports.getInProgressOrdersByCustomer = async (req, res) => {
     }
 };
 
+
+//ลูกค้าดึงข้อมูลจากออเดอร์ที่สำเร็จ
+exports.getCompletedOrdersByCustomer = async (req, res) => {
+    const { id } = req.params;
+    try {
+        // ค้นหาข้อมูลออเดอร์ที่สถานะเป็น "Pending" โดยอิงจาก customer_Id
+        const orders = await Order.find({ customer_Id: id, order_Status: 'Completed' }).populate("table_Id", "number seat_count");
+
+        // ตรวจสอบว่ามีคำสั่งซื้อหรือไม่
+        if (orders.length === 0) {
+            return res.status(404).json({ message: 'No pending orders found for this customer.' });
+        }
+
+        // ดึงข้อมูล Table ที่เชื่อมโยงกับแต่ละคำสั่งซื้อ
+        const tables = await Table.find({});
+
+        // ดึงข้อมูล OrderFoodDetail และ OrderDrinkDetail พร้อมกันด้วย Promise.all
+        const [orderFoodDetails, orderDrinkDetails, payment] = await Promise.all([
+            OrderFoodDetail.find({ order_Id: { $in: orders.map(order => order._id) } })
+                .populate('food_Id')  // Populate the food details (menu items)
+                .populate('chef_Id')  // Optionally, populate other details like chef
+                .populate('employee_Id'),  // Optionally, populate employee details
+            OrderDrinkDetail.find({ order_Id: { $in: orders.map(order => order._id) } })
+                .populate('drink_Id')  // Populate the drink details (drink items)
+                .populate('employee_Id'),  // Optionally, populate employee details
+            Payment.find({ order_Id: { $in: orders.map(order => order._id) } })
+        ]);
+
+        // ส่งข้อมูลคำสั่งซื้อพร้อมรายละเอียดอาหาร น้ำดื่ม และข้อมูลโต๊ะที่พบ
+        return res.status(200).json({
+            orders,
+            orderFoodDetails,
+            orderDrinkDetails,
+            tables, // เพิ่มข้อมูลโต๊ะ
+            payment
+        });
+    } catch (error) {
+        console.error('Error fetching pending orders:', error);
+        return res.status(500).json({ message: 'Error fetching pending orders.', error: error.message });
+    }
+};
+
+//ลูกค้าดึงข้อมูลจากออเดอร์ที่สำเร็จ
+exports.getCancelledByCustomer = async (req, res) => {
+    const { id } = req.params;
+    try {
+        // ค้นหาข้อมูลออเดอร์ที่สถานะเป็น "Pending" โดยอิงจาก customer_Id
+        const orders = await Order.find({ customer_Id: id, order_Status: 'Cancelled' }).populate("table_Id", "number seat_count");
+
+        // ตรวจสอบว่ามีคำสั่งซื้อหรือไม่
+        if (orders.length === 0) {
+            return res.status(404).json({ message: 'No pending orders found for this customer.' });
+        }
+
+        // ดึงข้อมูล Table ที่เชื่อมโยงกับแต่ละคำสั่งซื้อ
+        const tables = await Table.find({});
+
+        // ดึงข้อมูล OrderFoodDetail และ OrderDrinkDetail พร้อมกันด้วย Promise.all
+        const [orderFoodDetails, orderDrinkDetails, payment] = await Promise.all([
+            OrderFoodDetail.find({ order_Id: { $in: orders.map(order => order._id) } })
+                .populate('food_Id')  // Populate the food details (menu items)
+                .populate('chef_Id')  // Optionally, populate other details like chef
+                .populate('employee_Id'),  // Optionally, populate employee details
+            OrderDrinkDetail.find({ order_Id: { $in: orders.map(order => order._id) } })
+                .populate('drink_Id')  // Populate the drink details (drink items)
+                .populate('employee_Id'),  // Optionally, populate employee details
+            Payment.find({ order_Id: { $in: orders.map(order => order._id) } })
+        ]);
+
+        // ส่งข้อมูลคำสั่งซื้อพร้อมรายละเอียดอาหาร น้ำดื่ม และข้อมูลโต๊ะที่พบ
+        return res.status(200).json({
+            orders,
+            orderFoodDetails,
+            orderDrinkDetails,
+            tables, // เพิ่มข้อมูลโต๊ะ
+            payment
+        });
+    } catch (error) {
+        console.error('Error fetching pending orders:', error);
+        return res.status(500).json({ message: 'Error fetching pending orders.', error: error.message });
+    }
+};
+
+/////////////////////////////////////////////////////////////////////////////////สั่งอาหารโดยพนักงาน
+exports.getPendingOrdersByCustomerOrEmployee = async (req, res) => {
+    const { id } = req.params;
+    try {
+        // ค้นหาข้อมูลออเดอร์ที่สถานะเป็น "Pending" โดยอิงจาก customer_Id
+        const orders = await Order.find({
+            employee_Id: id,
+            order_Status: 'Pending'
+        });
+
+        // ตรวจสอบว่ามีคำสั่งซื้อหรือไม่
+        if (orders.length === 0) {
+            return res.status(404).json({ message: 'No pending orders found for this customer.' });
+        }
+
+        // ดึงข้อมูล Table ที่เชื่อมโยงกับแต่ละคำสั่งซื้อ
+        const tables = await Table.find({});
+
+        // ดึงข้อมูล OrderFoodDetail และ OrderDrinkDetail พร้อมกันด้วย Promise.all
+        const [orderFoodDetails, orderDrinkDetails] = await Promise.all([
+            OrderFoodDetail.find({ order_Id: { $in: orders.map(order => order._id) } })
+                .populate('food_Id')  // Populate the food details (menu items)
+                .populate('chef_Id')  // Optionally, populate other details like chef
+                .populate('employee_Id'),  // Optionally, populate employee details
+            OrderDrinkDetail.find({ order_Id: { $in: orders.map(order => order._id) } })
+                .populate('drink_Id')  // Populate the drink details (drink items)
+                .populate('employee_Id')  // Optionally, populate employee details
+        ]);
+
+        // ส่งข้อมูลคำสั่งซื้อพร้อมรายละเอียดอาหาร น้ำดื่ม และข้อมูลโต๊ะที่พบ
+        return res.status(200).json({
+            orders,
+            orderFoodDetails,
+            orderDrinkDetails,
+            tables // เพิ่มข้อมูลโต๊ะ
+        });
+    } catch (error) {
+        console.error('Error fetching pending orders:', error);
+        return res.status(500).json({ message: 'Error fetching pending orders.', error: error.message });
+    }
+};
+
+
+exports.getInProgressOrdersByCustomerOrEmployee = async (req, res) => {
+    const { id } = req.params;
+    console.log(id)
+    try {
+        // ค้นหาข้อมูลออเดอร์ที่สถานะเป็น "Pending" โดยอิงจาก customer_Id
+        const orders = await Order.find({ employee_Id: id, order_Status: 'In Progress' }).populate("table_Id", "number seat_count");
+
+        // ตรวจสอบว่ามีคำสั่งซื้อหรือไม่
+        if (orders.length === 0) {
+            return res.status(404).json({ message: 'No pending orders found for this customer.' });
+        }
+
+        // ดึงข้อมูล Table ที่เชื่อมโยงกับแต่ละคำสั่งซื้อ
+        const tables = await Table.find({});
+
+        // ดึงข้อมูล OrderFoodDetail และ OrderDrinkDetail พร้อมกันด้วย Promise.all
+        const [orderFoodDetails, orderDrinkDetails, payment] = await Promise.all([
+            OrderFoodDetail.find({ order_Id: { $in: orders.map(order => order._id) } })
+                .populate('food_Id')  // Populate the food details (menu items)
+                .populate('chef_Id')  // Optionally, populate other details like chef
+                .populate('employee_Id'),  // Optionally, populate employee details
+            OrderDrinkDetail.find({ order_Id: { $in: orders.map(order => order._id) } })
+                .populate('drink_Id')  // Populate the drink details (drink items)
+                .populate('employee_Id'),  // Optionally, populate employee details
+            Payment.find({ order_Id: { $in: orders.map(order => order._id) } })
+        ]);
+
+        // ส่งข้อมูลคำสั่งซื้อพร้อมรายละเอียดอาหาร น้ำดื่ม และข้อมูลโต๊ะที่พบ
+        return res.status(200).json({
+            orders,
+            orderFoodDetails,
+            orderDrinkDetails,
+            tables, // เพิ่มข้อมูลโต๊ะ
+            payment
+        });
+    } catch (error) {
+        console.error('Error fetching pending orders:', error);
+        return res.status(500).json({ message: 'Error fetching pending orders.', error: error.message });
+    }
+};
+
+exports.getCompletedOrdersByCustomerOrEmployee = async (req, res) => {
+    const { id } = req.params;
+    try {
+        // ค้นหาข้อมูลออเดอร์ที่สถานะเป็น "Pending" โดยอิงจาก customer_Id
+        const orders = await Order.find({ employee_Id: id, order_Status: 'Completed' }).populate("table_Id", "number seat_count");
+
+        // ตรวจสอบว่ามีคำสั่งซื้อหรือไม่
+        if (orders.length === 0) {
+            return res.status(404).json({ message: 'No pending orders found for this customer.' });
+        }
+
+        // ดึงข้อมูล Table ที่เชื่อมโยงกับแต่ละคำสั่งซื้อ
+        const tables = await Table.find({});
+
+        // ดึงข้อมูล OrderFoodDetail และ OrderDrinkDetail พร้อมกันด้วย Promise.all
+        const [orderFoodDetails, orderDrinkDetails, payment] = await Promise.all([
+            OrderFoodDetail.find({ order_Id: { $in: orders.map(order => order._id) } })
+                .populate('food_Id')  // Populate the food details (menu items)
+                .populate('chef_Id')  // Optionally, populate other details like chef
+                .populate('employee_Id'),  // Optionally, populate employee details
+            OrderDrinkDetail.find({ order_Id: { $in: orders.map(order => order._id) } })
+                .populate('drink_Id')  // Populate the drink details (drink items)
+                .populate('employee_Id'),  // Optionally, populate employee details
+            Payment.find({ order_Id: { $in: orders.map(order => order._id) } })
+        ]);
+
+        // ส่งข้อมูลคำสั่งซื้อพร้อมรายละเอียดอาหาร น้ำดื่ม และข้อมูลโต๊ะที่พบ
+        return res.status(200).json({
+            orders,
+            orderFoodDetails,
+            orderDrinkDetails,
+            tables, // เพิ่มข้อมูลโต๊ะ
+            payment
+        });
+    } catch (error) {
+        console.error('Error fetching pending orders:', error);
+        return res.status(500).json({ message: 'Error fetching pending orders.', error: error.message });
+    }
+};
+
+
+exports.getCancelledByCustomerOrEmployee = async (req, res) => {
+    const { id } = req.params;
+    try {
+        // ค้นหาข้อมูลออเดอร์ที่สถานะเป็น "Pending" โดยอิงจาก customer_Id
+        const orders = await Order.find({ employee_Id: id, order_Status: 'Cancelled' }).populate("table_Id", "number seat_count");
+
+        // ตรวจสอบว่ามีคำสั่งซื้อหรือไม่
+        if (orders.length === 0) {
+            return res.status(404).json({ message: 'No pending orders found for this customer.' });
+        }
+
+        // ดึงข้อมูล Table ที่เชื่อมโยงกับแต่ละคำสั่งซื้อ
+        const tables = await Table.find({});
+
+        // ดึงข้อมูล OrderFoodDetail และ OrderDrinkDetail พร้อมกันด้วย Promise.all
+        const [orderFoodDetails, orderDrinkDetails, payment] = await Promise.all([
+            OrderFoodDetail.find({ order_Id: { $in: orders.map(order => order._id) } })
+                .populate('food_Id')  // Populate the food details (menu items)
+                .populate('chef_Id')  // Optionally, populate other details like chef
+                .populate('employee_Id'),  // Optionally, populate employee details
+            OrderDrinkDetail.find({ order_Id: { $in: orders.map(order => order._id) } })
+                .populate('drink_Id')  // Populate the drink details (drink items)
+                .populate('employee_Id'),  // Optionally, populate employee details
+            Payment.find({ order_Id: { $in: orders.map(order => order._id) } })
+        ]);
+
+        // ส่งข้อมูลคำสั่งซื้อพร้อมรายละเอียดอาหาร น้ำดื่ม และข้อมูลโต๊ะที่พบ
+        return res.status(200).json({
+            orders,
+            orderFoodDetails,
+            orderDrinkDetails,
+            tables, // เพิ่มข้อมูลโต๊ะ
+            payment
+        });
+    } catch (error) {
+        console.error('Error fetching pending orders:', error);
+        return res.status(500).json({ message: 'Error fetching pending orders.', error: error.message });
+    }
+};
+
+//******************************************************************************************************************** */
+
+
+
 //่ส่งรายการต้องการชำระ  OderinProgress.tsx
 exports.createPaymentOrderCustomer = async (req, res) => {
     const { id, orderId } = req.body;
@@ -281,6 +617,7 @@ exports.createPaymentOrderCustomer = async (req, res) => {
         });
 
     } catch (error) {
+        console.log("Error",error)
         res.status(500).json({
             message: 'เกิดข้อผิดพลาดในการสร้างออเดอร์',
             error: error.message,

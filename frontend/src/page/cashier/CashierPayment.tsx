@@ -117,7 +117,11 @@ const CashierPayment: React.FC = () => {
   }, [cashReceived])
   // setCashReceived(change);
 
-  const handlePayment = async (id: string) => {
+  const handlePayment = async (id: string, employee_Id: string) => {
+    if (!employee_Id) {
+      alert("กรุณารอให้พนักงานทำการอนุมัติก่อน");
+      return;
+    }
     if (paymentMethod === "cash" && (typeof cashReceived !== "number" || cashReceived < paidAmount)) {
       alert("กรุณารับเงินให้เพียงพอ");
       return;
@@ -127,6 +131,10 @@ const CashierPayment: React.FC = () => {
         console.log("ผู้ใช้ยกเลิกการยืนยันคำสั่งซื้อ");
         return; // ถ้าผู้ใช้ยกเลิก ก็จะไม่ทำอะไร
       }
+
+
+
+      console.log('fdsfsdfds', cashier_Id)
 
 
       let newcashReceived: number | "" = 0
@@ -148,7 +156,7 @@ const CashierPayment: React.FC = () => {
         console.log(response.data)
         if (response.status === 200) {
           setAlertSuccess(<div>ชำระเงินสำเร็จ</div>)
-          setTimeout(()=>{
+          setTimeout(() => {
             fetchListOrder();
           }, 2000)
         }
@@ -159,7 +167,11 @@ const CashierPayment: React.FC = () => {
   };
 
   // handlePaymentAndReceipt
-  const handlePaymentAndReceipt = async (id: string) => {
+  const handlePaymentAndReceipt = async (id: string, employee_Id: string) => {
+    if (!employee_Id) {
+      alert("กรุณารอให้พนักงานทำการอนุมัติก่อน");
+      return;
+    }
     if (paymentMethod === "cash" && (typeof cashReceived !== "number" || cashReceived < paidAmount)) {
       alert("กรุณารับเงินให้เพียงพอ");
       return;
@@ -190,7 +202,7 @@ const CashierPayment: React.FC = () => {
         console.log(response.data)
         if (response.status === 200) {
           setAlertSuccess(<div>ชำระเงินสำเร็จ</div>)
-          setTimeout(()=>{
+          setTimeout(() => {
             fetchListOrder();
           }, 2000)
           setIdrecipt(response.data.receipt_Id)
@@ -292,7 +304,7 @@ const CashierPayment: React.FC = () => {
   };
 
   return (
-    <Container maxWidth={false} sx={{ height: "100vh", width: "80vw", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <Container maxWidth={false} sx={{ height: "85vh", width: "80vw", display: "flex", alignItems: "center", justifyContent: "center" }}>
       {idrecipt ? (
         <div>
           {idrecipt && <Receipt id={idrecipt} onClose={handdlecloseDetail} />}
@@ -323,7 +335,7 @@ const CashierPayment: React.FC = () => {
                 <ListItemButton key={item._id} onClick={() => handleClickSelect(item._id)}>
                   <ListItemText
                     primary={`ออเดอร์ #${item?._id.substring(0, 6)} - โต๊ะหมายเลข ${item.table_Id?.number}`}
-                    secondary={`ลูกค้า: ${item?.customer_Id?.customer_Name} | พนักงาน: ${item?.employee_Id?.employee_Name || "ยังไม่ยืนยันออเดอร์"}`}
+                    secondary={`ลูกค้า: ${item?.customer_Id?.customer_Name} | พนักงาน: ${item?.employee_Id?.employee_Name || "ยังไม่ยืนยันออเดอร์โดยพนักงาน"}`}
                   />
                 </ListItemButton>
               ))}
@@ -461,8 +473,20 @@ const CashierPayment: React.FC = () => {
 
             {/* Change Display */}
             {paymentMethod === "cash" && cashReceived !== "" && (
-
-              <Typography variant="h6" color={changeAmount >= 0 ? "green" : "red"}>
+              <Typography
+                variant="h3"
+                color={changeAmount >= 0 ? "green" : "red"}
+                sx={{
+                  position: 'fixed',
+                  top: 30,
+                  right: 100,
+                  backgroundColor: '#fff',
+                  p: 1.5,
+                  borderRadius: 2,
+                  boxShadow: 3,
+                  zIndex: 9999,
+                }}
+              >
                 เงินทอน: {changeAmount >= 0 ? changeAmount : "เงินไม่พอ"} บาท
               </Typography>
             )}
@@ -481,7 +505,7 @@ const CashierPayment: React.FC = () => {
                 <Box sx={{ display: "flex", gap: 2, mt: 2 }} key={item._id}>
 
                   {/* Confirm Button */}
-                  <Button variant="contained" color="primary" sx={{ flex: 1 }} onClick={() => handlePaymentAndReceipt(item._id)}>
+                  <Button variant="contained" color="primary" sx={{ flex: 1 }} onClick={() => handlePaymentAndReceipt(item._id, item.employee_Id)}>
                     ใบเสร็จ
                   </Button>
 
@@ -491,14 +515,14 @@ const CashierPayment: React.FC = () => {
                     variant="contained"
                     color="primary"
                     sx={{ flex: 1 }}
-                    onClick={() => handlePayment(item._id)}
+                    onClick={() => handlePayment(item._id, item.employee_Id)}
                   >
                     ยืนยันการชำระเงิน
                   </Button>
-                  <SuccessAlertCashier successalert={alertSuccess} />
 
                 </Box>
               ))}
+            <SuccessAlertCashier successalert={alertSuccess} />
           </Box>
         </Box>)}
     </Container>

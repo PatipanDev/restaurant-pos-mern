@@ -4,16 +4,9 @@ import { Box, CssBaseline, Paper, Typography, Grid, Card, CardContent, Button, T
 
 import OrderDetails from './OrderDetails';
 import OrderInProgress from './OrderInProgress';
+import OrderCompleted from './OrderCompleted';
+import OrderCancelled from './OrderCancelled';
 
-
-const orderedItems = [
-  { name: 'สเต็ก', quantity: 2, price: 150 },
-  { name: 'ข้าวผัด', quantity: 1, price: 60 },
-  { name: 'ก๋วยเตี๋ยว', quantity: 3, price: 50 },
-];
-
-// คำนวณราคารวม
-const totalPrice = orderedItems.reduce((total, item) => total + item.quantity * item.price, 0);
 
 const Order = () => {
   const [tabIndex, setTabIndex] = useState(0); // แท็บที่เลือก
@@ -40,16 +33,20 @@ const Order = () => {
 
         {tabIndex === 0 ? (
           <div>
-            <OrderDetails/>
+            <OrderDetails />
           </div>
         ) : tabIndex === 1 ? (
           <div>
-          <OrderInProgress/>
+            <OrderInProgress />
           </div>
         ) : tabIndex === 2 ? (
-          <div>เนื้อหาสำหรับ tab 3</div>
+          <div>
+            <OrderCompleted />
+          </div>
         ) : tabIndex === 3 ? (
-          <div>เนื้อหาสำหรับ tab 4</div>
+          <div>
+            <OrderCancelled/>
+          </div>
         ) : (
           <div>ไม่มีเนื้อหา</div>
         )}

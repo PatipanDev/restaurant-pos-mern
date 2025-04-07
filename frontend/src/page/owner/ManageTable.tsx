@@ -162,7 +162,7 @@ const ManageTable: React.FC = () => {
   };
 
   return (
-    <div style={{ height: '90vh', width: '100%' }}>
+    <div style={{ height: '90vh', width: '80vw' }}>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{selectedRowId ? 'แก้ไขข้อมูลโต๊ะ' : 'เพิ่มข้อมูลโต๊ะ'}</DialogTitle>
         <DialogContent>

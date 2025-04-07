@@ -11,18 +11,41 @@ import {
     TableRow,
     Divider,
     MenuItem,
+    Button,
     Box,
+    TextField,
     Menu,
     Skeleton
 } from '@mui/material';
-import { Close } from '@mui/icons-material';
 
 import IconButton from '@mui/material/IconButton';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { useForm, Controller } from 'react-hook-form';
+
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+
+import SuccessAlert from '../../components/AlertSuccess';
+import { getUserId } from '../../utils/userUtils';
 import { formatDateTime } from '../../utils/formatDateTime';
+
+import socket from '../../utils/socket';
 
 
 const API_URL = import.meta.env.VITE_API_URL;
+const id: string = getUserId();
+console.log(id)
+
+
+interface Order {
+    createdAt: Date;
+    order_Status: string;
+    order_Eating_status: string;
+    table_Id: { number: number };
+    _id: string;
+
+}
+
 
 
 
@@ -52,46 +75,40 @@ const translateEatStatus = (status: string) => {
     }
 };
 
-interface FormOrder {
-    order_Eating_status?: string | undefined;
-    table_Id: string;
-    order_Dec?: string | undefined;
-}
-
-interface DrinkDetailProps {
-    _id: string | null;
-    onClose: () => void;  // เพิ่มฟังก์ชันปิด
-}
 
 
-const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
-    const [order, setOrders] = useState<any[]>([]);
+function OrderCompleted() {
+    const [order, setOrders] = useState<Order[]>([]);
     const [orderFoodDetails, setOrderFoodDetails] = useState<any[]>([]);
     const [orderDrinkDetails, setOrderDrinkDetails] = useState<any[]>([]);
+    const [tables, setTables] = useState<any[]>([]);
+    const [payments, setPayment] = useState<any[]>([]);
 
     const [loading, setLoading] = useState(true);
-
-
-
+    const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
+    const [isPaymentPending, setIsPaymentPending] = useState(false);
 
     // const {formattedDate, formattedTime} = formatDateTime()
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
-    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
-
     const fetchPendingOrders = async () => {
         try {
-            const response = await axios.get(`${API_URL}/api/food/getPendingOrdersByEmployee/${_id}`);
+            const response = await axios.get(`${API_URL}/api/food/getCompletedOrdersByCustomer/${id}`);
             setOrders(response.data.orders);
             setOrderFoodDetails(response.data.orderFoodDetails);
             setOrderDrinkDetails(response.data.orderDrinkDetails);
+            setTables(response.data.tables);
+            // console.log('fsdfdsf',response.data.payment)
+            if (response.data.payment && response.data.payment.length > 0) {
+                setPayment(response.data.payment);
+                // อาจจะตั้งค่า isPaymentPending เป็น false ในกรณีที่มีข้อมูลแล้ว
+                setIsPaymentPending(true);
+            } else {
+                // กรณีไม่มีข้อมูลการชำระเงิน (อาเรย์ว่างเปล่า หรือ payment เป็น null/undefined)
+                setPayment([]); // หรือค่าเริ่มต้นอื่น ๆ ที่เหมาะสม
+                // setIsPaymentPending(true); // หรือคงค่าเดิมไว้ ขึ้นอยู่กับ logic
+            }
             console.log(response.data);
 
         } catch (error) {
@@ -101,15 +118,32 @@ const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
         }
     };
 
+    const fetchPayment = async (order_Id: string) => {
+        try {
+            const response = await axios.get(`${API_URL}/api/food/getPaymentsByOrder/${order_Id}`);
+            setPayment(response.data.orders);
+            console.log('dsdsds',response.data);
+            if (response.data.orders && response.data.orders.length > 0) {
+                setIsPaymentPending(false)
+
+            } else {
+                setIsPaymentPending(true)
+            }
+
+        } catch (error) {
+            console.error('Error fetching order data:', error);
+        } finally {
+            setLoading(false); // ✅ โหลดเสร็จแล้ว
+        }
+    };
+
     useEffect(() => {
-        if (_id) {  // ตรวจสอบว่า customerId มีค่า
+        if (id) {  // ตรวจสอบว่า customerId มีค่   
             fetchPendingOrders();
         }
-    }, [_id]);  // เพิ่ม customerId ใน dependency array
+    }, [id]);  // เพิ่ม customerId ใน dependency array
 
-    console.log("มีข้อมูลไหม", order)
-    console.log("ข้อมูล", _id)
-
+    console.log("มีข้อมูลไหม", payments)
     // console.log('ลง', order.orders[0]._id)
 
     const totalFoodPrice = orderFoodDetails.reduce(
@@ -126,22 +160,31 @@ const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
 
     const totalPrice = totalFoodPrice + totalDrinkPrice;
     console.log(totalPrice)
+
+    const handleConfirmServ = async (orderId: string) => {
+        const isConfirmed = window.confirm("คุณต้องการยืนยันว่าทำอาหารเสร็จใช่หรือไม่?");
+        if (!isConfirmed) {
+            console.log("ผู้ใช้ยกเลิกการยืนยันคำสั่งซื้อ");
+            return; // ถ้าผู้ใช้ยกเลิก ก็จะไม่ทำอะไร
+        }
+        try {
+            console.log("ชื่อ", id, "oder", orderId)
+            // ส่งข้อมูลไปที่ Server เพื่อยืนยันคำสั่งซื
+            const response = await axios.post(`${API_URL}/api/food/createPaymentOrderCustomer`, { id, orderId });
+            console.log('Update successful', response);
+            setAlertSuccess(<div>{"กรุณาไปชำระเงินที่หน้าเค้าเตอร์"}</div>);
+            setTimeout(async () => {
+                await fetchPendingOrders();
+                fetchPayment(orderId);
+            }, 2000);
+        } catch (error: any) {
+            console.log("Error data message", error);
+            setAlertSuccess(<div>{error.response?.data?.message || "เกิดข้อผิดพลาด"}</div>);
+        }
+    };
+
     if (order.length === 0) {
         return (
-            <div>
-                <IconButton
-            sx={{
-              position: 'absolute',
-              top: 120,
-              left: 10,
-              zIndex: 10,
-              backgroundColor: '#F0FFFF'
-            }}
-            onClick={onClose}
-            color="primary"
-          >
-            <Close />
-          </IconButton>
             <Box
                 display="flex"
                 justifyContent="center"
@@ -152,14 +195,13 @@ const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
                     ไม่มีรายการ
                 </Typography>
             </Box>
-            </div>
         )
     }
 
     return (
-        <Container maxWidth="sm" sx={{ mt: 4, p: 3, bgcolor: '#fff', boxShadow: 3, borderRadius: 2 }}>
+        <Container maxWidth="sm" sx={{ mt: 4, p: 3, bgcolor: '#fff', boxShadow: 3, borderRadius: 2, }}>
             {/* ส่วนหัวที่มีไอคอนเมนูและราคารวม */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            {/* <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Typography variant="h6">เมนูอาหาร</Typography>
                 <IconButton
                     aria-label="menu"
@@ -176,7 +218,7 @@ const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
                     <MenuItem onClick={handleClose}>แก้ไข</MenuItem>
                     <MenuItem onClick={handleClose}>ลบ</MenuItem>
                 </Menu>
-            </Box>
+            </Box> */}
             {/* แสดง Skeleton ขณะโหลดข้อมูล */}
             {loading ? (
                 <>
@@ -189,26 +231,60 @@ const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
                     const { formattedDate, formattedTime } = formatDateTime(item.createdAt);
                     return (
                         <div key={item._id}>
-                            <Typography variant="h5" align="center" gutterBottom>
+                            <Typography
+                                variant="h5"
+                                align="center"
+                                gutterBottom
+                                sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' } }} // ปรับขนาดตัวอักษรสำหรับมือถือ
+                            >
                                 ใบสั่งอาหาร
                             </Typography>
-                            <Typography variant="subtitle1" align="center">
+                            <Typography
+                                variant="subtitle1"
+                                align="center"
+                                sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }} // ปรับขนาดตัวอักษรสำหรับมือถือ
+                            >
                                 รหัสออเดอร์: #{item._id.substring(0, 6)}
                             </Typography>
-                            <Typography variant="subtitle2" align="center" gutterBottom>
+                            <Typography
+                                variant="subtitle1"
+                                align="center"
+                                sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }} // ปรับขนาดตัวอักษรสำหรับมือถือ
+                            >
+                                โต๊ะ หมายเลข: #{item?.table_Id?.number}
+                            </Typography>
+                            <Typography
+                                variant="subtitle2"
+                                align="center"
+                                gutterBottom
+                                sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }} // ปรับขนาดตัวอักษรสำหรับมือถือ
+                            >
                                 วันที่: {formattedDate} เวลา {formattedTime}
                             </Typography>
                             <Divider sx={{ my: 2 }} />
-                            <Typography variant="body1">สถานะออเดอร์: {translateStatus(item.order_Status)}</Typography>
-                            <Typography variant="body1">สถานะการกิน: {translateEatStatus(item.order_Eating_status)}</Typography>
-                            <Typography variant="body1">โต๊ะ: หมายเลข {item.table_Id.number} จำนวน {item.table_Id.seat_count} ที่นั่ง</Typography>
+                            <Typography
+                                variant="body1"
+                                sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }} // ปรับขนาดตัวอักษรสำหรับมือถือ
+                            >
+                                สถานะออเดอร์: {translateStatus(item.order_Status)}
+                            </Typography>
+                            <Typography
+                                variant="body1"
+                                sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }} // ปรับขนาดตัวอักษรสำหรับมือถือ
+                            >
+                                สถานะการกิน: {translateEatStatus(item.order_Eating_status)}
+                            </Typography>
                         </div>
                     );
                 })
             )}
 
             <Divider sx={{ my: 2 }} />
-            <Typography variant="h6" align="left">
+            <Typography
+                variant="h6"
+                align="left"
+                sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} // ปรับขนาดตัวอักษรสำหรับมือถือ
+            >
                 รายการอาหาร
             </Typography>
             <TableContainer>
@@ -220,7 +296,6 @@ const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
                             <TableCell>เพิ่มเติม</TableCell>
                             <TableCell>จำนวน</TableCell>
                             <TableCell>ราคา/หน่วย</TableCell>
-
                             <TableCell>ราคา</TableCell>
                         </TableRow>
                     </TableHead>
@@ -239,7 +314,7 @@ const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
                             : orderFoodDetails.map((FoodDetails, index) => (
                                 <TableRow key={FoodDetails._id}>
                                     <TableCell>{index + 1}</TableCell>
-                                    <TableCell>{FoodDetails.food_Id.food_Name} </TableCell>
+                                    <TableCell>{FoodDetails.food_Id.food_Name}</TableCell>
                                     <TableCell>{FoodDetails.orderDetail_More}</TableCell>
                                     <TableCell>x{FoodDetails.orderDetail_Quantity}</TableCell>
                                     <TableCell>{parseFloat(FoodDetails.food_Id.food_Price.$numberDecimal)}</TableCell>
@@ -250,7 +325,11 @@ const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
                 </Table>
             </TableContainer>
             <Divider sx={{ my: 2 }} />
-            <Typography variant="h6" align="left">
+            <Typography
+                variant="h6"
+                align="left"
+                sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} // ปรับขนาดตัวอักษรสำหรับมือถือ
+            >
                 รายการเครื่องดื่ม
             </Typography>
             <TableContainer>
@@ -291,25 +370,38 @@ const OrderDetailsCheck: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
                 </Table>
             </TableContainer>
             <Divider sx={{ my: 2 }} />
-            <Typography variant="h6" align="right" marginBottom={6}>
+            <Typography
+                variant="h6"
+                align="right"
+                sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }} // ปรับขนาดตัวอักษรสำหรับมือถือ
+            >
                 ราคารวม: {loading ? <Skeleton variant="text" width={80} /> : `${totalPrice} บาท`}
             </Typography>
             <Divider sx={{ my: 2 }} />
-            <IconButton
-            sx={{
-              position: 'absolute',
-              top: 120,
-              left: 10,
-              zIndex: 10,
-              backgroundColor: '#F0FFFF'
-            }}
-            onClick={onClose}
-            color="primary"
-          >
-            <Close />
-          </IconButton>
+            {order.map((item) => (
+                <Box key={item._id} display="flex" gap={2} alignItems="center" sx={{ marginBottom: 20 }}>
+                    <Button
+                        fullWidth
+                        type='submit'
+                        variant="contained"
+                        color="primary"
+                        sx={{ flex: 1 }}
+                        disabled={isPaymentPending}
+                        onClick={() => handleConfirmServ(item._id)}
+                    >
+                        {loading ? (
+                            <Skeleton variant="text" width="50px" />
+                        ) : (
+                            isPaymentPending ? "ขอบคุณที่ใช้บริการ" :  "ชำระเงิน"
+                        )}
+                    </Button>
+                    <SuccessAlert successalert={alertSuccess} />
+                </Box>
+
+            ))}
+
         </Container>
     );
 }
 
-export default OrderDetailsCheck;
+export default OrderCompleted;

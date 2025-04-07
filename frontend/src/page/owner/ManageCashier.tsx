@@ -73,18 +73,20 @@ const ManageCashier: React.FC = () => {
 
   useEffect(() => {
     if (selectedRowId !== null) {
-        const selectedRow = rows.find((row) => row._id === selectedRowId) as Cashier;
-        if (selectedRow) { // เพิ่มการตรวจสอบว่า selectedRow มีค่าหรือไม่
-            setValue('cashier_Name', selectedRow.cashier_Name);
-            setValue('cashier_Password', selectedRow.cashier_Password);
-            setValue('cashier_Address', selectedRow.cashier_Address);
-            setValue('cashier_Weight', selectedRow.cashier_Weight);
-            setValue('cashier_Height', selectedRow.cashier_Height);
-            setValue('cashier_Gender', selectedRow.cashier_Gender);
-            setValue('cashier_Birthdate', selectedRow.cashier_Birthdate);
-        }
+      const selectedRow = rows.find((row) => row._id === selectedRowId) as Cashier;
+      if (selectedRow) { // เพิ่มการตรวจสอบว่า selectedRow มีค่าหรือไม่
+        setValue('cashier_Name', selectedRow.cashier_Name);
+        setValue('cashier_Password', selectedRow.cashier_Password);
+        setValue('cashier_Address', selectedRow.cashier_Address);
+        setValue('cashier_Weight', selectedRow.cashier_Weight);
+        setValue('cashier_Height', selectedRow.cashier_Height);
+        setValue('cashier_Gender', selectedRow.cashier_Gender);
+        const rawDate = new Date(selectedRow.cashier_Birthdate);
+        const formattedDate: any = rawDate.toISOString().split('T')[0]; // ได้รูปแบบ "2025-03-20"
+        setValue('cashier_Birthdate', formattedDate);
+      }
     }
-}, [selectedRowId, rows, setValue]);
+  }, [selectedRowId, rows, setValue]);
 
   const columns: GridColDef<Cashier>[] = [
     {
@@ -95,11 +97,24 @@ const ManageCashier: React.FC = () => {
       renderCell: (params) => rows.indexOf(params.row) + 1,
     },
     { field: 'cashier_Name', headerName: 'ชื่อ', flex: 1, minWidth: 180 },
-    { field: 'cashier_Address', headerName: 'ที่อยู่', flex: 2, minWidth: 200 },
+
     { field: 'cashier_Weight', headerName: 'น้ำหนัก', flex: 1, minWidth: 100 },
     { field: 'cashier_Height', headerName: 'ส่วนสูง', flex: 1, minWidth: 100 },
     { field: 'cashier_Gender', headerName: 'เพศ', flex: 1, minWidth: 100 },
-    { field: 'cashier_Birthdate', headerName: 'วันเกิด', flex: 1, minWidth: 150 },
+    { field: 'cashier_Birthdate', headerName: 'วันเกิด', flex: 1, 
+      minWidth: 150,
+      renderCell: (params) => {
+        const rawDate = params.row.cashier_Birthdate;
+        const date = new Date(rawDate);
+
+        return date.toLocaleDateString('th-TH', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+        });
+    },
+    },
+    { field: 'cashier_Address', headerName: 'ที่อยู่', flex: 2, minWidth: 200 },
     {
       field: 'actions',
       headerName: 'แก้ไขข้อมูล',
@@ -158,13 +173,13 @@ const ManageCashier: React.FC = () => {
     reset();
   };
 
-  
+
 
   // ... (ส่วนฟังก์ชันอื่นๆ)
 
   const onSubmit = async (data: FormData) => {
     console.log("Form Data:", data);
-  
+
     try {
       if (selectedRowId !== null) {
         const updatedData = {
@@ -210,7 +225,7 @@ const ManageCashier: React.FC = () => {
   };
 
   return (
-    <div style={{ height: '90vh', width: '100%' }}>
+    <div style={{ height: '90vh', width: '80vw' }}>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{selectedRowId ? 'แก้ไขข้อมูลแคชเชียร์' : 'เพิ่มข้อมูลแคชเชียร์'}</DialogTitle>
         <DialogContent>
