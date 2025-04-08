@@ -187,11 +187,20 @@ const ManageFoods: React.FC = () => {
       field: 'actions',
       headerName: 'แก้ไขข้อมูล',
       width: 100,
-      renderCell: (params) => (
-        <Button variant="outlined" startIcon={<ModeEditIcon />} onClick={() => handleEditClick(params.id)}>
-          แก้ไข
-        </Button>
-      ),
+      renderCell: (params) => {
+        const isDisabled = !params.row.product_Category_Id?.category_name
+    
+        return (
+          <Button
+            variant="outlined"
+            startIcon={<ModeEditIcon />}
+            onClick={() => handleEditClick(params.id)}
+            disabled={isDisabled} // ปิดการใช้งานถ้าค่าหนึ่งใดว่าง
+          >
+            แก้ไข
+          </Button>
+        );
+      },
     },
     {
       field: 'delete',

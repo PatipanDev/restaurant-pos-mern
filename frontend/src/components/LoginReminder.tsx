@@ -31,7 +31,7 @@ const LoginReminder = () => {
         color="primary"
         style={{ marginTop: '20px' }}
         onClick={() => {
-          alert('Redirect to Login page');
+          alert('กำลังไปที่หน้าล็อกอิน');
           navigate("/login");
         }}
         startIcon={<LoginIcon />}  // Adding the icon to the button

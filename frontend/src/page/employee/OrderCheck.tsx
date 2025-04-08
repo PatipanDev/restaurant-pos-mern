@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, CssBaseline, Paper, Typography, Grid, Card, CardContent, Button, Tabs, Tab, Divider } from '@mui/material';
 
 import OrderDetailsCard from './componentEmployee/OrderDetailsCard';
+import OrderDetailsCardHis from './componentEmployee/OrderDetailsCardHis';
 
 const OrderCheck = () => {
   const [tabIndex, setTabIndex] = useState(0); // แท็บที่เลือก
@@ -24,25 +25,19 @@ const OrderCheck = () => {
         <Typography variant="h4" gutterBottom>รายการที่ต้องตรวจสอบ</Typography>
         {/* Tabs */}
         <Tabs value={tabIndex} onChange={handleTabChange}>
-          <Tab label="ตรวจสอบรายการอาหาร" />
-          <Tab label="กำลังดำเนินการ" />
-          <Tab label="รายการที่สำเร็จ" />
-          <Tab label="รายการที่ยกเลิก" />
+          <Tab label="ยืนยันการสั่งอาหาร" />
+          <Tab label="ประวัติรายการ" />
         </Tabs>
 
         {tabIndex === 0 ? (
           <div>
-            <OrderDetailsCard/>
+            <OrderDetailsCard />
           </div>
 
         ) : tabIndex === 1 ? (
           <div>
-
+            <OrderDetailsCardHis />
           </div>
-        ) : tabIndex === 2 ? (
-          <div>เนื้อหาสำหรับ tab 3</div>
-        ) : tabIndex === 3 ? (
-          <div>เนื้อหาสำหรับ tab 4</div>
         ) : (
           <div>ไม่มีเนื้อหา</div>
         )}

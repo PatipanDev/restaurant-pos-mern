@@ -87,7 +87,7 @@ const schema = yup.object({
 }).required();
 
 
-function OrderDetails() {
+const OrderDetails: React.FC = () => {
     const [order, setOrders] = useState<Order[]>([]);
     const [orderFoodDetails, setOrderFoodDetails] = useState<any[]>([]);
     const [orderDrinkDetails, setOrderDrinkDetails] = useState<any[]>([]);
@@ -121,7 +121,7 @@ function OrderDetails() {
             setOrderFoodDetails(response.data.orderFoodDetails);
             setOrderDrinkDetails(response.data.orderDrinkDetails);
             setTables(response.data.tables);
-            console.log(response.data);
+            console.log('ค่าที่ได้',response.data);
 
         } catch (error) {
             console.error('Error fetching order data:', error);
@@ -142,13 +142,13 @@ function OrderDetails() {
 
     const totalFoodPrice = orderFoodDetails.reduce(
         (sum, FoodDetails) =>
-            sum + FoodDetails.orderDetail_Quantity * parseFloat(FoodDetails.food_Id.food_Price.$numberDecimal),
+            sum + FoodDetails.orderDetail_Quantity * parseFloat(FoodDetails.food_Id?.food_Price.$numberDecimal),
         0
     );
 
     const totalDrinkPrice = orderDrinkDetails.reduce(
         (sum, DrinkDetails) =>
-            sum + DrinkDetails.orderDetail_Quantity * parseFloat(DrinkDetails.drink_Id.drink_Price),
+            sum + DrinkDetails.orderDetail_Quantity * parseFloat(DrinkDetails?.drink_Id?.drink_Price),
         0
     );
 
@@ -304,11 +304,11 @@ function OrderDetails() {
                             : orderFoodDetails.map((FoodDetails, index) => (
                                 <TableRow key={FoodDetails._id}>
                                     <TableCell>{index + 1}</TableCell>
-                                    <TableCell>{FoodDetails.food_Id.food_Name} </TableCell>
-                                    <TableCell>{FoodDetails.orderDetail_More}</TableCell>
-                                    <TableCell>{FoodDetails.orderDetail_Quantity}</TableCell>
-                                    <TableCell>{parseFloat(FoodDetails.food_Id.food_Price.$numberDecimal)}</TableCell>
-                                    <TableCell>{FoodDetails.orderDetail_Quantity * parseFloat(FoodDetails.food_Id.food_Price.$numberDecimal)} บาท</TableCell>
+                                    <TableCell>{FoodDetails?.food_Id?.food_Name} </TableCell>
+                                    <TableCell>{FoodDetails?.orderDetail_More}</TableCell>
+                                    <TableCell>{FoodDetails?.orderDetail_Quantity}</TableCell>
+                                    <TableCell>{parseFloat(FoodDetails?.food_Id?.food_Price?.$numberDecimal)}</TableCell>
+                                    <TableCell>{FoodDetails?.orderDetail_Quantity * parseFloat(FoodDetails?.food_Id?.food_Price?.$numberDecimal)} บาท</TableCell>
                                 </TableRow>
                             ))}
                     </TableBody>
@@ -345,11 +345,11 @@ function OrderDetails() {
                             : orderDrinkDetails.map((DrinkDetails, index: number) => (
                                 <TableRow key={DrinkDetails._id}>
                                     <TableCell>{index + 1}</TableCell>
-                                    <TableCell>{DrinkDetails.drink_Id.drink_Name}</TableCell>
-                                    <TableCell>{DrinkDetails.orderDetail_More}</TableCell>
-                                    <TableCell>{DrinkDetails.orderDetail_Quantity}</TableCell>
-                                    <TableCell>{DrinkDetails.drink_Id.drink_Price}</TableCell>
-                                    <TableCell>{DrinkDetails.orderDetail_Quantity * parseFloat(DrinkDetails.drink_Id.drink_Price)} บาท</TableCell>
+                                    <TableCell>{DrinkDetails?.drink_Id?.drink_Name}</TableCell>
+                                    <TableCell>{DrinkDetails?.orderDetail_More}</TableCell>
+                                    <TableCell>{DrinkDetails?.orderDetail_Quantity}</TableCell>
+                                    <TableCell>{DrinkDetails?.drink_Id?.drink_Price}</TableCell>
+                                    <TableCell>{DrinkDetails?.orderDetail_Quantity * parseFloat(DrinkDetails?.drink_Id?.drink_Price)} บาท</TableCell>
                                 </TableRow>
                             ))}
                     </TableBody>
@@ -384,7 +384,7 @@ function OrderDetails() {
                         />
                     )}
                 </Box>
-                <Box display="flex" gap={2} alignItems="center" sx={{ marginBottom: 6 }}>
+                <Box display="flex" gap={2} alignItems="center" sx={{ marginBottom: 20 }}>
                     <Controller
                         name="order_Eating_status"
                         control={control}

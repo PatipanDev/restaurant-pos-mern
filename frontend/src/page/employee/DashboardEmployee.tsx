@@ -23,7 +23,7 @@ import axios from "axios";
 
 // นำเข้าหน้า
 import OrderEmployee from './OrderEmployee';
-import Profile from '../user/Profile';
+import ProfileEmployee from './ProfileEmployee';
 import Listfood from '../Listfood';
 import LoginReminder from '../../components/LoginReminder';
 import ServFood from './ServFood';
@@ -82,6 +82,10 @@ export default function DashboardEmployee() {
         setIsUser(false);
       }
     };
+
+    if(value === 4){
+      
+    }
 
     const checkUserRole = () => {
       const userFromStorage = localStorage.getItem("user");
@@ -150,7 +154,7 @@ export default function DashboardEmployee() {
         {value === 0 && <Listfood />}
         {value === 2 && (isUser ? <OrderCheck /> : <LoginReminder />)}
         {value === 3 && (isUser ? <ServFood /> : <LoginReminder />)}
-        {value === 4 && (isUser ? <Profile /> : <LoginReminder />)}
+        {value === 4 && (isUser ? <ProfileEmployee /> : <LoginReminder />)}
       </Box>
 
       {/* แสดง Bottom Navigation ถ้าเป็นจอเล็ก */}

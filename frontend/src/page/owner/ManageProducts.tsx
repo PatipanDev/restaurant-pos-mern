@@ -5,6 +5,8 @@ import { DataGrid, GridColDef, GridRowsProp, GridRowId, GridCellParams } from '@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
+import { ObjectId } from 'mongodb';
+
 
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -61,18 +63,13 @@ const ManageProducts: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const productsResponse = await axios.get(`${API_URL}/api/data/getproducts`);
-      setRows(productsResponse.data);
+      const response = await axios.get(`${API_URL}/api/data/getproducts`);
+      setRows(response.data.products);
 
-      const unitsResponse = await axios.get(`${API_URL}/api/data/getunits`);
-      setUnits(unitsResponse.data);
+      setUnits(response.data.unit);
+      setCategories(response.data.category);
 
-      const categoriesResponse = await axios.get(`${API_URL}/api/data/getcategories`);
-      setCategories(categoriesResponse.data);
-
-      console.log('Products:', productsResponse.data);
-      console.log('Units:', unitsResponse.data);
-      console.log('Categories:', categoriesResponse.data);
+      console.log('Products:', response.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -103,35 +100,54 @@ const ManageProducts: React.FC = () => {
       headerName: 'ลำดับ',
       flex: 0.9,
       width: 30,
+      align: 'right',
       renderCell: (params) => rows.indexOf(params.row) + 1,
     },
-    { field: 'product_Name', headerName: 'ชื่อสินค้า', flex: 1, minWidth: 180 },
-    { field: 'product_Quantity', headerName: 'ปริมาณพร้อมทำอาหาร', flex: 1, minWidth: 140 },
-    { field: 'product_Stock', headerName: 'ปริมาณสินค้าคงเหลือ', flex: 1, minWidth: 150 },
-    { field: 'product_Price', headerName: 'ราคาสินค้า(บาท)', flex: 1, minWidth: 120 },
+    { field: 'product_Name', headerName: 'ชื่อสินค้า', flex: 1, minWidth: 180, align: 'right' },
+    { field: 'product_Quantity', headerName: 'ปริมาณที่ใช้ไปแล้ว', flex: 1, minWidth: 140, align: 'right' },
+    { field: 'product_Stock', headerName: 'ปริมาณสินค้าคงเหลือ', flex: 1, minWidth: 150, align: 'right' },
+    { 
+      field: 'product_Price', 
+      headerName: 'ราคาสินค้า(บาท)', 
+      flex: 1, 
+      minWidth: 120, 
+      align: 'right',
+      renderCell: (params) => params.row.product_Price?.toLocaleString(), 
+    },
     {
       field: 'categoryId',
       headerName: 'หมวดหมู่สินค้า',
       flex: 1,
       minWidth: 150,
-      renderCell: (params) => params.row.categoryId?.category_name, // Render category name instead of ID
+      align: 'right',
+      renderCell: (params) => params.row.categoryId?.category_name,
     },
     {
       field: 'unitId',
       headerName: 'หน่วยสินค้า',
       flex: 1,
       minWidth: 150,
-      renderCell: (params) => params.row.unitId?.unit_Name, // Render unit name instead of ID
+      align: 'right',
+      renderCell: (params) => params.row.unitId?.unit_Name,
     },
     {
       field: 'actions',
       headerName: 'แก้ไขข้อมูล',
       width: 100,
-      renderCell: (params) => (
-        <Button variant="outlined" startIcon={<ModeEditIcon />} onClick={() => handleEditClick(params.id)}>
-          แก้ไข
-        </Button>
-      ),
+      renderCell: (params) => {
+        const isDisabled = !params.row.categoryId?.category_name || !params.row.unitId?.unit_Name;
+    
+        return (
+          <Button
+            variant="outlined"
+            startIcon={<ModeEditIcon />}
+            onClick={() => handleEditClick(params.id)}
+            disabled={isDisabled} // ปิดการใช้งานถ้าค่าหนึ่งใดว่าง
+          >
+            แก้ไข
+          </Button>
+        );
+      },
     },
     {
       field: 'delete',
@@ -144,6 +160,8 @@ const ManageProducts: React.FC = () => {
       ),
     },
   ];
+
+
 
 
 
@@ -274,7 +292,7 @@ const ManageProducts: React.FC = () => {
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="ปริมาณ"
+                  label="ปริมาณที่ใช้ไปแล้ว"
                   type="number"
                   fullWidth
                   margin="dense"
@@ -282,7 +300,7 @@ const ManageProducts: React.FC = () => {
                   helperText={errors.product_Quantity?.message}
                   onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                   value={field.value || 0}
-                  // disabled={true} //ปิดการกรอกข้อมูล
+                // disabled={true} //ปิดการกรอกข้อมูล
                 />
               )}
             />
@@ -342,11 +360,17 @@ const ManageProducts: React.FC = () => {
                   value={field.value || ""}
                   onChange={field.onChange}
                 >
-                  {categories.map((category) => (
-                    <MenuItem key={category._id} value={category._id}>
-                      {category.category_name}
+                  {Array.isArray(categories) && categories.length > 0 ? (
+                    categories.map((category) => (
+                      <MenuItem key={category._id} value={category._id}>
+                        {category.category_name}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled value="">
+                      กรุณาเพิ่มข้อมูล ประเภทสินค้าก่อน ก่อน
                     </MenuItem>
-                  ))}
+                  )}
                 </TextField>
               )}
             />
@@ -367,11 +391,17 @@ const ManageProducts: React.FC = () => {
                   value={field.value || ""}
                   onChange={field.onChange}
                 >
-                  {units.map((unit) => (
-                    <MenuItem key={unit._id} value={unit._id}>
-                      {unit.unit_Name}
+                  {Array.isArray(units) && units.length > 0 ? (
+                    units.map((unit) => (
+                      <MenuItem key={unit._id} value={unit._id}>
+                        {unit.unit_Name}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled value="">
+                      กรุณาเพิ่มข้อมูล หน่วย ก่อน
                     </MenuItem>
-                  ))}
+                  )}
                 </TextField>
               )}
             />

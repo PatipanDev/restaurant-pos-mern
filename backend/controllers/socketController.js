@@ -1,6 +1,7 @@
 const Order = require('../models/Order');
 const Table = require('../models/Table');
 const OrderFoodDetail = require('../models/OrderFoodDetail')
+const OrderDrinkDetail = require('../models/OrderDrinkDetail')
 const express = require('express');
 const router = express.Router();  // เพิ่มการประกาศ router ที่นี่
 
@@ -34,6 +35,31 @@ module.exports = function (io) {
         console.error('Error fetching latest orders:', error);
       }
     });
+
+    socket.on('get_latest_order_his', async () => {
+      try {
+        // ดึงข้อมูลคำสั่งซื้อที่สถานะเป็น 'Cancelled' หรือ 'Completed' และไม่มี employee_Id
+        const latestOrders = await Order.find({
+          order_Status: { $in: ['Cancelled', 'Completed'] },
+          employee_Id: { $exists: false }  // ตรวจสอบว่าไม่มี employee_Id
+        })
+          .populate('customer_Id', 'customer_Name customer_Telnum') // ดึงเฉพาะชื่อและเบอร์โทรของลูกค้า
+          .populate('table_Id', 'number seat_count') // ดึงหมายเลขโต๊ะและจำนวนที่นั่ง
+          .sort({ _id: -1 })  // เรียงจากล่าสุด (มาก่อน)
+          .limit(40);         // จำกัดจำนวนแค่ 40 รายการ
+    
+        // ส่งข้อมูลไปยัง client ถ้ามีข้อมูล
+        if (latestOrders.length > 0) {
+          socket.emit('new_order_for_staff', latestOrders);
+        } else {
+          socket.emit('new_order_for_staff', []); // ส่ง array ว่างถ้าไม่มีข้อมูล
+        }
+      } catch (error) {
+        console.error('Error fetching latest orders:', error);
+        socket.emit('error', 'ไม่สามารถดึงข้อมูลคำสั่งซื้อได้');
+      }
+    });
+    
 
 
     // เมื่อได้รับคำขออัปเดตคำสั่งซื้อและสถานะโต๊ะ
@@ -95,20 +121,20 @@ module.exports = function (io) {
     });
 
 
-    socket.on('CancelledOrderDetail', async ({order_id}) => {
+    socket.on('CancelledOrderDetail', async ({ order_id }) => {
       try {
         console.log(order_id);
-    
+
         // ค้นหาคำสั่งจากฐานข้อมูล
         const order = await Order.findById(order_id);  // ต้องใช้ await เพื่อให้การค้นหาทำงานเสร็จก่อน
-      
+
         if (order) {
           // อัปเดตสถานะคำสั่งเป็น "Cancelled"
           order.order_Status = "Cancelled";
-    
+
           // บันทึกการเปลี่ยนแปลง
           await order.save();  // ใช้ await เพื่อให้การบันทึกข้อมูลสำเร็จ
-    
+
           // ตอบกลับข้อมูลคำสั่งที่ถูกยกเลิกกลับไปยังผู้ใช้
           socket.emit('OrderCancelled', {
             message: `คำสั่ง ${order_id} ถูกยกเลิกแล้ว`,
@@ -175,30 +201,78 @@ module.exports = function (io) {
     //ดึงข้อมูลอาหารที่พนักงานต้องเซิร์ฟ
     socket.on('getFoodReady', async () => {
       try {
-        // ค้นหาข้อมูลใน OrderFoodDetail โดยใช้ order_Id ที่ได้จาก orderIds
-        const Serving = await OrderFoodDetail.find({
+        const ServingFood = await OrderFoodDetail.find({
           orderDetail_Cooking: "Completed",
           orderDetail_Serving: "Not Served"
         })
           .populate({
             path: 'order_Id',
-            populate: { path: 'table_Id', select: 'number' } // ดึงเฉพาะหมายเลขโต๊ะ (number) จาก Table model
+            populate: { path: 'table_Id', select: 'number' }
           })
-          .populate('food_Id') // ดึงข้อมูลจาก Food model
-          .populate('chef_Id'); // ดึงข้อมูลจาก Chef model
+          .populate('food_Id')
+          .populate('chef_Id');
 
-        if (Serving.length === 0) {
-          // ถ้าไม่มีข้อมูลใน OrderFoodDetail ส่งข้อความแจ้งเตือน
-          socket.emit('dataFoodReady', []); // ✅ ส่ง array แทน object
-        } else {
-          // ส่งข้อมูลกลับไปยังไคลเอนต์
-          socket.emit('dataFoodReady', Serving);
-        }
+        const ServingDrink = await OrderDrinkDetail.find({
+          orderDetail_Serving: "Not Served"
+        })
+          .populate({
+            path: 'order_Id',
+            populate: { path: 'table_Id', select: 'number' }
+          })
+          .populate('drink_Id');
+
+        // ส่งทั้งข้อมูลอาหารและเครื่องดื่มกลับไปพร้อมกัน
+        socket.emit('dataFoodReady', {
+          food: ServingFood,
+          drink: ServingDrink
+        });
+
       } catch (error) {
         console.error('Error fetching order food details:', error);
         socket.emit('orderFoodDetailsError', 'Error fetching order food details');
       }
     });
+
+
+    socket.on('getFoodReadyHis', async () => {
+      try {
+        const ServingFood = await OrderFoodDetail.find({
+          orderDetail_Cooking: "Completed",
+          orderDetail_Serving: "Served"
+        })
+          .sort({ _id: -1 }) // เรียงจากล่าสุด
+          .limit(20)         // จำกัดแค่ 20 รายการ
+          .populate({
+            path: 'order_Id',
+            populate: { path: 'table_Id', select: 'number' }
+          })
+          .populate('food_Id')
+          .populate('chef_Id');
+
+        const ServingDrink = await OrderDrinkDetail.find({
+          orderDetail_Serving: "Served"
+        })
+          .sort({ _id: -1 }) // เรียงจากล่าสุด
+          .limit(20)         // จำกัดแค่ 20 รายการ
+          .populate({
+            path: 'order_Id',
+            populate: { path: 'table_Id', select: 'number' }
+          })
+          .populate('drink_Id');
+
+        // ส่งทั้งข้อมูลอาหารและเครื่องดื่มกลับไปพร้อมกัน
+        socket.emit('dataFoodReady', {
+          food: ServingFood,
+          drink: ServingDrink
+        });
+
+      } catch (error) {
+        console.error('Error fetching order food details:', error);
+        socket.emit('orderFoodDetailsError', 'Error fetching order food details');
+      }
+    });
+
+
 
     // *****************************************************ส่วนของอีเว้นที่เกิดขึ้น***********************************************************************
 
@@ -213,6 +287,22 @@ module.exports = function (io) {
 
         // ส่งข้อมูลกลับไปที่ client ว่าอัปเดตสำเร็จ
         socket.emit('orderConfirmed', order);
+
+        const orderDetails = await OrderFoodDetail.find({
+          order_Id: { $in: orderIds },
+          orderDetail_Cooking: { $in: ["In Progress", "Pending"] } // ใช้ $in เพื่อเลือกค่าใดค่าหนึ่ง
+        })
+          .populate('order_Id')  // ดึงข้อมูลจาก Order model
+          .populate('food_Id')   // ดึงข้อมูลจาก Food model
+          .populate('chef_Id');  // ดึงข้อมูลจาก Chef model
+
+        if (orderDetails.length === 0) {
+          // ถ้าไม่มีข้อมูลใน OrderFoodDetail ส่งข้อความแจ้งเตือน
+          io.emit('orderFoodDetails', []); // ✅ ส่ง array แทน object
+        } else {
+          // ส่งข้อมูลกลับไปยังไคลเอนต์
+          io.emit('orderFoodDetails', orderDetails);
+        }
 
       } catch (error) {
         console.error('Error updating order:', error);
@@ -301,24 +391,35 @@ module.exports = function (io) {
         // ส่งข้อมูลกลับไปที่ client ว่าอัปเดตสำเร็จ
         socket.emit('FinishConfirmed', cooking);
 
-        const Serving = await OrderFoodDetail.find({
+        const ServingFood = await OrderFoodDetail.find({
           orderDetail_Cooking: "Completed",
-          orderDetail_Serving: "Not Served"
+          orderDetail_Serving: "Served"
         })
+          .sort({ _id: -1 }) // เรียงจากล่าสุด
+          .limit(20)         // จำกัดแค่ 20 รายการ
           .populate({
             path: 'order_Id',
-            populate: { path: 'table_Id', select: 'number' } // ดึงเฉพาะหมายเลขโต๊ะ (number) จาก Table model
+            populate: { path: 'table_Id', select: 'number' }
           })
-          .populate('food_Id') // ดึงข้อมูลจาก Food model
-          .populate('chef_Id'); // ดึงข้อมูลจาก Chef model
+          .populate('food_Id')
+          .populate('chef_Id');
 
-        if (Serving.length === 0) {
-          // ถ้าไม่มีข้อมูลใน OrderFoodDetail ส่งข้อความแจ้งเตือน
-          socket.emit('dataFoodReady', []); // ✅ ส่ง array แทน object
-        } else {
-          // ส่งข้อมูลกลับไปยังไคลเอนต์
-          socket.emit('dataFoodReady', Serving);
-        }
+        const ServingDrink = await OrderDrinkDetail.find({
+          orderDetail_Serving: "Served"
+        })
+          .sort({ _id: -1 }) // เรียงจากล่าสุด
+          .limit(20)         // จำกัดแค่ 20 รายการ
+          .populate({
+            path: 'order_Id',
+            populate: { path: 'table_Id', select: 'number' }
+          })
+          .populate('drink_Id');
+
+        // ส่งทั้งข้อมูลอาหารและเครื่องดื่มกลับไปพร้อมกัน
+        io.emit('dataFoodReady', {
+          food: ServingFood,
+          drink: ServingDrink
+        });
 
       } catch (error) {
         console.error('Error updating order:', error);

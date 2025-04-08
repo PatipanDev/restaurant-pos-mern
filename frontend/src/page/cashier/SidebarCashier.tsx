@@ -10,6 +10,7 @@ import ManageIngredients from '../chef/ManageIngredients';
 import ManageProductsChef from '../chef/ManageProductsChef';
 import ManageFoodsChef from '../chef/ManageFoodsChef';
 import TabReceipt from './component/TabReceipt';
+import HomePageCashier from './HomePageCashier';
 
 import axios from 'axios';
 
@@ -125,12 +126,10 @@ const SidebarCashier: React.FC = () => {
         {/* ขนาดหน้าจอที่โชว์ */}
       </Drawer>
       <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100%' }}>
-        {selectedPage === 'home' && <h1>หน้าหลัก</h1>}
+        {selectedPage === 'home' && <HomePageCashier/>}
     
         {selectedPage === 'payment' && <TabReceipt/>}
-        {selectedPage === 'product' && <ManageProductsChef />}
-        {selectedPage === 'foodrecipe' && <ManageFoodsChef />}
-        {selectedPage === 'settings' && <h1>การตั้งค่า</h1>}
+
 
 
       </div>
@@ -158,10 +157,6 @@ const SidebarCashier: React.FC = () => {
 // เมนูใน Sidebar ที่โชว์
 const menuItems = [
   { page: 'payment', label: 'ชำระเงิน', icon: <ReceiptLong /> },
-  { page: 'product', label: 'สินค้า', icon: <Inventory2 /> },
-  { page: 'foodrecipe', label: 'สูตรอาหาร', icon: <HistoryEdu /> },
-  { page: 'settings', label: 'การตั้งค่า', icon: <Settings /> },
-
 ];
 
 

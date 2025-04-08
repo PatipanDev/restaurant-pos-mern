@@ -8,7 +8,7 @@ import OrderCompleted from './OrderCompleted';
 import OrderCancelled from './OrderCancelled';
 
 
-const Order = () => {
+const Order: React.FC = () => {
   const [tabIndex, setTabIndex] = useState(0); // แท็บที่เลือก
   const navigate = useNavigate();
 
@@ -24,7 +24,13 @@ const Order = () => {
       <>
         <Typography variant="h4" gutterBottom>รายการอาหารที่สั่งแล้ว</Typography>
         {/* Tabs */}
-        <Tabs value={tabIndex} onChange={handleTabChange}>
+        <Tabs
+          value={tabIndex}
+          onChange={handleTabChange}
+          variant="scrollable"
+          scrollButtons="auto"
+          aria-label="order tabs"
+        >
           <Tab label="สั่งอาหาร" />
           <Tab label="กำลังดำเนินการ" />
           <Tab label="รายการที่สำเร็จ" />
@@ -45,7 +51,7 @@ const Order = () => {
           </div>
         ) : tabIndex === 3 ? (
           <div>
-            <OrderCancelled/>
+            <OrderCancelled />
           </div>
         ) : (
           <div>ไม่มีเนื้อหา</div>

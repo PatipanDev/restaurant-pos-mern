@@ -26,7 +26,7 @@ const server = http.createServer(app);
 // เชื่อมต่อ socket.io กับ server
 const io = socketIo(server, {
     cors: {
-      origin: "http://192.168.1.6:5173",  // อนุญาตให้ React frontend เข้าถึงได้
+      origin: " http://10.80.23.25:5173",  // อนุญาตให้ React frontend เข้าถึงได้
       methods: ["GET", "POST"],          // วิธีที่รองรับ
       allowedHeaders: ["Content-Type"],  // กำหนด headers ที่อนุญาต
       credentials: true                  // อนุญาตให้ส่งคุกกี้
@@ -44,7 +44,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
     // origin: "http://localhost:5173", // Frontend URL
-    origin: "http://192.168.1.4:5173",
+    origin: " http://10.80.23.25:5173",
     credentials: true,  // อนุญาตให้ส่งคุกกี้
 }));
 

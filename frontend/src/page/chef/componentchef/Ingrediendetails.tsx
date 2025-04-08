@@ -57,17 +57,14 @@ const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }
   const fetchData = async () => {
     try {
 
-      const productsResponse = await axios.get(`${API_URL}/api/data/getproducts`);
-      setProducts(productsResponse.data);
-
       const ingredientDetailsResponse = await axios.get(`${API_URL}/api/data/getIngredientDetails/${id}`);
-      setRows(ingredientDetailsResponse.data);
+      setRows(ingredientDetailsResponse.data.ingredientDetails);
+      setProducts(ingredientDetailsResponse.data.product)
 
 
 
 
       console.log('Ingredient Details:', ingredientDetailsResponse.data);
-      console.log('Products:', productsResponse.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -101,11 +98,20 @@ const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }
       field: 'actions',
       headerName: 'แก้ไขข้อมูล',
       width: 100,
-      renderCell: (params) => (
-        <Button variant="outlined" startIcon={<ModeEditIcon />} onClick={() => handleEditIngredientClick(params.id as string)}>
-          แก้ไข
-        </Button>
-      ),
+      renderCell: (params) => {
+        const isDisabled = !params.row.product_Id?.product_Name;
+    
+        return (
+          <Button
+            variant="outlined"
+            startIcon={<ModeEditIcon />}
+            onClick={() => handleEditIngredientClick(params.id as string)}
+            disabled={isDisabled} // ปิดการใช้งานถ้าค่าหนึ่งใดว่าง
+          >
+            แก้ไข
+          </Button>
+        );
+      },
     },
     {
       field: 'delete',
@@ -259,11 +265,6 @@ const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }
                       กรุณาเพิ่มข้อมูล product ก่อน
                     </MenuItem>
                   )}
-                  {/* {products.map((product) => (
-                    <MenuItem key={product._id} value={product._id}>
-                      {product.product_Name}
-                    </MenuItem>
-                  ))} */}
                 </TextField>
               )}
             />

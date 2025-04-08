@@ -17,10 +17,10 @@ const WarningAlert: React.FC<WarningAlertProps> = ({ messagealert, duration = 30
       setShow(true); // แสดง Alert เมื่อ messagealert มีค่า
 
       // เล่นเสียงแจ้งเตือน
-      if (!audioRef.current) {
-        audioRef.current = new Audio(beepSound);
-      }
-      audioRef.current.play();
+      // if (!audioRef.current) {
+      //   audioRef.current = new Audio(beepSound);
+      // }
+      // audioRef.current.play();
 
       // ตั้งเวลาปิด Alert หลังจาก 3 วินาที
       if (timerRef.current) clearTimeout(timerRef.current);

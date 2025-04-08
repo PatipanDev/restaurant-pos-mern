@@ -293,7 +293,6 @@ const Sidebar: React.FC = () => {
 
       <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100%' }}>
         {selectedPage === 'home' && <h1><HomePageOwner/></h1>}
-        {selectedPage === 'profile' && <h1>ผู้ใช้งาน</h1>}
         {/* {selectedPage === 'settings' && <h1>การตั้งค่า</h1>} */}
         {selectedPage === 'manageEmployee' && <ManageEmployee />}
         {selectedPage === 'manageCashier' && <ManageCashier />}
@@ -311,7 +310,6 @@ const Sidebar: React.FC = () => {
 
         {selectedPage === 'manageFood' && <ManageFoods />}
         {selectedPage === 'manageShopOwner' && <ManageShopOwners />}
-        {selectedPage === 'managefoods2' && <ManageFoods2 />}
 
         {/* สั่งสินค้า */}
         {selectedPage === 'manageSupplier' && <ManageSupplier />}
@@ -343,8 +341,6 @@ const Sidebar: React.FC = () => {
 // เมนูใน Sidebar ที่โชว์
 const menuItems = [
   { page: 'settingsweb', label: 'ตั้งค่าร้านค้า', icon: <SettingsApplications /> },
-  { page: 'profile', label: 'ผู้ใช้งาน', icon: <People /> },
-  { page: 'managefoods2', label: 'จัดการอาหาร', icon: <People /> },
 ];
 
 

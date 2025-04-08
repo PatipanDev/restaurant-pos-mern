@@ -46,7 +46,7 @@ const schema = yup.object({
 
 
 
-const ManageProductsChef: React.FC = () => {
+const ManageProductsChefs: React.FC = () => {
   const [rows, setRows] = useState<GridRowsProp<Product>>([]);
   const [open, setOpen] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<GridRowId | null>(null);
@@ -134,11 +134,20 @@ const ManageProductsChef: React.FC = () => {
       field: 'actions',
       headerName: 'แก้ไขข้อมูล',
       width: 100,
-      renderCell: (params) => (
-        <Button variant="outlined" startIcon={<ModeEditIcon />} onClick={() => handleEditClick(params.id)}>
-          แก้ไข
-        </Button>
-      ),
+      renderCell: (params) => {
+        const isDisabled = !params.row.categoryId?.category_name || !params.row.unitId?.unit_Name;
+    
+        return (
+          <Button
+            variant="outlined"
+            startIcon={<ModeEditIcon />}
+            onClick={() => handleEditClick(params.id)}
+            disabled={isDisabled} // ปิดการใช้งานถ้าค่าหนึ่งใดว่าง
+          >
+            แก้ไข
+          </Button>
+        );
+      },
     },
     {
       field: 'delete',
@@ -419,4 +428,4 @@ const ManageProductsChef: React.FC = () => {
   );
 }
 
-export default ManageProductsChef;  
+export default ManageProductsChefs;  

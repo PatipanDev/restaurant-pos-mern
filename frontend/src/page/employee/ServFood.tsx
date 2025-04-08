@@ -35,10 +35,8 @@ const ServFood = () => {
         <Typography variant="h4" gutterBottom>รายการอาหารที่ต้องเสิร์ฟ</Typography>
         {/* Tabs */}
         <Tabs value={tabIndex} onChange={handleTabChange}>
-          <Tab label="อาหารที่ทำเสร็จ" />
-          <Tab label="กำลังดำเนินการ" />
-          <Tab label="รายการที่สำเร็จ" />
-          <Tab label="รายการที่ยกเลิก" />
+          <Tab label="รายการที่เสิร์พ" />
+          <Tab label="ประวัติการเสิร์พ" />
         </Tabs>
 
         {tabIndex === 0 ? (
@@ -50,10 +48,6 @@ const ServFood = () => {
           <div>
 
           </div>
-        ) : tabIndex === 2 ? (
-          <div>เนื้อหาสำหรับ tab 3</div>
-        ) : tabIndex === 3 ? (
-          <div>เนื้อหาสำหรับ tab 4</div>
         ) : (
           <div>ไม่มีเนื้อหา</div>
         )}

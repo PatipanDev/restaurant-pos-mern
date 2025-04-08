@@ -101,11 +101,20 @@ const AddListProductDetail: React.FC<OrderProductDetailsProps> = ({ id, onClose 
             field: 'actions',
             headerName: 'แก้ไขข้อมูล',
             width: 100,
-            renderCell: (params) => (
-                <Button variant="outlined" startIcon={<ModeEditIcon />} onClick={() => handleEditFoodRecipeClick(params.id as string)}>
+            renderCell: (params) => {
+                const isDisabled = !params.row?.product_Id?.product_Name;
+            
+                return (
+                  <Button
+                    variant="outlined"
+                    startIcon={<ModeEditIcon />}
+                    onClick={() => handleEditFoodRecipeClick(params.id as string)}
+                    disabled={isDisabled} // ปิดการใช้งานถ้าค่าหนึ่งใดว่าง
+                  >
                     แก้ไข
-                </Button>
-            ),
+                  </Button>
+                );
+              },
         },
         {
             field: 'delete',

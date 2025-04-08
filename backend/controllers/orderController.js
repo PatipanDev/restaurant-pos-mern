@@ -10,10 +10,10 @@ exports.createOrderFoodDetail = async (req, res) => {
     try {
         const { customer_Id, orderDetail_More, food_Id, orderDetail_Quantity, employee_Id } = req.body;
 
-        console.log(employee_Id+"fdsfdsf")
+        console.log(employee_Id + "fdsfdsf")
 
-        if(employee_Id){
-            return await employeeOrderGiveCutomer(req, res); 
+        if (employee_Id) {
+            return await employeeOrderGiveCutomer(req, res);
         }
 
         if (!food_Id || !orderDetail_Quantity) {
@@ -83,10 +83,10 @@ exports.createOrderFoodDetail = async (req, res) => {
 };
 
 
-const employeeOrderGiveCutomer = async (req,res) =>{
-    try{
+const employeeOrderGiveCutomer = async (req, res) => {
+    try {
         const { customer_Id, orderDetail_More, food_Id, orderDetail_Quantity, employee_Id } = req.body;
-        console.log('ไอดีพนักงาน',employee_Id)
+        console.log('ไอดีพนักงาน', employee_Id)
 
         if (!food_Id || !orderDetail_Quantity) {
             return res.status(400).json({ message: "Missing required fields" });
@@ -262,7 +262,9 @@ exports.getPendingOrdersByCustomer = async (req, res) => {
         const orders = await Order.find({
             customer_Id: id,
             order_Status: 'Pending'
-        });
+        })
+            .sort({ _id: -1 }) // เรียงจากล่าสุด (มาก่อน)
+            .limit(1);  // จำกัดให้ดึงแค่ 1 รายการที่ล่าสุด
 
         // ตรวจสอบว่ามีคำสั่งซื้อหรือไม่
         if (orders.length === 0) {
@@ -297,11 +299,13 @@ exports.getPendingOrdersByCustomer = async (req, res) => {
 };
 
 
+
+
 exports.getInProgressOrdersByCustomer = async (req, res) => {
     const { id } = req.params;
     try {
         // ค้นหาข้อมูลออเดอร์ที่สถานะเป็น "Pending" โดยอิงจาก customer_Id
-        const orders = await Order.find({ customer_Id: id, order_Status: 'In Progress' }).populate("table_Id", "number seat_count");
+        const orders = await Order.find({ customer_Id: id, order_Status: 'In Progress' }).populate("table_Id", "number seat_count").sort({ _id: -1 }).limit(1);  // จำกัดให้ดึงแค่ 1 รายการที่ล่าสุด
 
         // ตรวจสอบว่ามีคำสั่งซื้อหรือไม่
         if (orders.length === 0) {
@@ -343,7 +347,7 @@ exports.getCompletedOrdersByCustomer = async (req, res) => {
     const { id } = req.params;
     try {
         // ค้นหาข้อมูลออเดอร์ที่สถานะเป็น "Pending" โดยอิงจาก customer_Id
-        const orders = await Order.find({ customer_Id: id, order_Status: 'Completed' }).populate("table_Id", "number seat_count");
+        const orders = await Order.find({ customer_Id: id, order_Status: 'Completed' }).populate("table_Id", "number seat_count").sort({ _id: -1 }).limit(1);  // จำกัดให้ดึงแค่ 1 รายการที่ล่าสุด
 
         // ตรวจสอบว่ามีคำสั่งซื้อหรือไม่
         if (orders.length === 0) {
@@ -384,7 +388,7 @@ exports.getCancelledByCustomer = async (req, res) => {
     const { id } = req.params;
     try {
         // ค้นหาข้อมูลออเดอร์ที่สถานะเป็น "Pending" โดยอิงจาก customer_Id
-        const orders = await Order.find({ customer_Id: id, order_Status: 'Cancelled' }).populate("table_Id", "number seat_count");
+        const orders = await Order.find({ customer_Id: id, order_Status: 'Cancelled' }).populate("table_Id", "number seat_count").sort({ _id: -1 }).limit(1);  // จำกัดให้ดึงแค่ 1 รายการที่ล่าสุด
 
         // ตรวจสอบว่ามีคำสั่งซื้อหรือไม่
         if (orders.length === 0) {
@@ -425,10 +429,12 @@ exports.getPendingOrdersByCustomerOrEmployee = async (req, res) => {
     const { id } = req.params;
     try {
         // ค้นหาข้อมูลออเดอร์ที่สถานะเป็น "Pending" โดยอิงจาก customer_Id
-        const orders = await Order.find({
+        const orders = await Order.findOne({
             employee_Id: id,
             order_Status: 'Pending'
-        });
+        })
+            .sort({ _id: -1 }) // เรียงจากล่าสุด (มาก่อน)
+            .limit(1);  // จำกัดให้ดึงแค่ 1 รายการที่ล่าสุด
 
         // ตรวจสอบว่ามีคำสั่งซื้อหรือไม่
         if (orders.length === 0) {
@@ -468,7 +474,13 @@ exports.getInProgressOrdersByCustomerOrEmployee = async (req, res) => {
     console.log(id)
     try {
         // ค้นหาข้อมูลออเดอร์ที่สถานะเป็น "Pending" โดยอิงจาก customer_Id
-        const orders = await Order.find({ employee_Id: id, order_Status: 'In Progress' }).populate("table_Id", "number seat_count");
+        const orders = await Order.find({
+            employee_Id: id,
+            order_Status: 'In Progress'
+        })
+            .populate("table_Id", "number seat_count")  // ดึงข้อมูลหมายเลขโต๊ะและจำนวนที่นั่ง
+            .sort({ _id: -1 })  // เรียงตาม ID ใหม่สุด (จากล่าสุด)
+            .limit(1);  // จำกัดให้ดึงแค่ 1 รายการที่ล่าสุด
 
         // ตรวจสอบว่ามีคำสั่งซื้อหรือไม่
         if (orders.length === 0) {
@@ -508,7 +520,13 @@ exports.getCompletedOrdersByCustomerOrEmployee = async (req, res) => {
     const { id } = req.params;
     try {
         // ค้นหาข้อมูลออเดอร์ที่สถานะเป็น "Pending" โดยอิงจาก customer_Id
-        const orders = await Order.find({ employee_Id: id, order_Status: 'Completed' }).populate("table_Id", "number seat_count");
+        const orders = await Order.find({
+            employee_Id: id,
+            order_Status: 'Completed'
+        })
+            .populate("table_Id", "number seat_count")  // ดึงข้อมูลหมายเลขโต๊ะและจำนวนที่นั่ง
+            .sort({ _id: -1 })  // เรียงจากใหม่สุด (ล่าสุด)
+            .limit(1);  // จำกัดให้ดึงแค่ 1 รายการที่ล่าสุด
 
         // ตรวจสอบว่ามีคำสั่งซื้อหรือไม่
         if (orders.length === 0) {
@@ -549,7 +567,13 @@ exports.getCancelledByCustomerOrEmployee = async (req, res) => {
     const { id } = req.params;
     try {
         // ค้นหาข้อมูลออเดอร์ที่สถานะเป็น "Pending" โดยอิงจาก customer_Id
-        const orders = await Order.find({ employee_Id: id, order_Status: 'Cancelled' }).populate("table_Id", "number seat_count");
+        const orders = await Order.find({
+            employee_Id: id,
+            order_Status: 'Cancelled'
+        })
+            .populate("table_Id", "number seat_count")  // ดึงข้อมูลหมายเลขโต๊ะและจำนวนที่นั่ง
+            .sort({ _id: -1 })  // เรียงจากใหม่สุด (ล่าสุด)
+            .limit(1);  // จำกัดให้ดึงแค่ 1 รายการที่ล่าสุด
 
         // ตรวจสอบว่ามีคำสั่งซื้อหรือไม่
         if (orders.length === 0) {
@@ -617,7 +641,7 @@ exports.createPaymentOrderCustomer = async (req, res) => {
         });
 
     } catch (error) {
-        console.log("Error",error)
+        console.log("Error", error)
         res.status(500).json({
             message: 'เกิดข้อผิดพลาดในการสร้างออเดอร์',
             error: error.message,
@@ -674,7 +698,7 @@ exports.getPendingOrdersByEmployee = async (req, res) => {
 exports.getpaymentorderByCashier = async (req, res) => {
     try {
         // ค้นหาข้อมูลออเดอร์ที่สถานะเป็น "Pending" โดยอิงจาก customer_Id
-        const orders = await Order.find({order_Status: 'In Progress' }).populate("table_Id", "number seat_count");
+        const orders = await Order.find({ order_Status: 'In Progress' }).populate("table_Id", "number seat_count");
 
         // ตรวจสอบว่ามีคำสั่งซื้อหรือไม่
         if (orders.length === 0) {

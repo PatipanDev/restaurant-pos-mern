@@ -277,8 +277,8 @@ const WebsiteInfoForm: React.FC = () => {
               )}
             />
           </Grid>
-
-          {/* 🎨 Primary Color */}
+          <div style={{ width: "100%", height: "40px", border: "none", cursor: "pointer", display: "none" }}>
+            {/* 🎨 Primary Color */}
           <Grid item xs={6}>
             <InputLabel shrink>สีธีมหลัก</InputLabel>
             <Controller
@@ -309,6 +309,9 @@ const WebsiteInfoForm: React.FC = () => {
               )}
             />
           </Grid>
+
+          </div>
+          
 
           {/* ปุ่มส่งข้อมูล */}
           <Grid item xs={12} sx={{ textAlign: "center" }}>

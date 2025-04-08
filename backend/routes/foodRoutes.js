@@ -40,6 +40,8 @@ router.post('/createOrderDrinkDetail', orderControllor.createOrderDrinkDetail)
 
 //ดึงข้อมูลรายการอาหารของลูกค้า ตามไอดีแต่ละคน
 router.get('/getPendingOrdersByCustomer/:id', orderControllor.getPendingOrdersByCustomer)
+// router.get('/getPendingOrdersByCustomerHis/:id', orderControllor.getPendingOrdersByCustomerHis)
+
 //ดึงข้อมูลรายการอาหารที่กำลังดำเนินการ
 router.get('/getInProgressOrdersByCustomer/:id', orderControllor.getInProgressOrdersByCustomer)
 router.get('/getCompletedOrdersByCustomer/:id', orderControllor.getCompletedOrdersByCustomer)

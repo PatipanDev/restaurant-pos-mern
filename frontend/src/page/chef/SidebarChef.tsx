@@ -11,6 +11,7 @@ import ManageProductsChef from './ManageProductsChef';
 import ManageFoodsChef from './ManageFoodsChef';
 import OrderTable from './componentchef/orderTable';
 import AddListFoodBuy from './AddOrderProduct';
+import HomePageChef from './HomePageChef';
 
 import axios from 'axios';
 
@@ -126,15 +127,15 @@ const SidebarChef: React.FC = () => {
         {/* ขนาดหน้าจอที่โชว์ */}
       </Drawer>
       <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100%' }}>
-        {selectedPage === 'home' && <h1>หน้าหลัก</h1>}
-        {selectedPage === 'odercustomer' && <h1><OrderTable/></h1>}
+        {selectedPage === 'home' && <HomePageChef/>}
+        {selectedPage === 'odercustomer' && <OrderTable/>}
     
         {selectedPage === 'ingredient' && <ManageIngredients />}
         {selectedPage === 'product' && <ManageProductsChef />}
         {selectedPage === 'foodrecipe' && <ManageFoodsChef />}
         {selectedPage === 'addlistfoodbuy' && <AddListFoodBuy />}
         
-        {selectedPage === 'settings' && <h1>การตั้งค่า</h1>}
+        {/* {selectedPage === 'settings' && <h1>การตั้งค่า</h1>} */}
       </div>
 
       <Dialog open={openDialog} onClose={handleCloseDialog}>
@@ -163,7 +164,7 @@ const menuItems = [
   { page: 'product', label: 'สินค้า', icon: <Inventory2 /> },
   { page: 'foodrecipe', label: 'สูตรอาหาร', icon: <HistoryEdu /> },
   { page: 'addlistfoodbuy', label: 'สั่งสินค้า', icon: <Summarize /> },
-  { page: 'settings', label: 'การตั้งค่า', icon: <Settings /> },
+  // { page: 'settings', label: 'การตั้งค่า', icon: <Settings /> },
 ];
 
 // ✅ สไตล์เมนูหลัก

@@ -10,7 +10,7 @@ import { formatDateTime } from '../../../utils/formatDateTime';
 import SuccessAlert from '../../../components/AlertSuccess';
 
 
-const OrderDetailsCard = () => {
+const OrderDetailsCardHis = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
@@ -19,7 +19,7 @@ const OrderDetailsCard = () => {
     socket.connect();
     // ขอข้อมูลคำสั่งซื้อล่าสุดจากเซิร์ฟเวอร์
     if (socket.connected) {
-      socket.emit('get_latest_order');
+      socket.emit('get_latest_order_his');
       console.log("==>Socket connected");
     } else {
       console.error("Socket is not connected!");
@@ -153,6 +153,7 @@ const OrderDetailsCard = () => {
                     <Button
                       variant="contained"
                       color="secondary"
+                      disabled
                       sx={{ marginRight: 2 }}
                       onClick={(event) => {
                         event.stopPropagation(); // ป้องกันการส่งต่อ event ไปยัง CardContent
@@ -164,6 +165,7 @@ const OrderDetailsCard = () => {
                     <Button
                       variant="contained"
                       color="primary"
+                      disabled
 
                       onClick={(event) => {
                         event.stopPropagation(); // ป้องกันการส่งต่อ event ไปยัง CardContent
@@ -182,4 +184,4 @@ const OrderDetailsCard = () => {
   );
 };
 
-export default OrderDetailsCard;
+export default OrderDetailsCardHis;

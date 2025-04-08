@@ -40,7 +40,7 @@ const translateStatusServ = (status: string) => {
 };
 
 
-const ServFoodList: React.FC = () => {
+const ServFoodListHis: React.FC = () => {
   const [foodready, setFoodReady] = useState<any[]>([]);
   const [drinkready, setDrinkReady] = useState<any[]>([]);
 
@@ -49,7 +49,7 @@ const ServFoodList: React.FC = () => {
     socket.connect();
     // ขอข้อมูลคำสั่งซื้อล่าสุดจากเซิร์ฟเวอร์
     if (socket.connected) {
-      socket.emit('getFoodReady');
+      socket.emit('getFoodReadyHis');
       console.log("==>Socket connected");
     } else {
       console.error("Socket is not connected!");
@@ -143,6 +143,7 @@ const ServFoodList: React.FC = () => {
                     variant="contained"
                     color="primary"
                     onClick={() => handleConfirmServ(order._id)}
+                    disabled
                   // disabled={order.orderDetail_Cooking !== "In Progress" || String(order.chef_Id) === String(userId)}
                   >
                     ยืนยันการเสิร์พ
@@ -200,4 +201,4 @@ const ServFoodList: React.FC = () => {
   );
 };
 
-export default ServFoodList;
+export default ServFoodListHis;

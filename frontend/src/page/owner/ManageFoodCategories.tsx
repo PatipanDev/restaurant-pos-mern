@@ -40,17 +40,18 @@ const ManageFoodCategories: React.FC = () => {
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
     resolver: yupResolver(schema),
   });
+  const fetchData = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/data/getfoodcategory`);
+      setRows(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/api/data/getfoodcategory`);
-        setRows(response.data);
-        console.log(response.data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+    
     fetchData();
   }, []);
 
@@ -84,7 +85,7 @@ const ManageFoodCategories: React.FC = () => {
       headerName: 'แก้ไขข้อมูล',
       width: 100,
       renderCell: (params) => (
-        <Button variant="outlined" startIcon={<ModeEditIcon />} onClick={() => handleEditClick(params.id)}>แก้ไข</Button>
+        <Button variant="outlined" startIcon={<ModeEditIcon />} onClick={() => handleEditClick(params.id )}>แก้ไข</Button>
       ),
     },
     {
@@ -92,7 +93,7 @@ const ManageFoodCategories: React.FC = () => {
       headerName: 'ลบข้อมูล',
       width: 100,
       renderCell: (params) => (
-        <Button variant="outlined" startIcon={<DeleteIcon />} color="error" onClick={() => handleDeleteClick(params.id)}>ลบ</Button>
+        <Button variant="outlined" startIcon={<DeleteIcon />} color="error" onClick={() => handleDeleteClick(params.id as string)}>ลบ</Button>
       ),
     },
   ];
@@ -101,12 +102,12 @@ const ManageFoodCategories: React.FC = () => {
     const confirmDelete = window.confirm('คุณแน่ใจหรือไม่ว่าจะลบข้อมูลนี้?');
     if (confirmDelete) {
       try {
-        const categoryId = rows.find((row) => row._id === id)?._id;
+        const categoryId = rows.find((row) => row._id === id)?. _id;
+  
         if (categoryId) {
-          await axios.delete(`${API_URL}api/data/deletefoodcategory/${categoryId}`);
-          const updatedRows = rows.filter((row) => row._id !== categoryId);
-          setRows(updatedRows);
+          await axios.delete(`${API_URL}/api/data/deletefoodcategory/${categoryId}`);
           setAlertSuccess(<div>ลบข้อมูลสำเร็จ</div>);
+          fetchData();
         } else {
           alert('ไม่พบข้อมูลที่จะลบ');
         }

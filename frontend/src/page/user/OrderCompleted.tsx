@@ -76,8 +76,7 @@ const translateEatStatus = (status: string) => {
 };
 
 
-
-function OrderCompleted() {
+const OrderCompleted: React.FC = () => {
     const [order, setOrders] = useState<Order[]>([]);
     const [orderFoodDetails, setOrderFoodDetails] = useState<any[]>([]);
     const [orderDrinkDetails, setOrderDrinkDetails] = useState<any[]>([]);

@@ -81,12 +81,16 @@ exports.getIngredientDetailsByIngredientId = async (req, res) => {
               populate: { path: 'unitId', select: 'unit_Name' } // ดึง unit_Name จาก unitId
           });
 
+      const product = await Product.find();
+
       // ตรวจสอบว่าเจอข้อมูลหรือไม่
       if (!ingredientDetails) {
           return res.status(404).json({ message: 'ไม่พบข้อมูล' });
       }
 
-      res.status(200).json(ingredientDetails); // ส่งข้อมูลกลับ
+      res.status(200).json({ingredientDetails,
+        product
+      }); // ส่งข้อมูลกลับ
   } catch (error) {
       console.error('Error fetching ingredient details:', error);
       res.status(500).json({ message: 'เกิดข้อผิดพลาด', error: error.message });
