@@ -26,8 +26,8 @@ const server = http.createServer(app);
 // เชื่อมต่อ socket.io กับ server
 const io = socketIo(server, {
     cors: {
-      origin: " http://10.80.23.25:5173",  // อนุญาตให้ React frontend เข้าถึงได้
-      methods: ["GET", "POST"],          // วิธีที่รองรับ
+      origin: process.env.FRONT,  // อนุญาตให้ React frontend เข้าถึงได้
+      methods: ['GET', 'POST'],    // วิธีที่รองรับ
       allowedHeaders: ["Content-Type"],  // กำหนด headers ที่อนุญาต
       credentials: true                  // อนุญาตให้ส่งคุกกี้
     }
@@ -44,7 +44,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
     // origin: "http://localhost:5173", // Frontend URL
-    origin: " http://10.80.23.25:5173",
+    origin: process.env.FRONT,
     credentials: true,  // อนุญาตให้ส่งคุกกี้
 }));
 
@@ -77,6 +77,7 @@ server.listen(PORT, () => {
     console.log("🔍 JWT_SECRET:", process.env.JWT_SECRET);
     const currentTime = new Date().toLocaleString();
     console.log(`🚀 Server is running at http://localhost:${PORT} time: ${currentTime}`);
+    console.log(`Allowed Frontend: ${process.env.FRONT}`);
 });
 
 
