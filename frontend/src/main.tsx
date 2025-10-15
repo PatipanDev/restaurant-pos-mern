@@ -1,14 +1,12 @@
 import { StrictMode } from 'react';
-import { createRoot} from 'react-dom/client';
-import ReactDOM from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App';
 
-const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+const root = createRoot(document.getElementById('root')!);
 
-// ใช้ createRoot เพื่อติดตั้ง React component ลงใน DOM
-createRoot(document.getElementById('root')!).render(
+root.render(
   <StrictMode>
-    <App/>
+    <App />
   </StrictMode>
 );
