@@ -1,11 +1,10 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
-import React, { useState, useEffect, Component } from 'react';
-import { DataGrid, GridColDef, GridRowsProp, GridRowId, GridCellParams } from '@mui/x-data-grid';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { DataGrid, GridColDef, GridRowsProp, GridRowId} from '@mui/x-data-grid';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
-import { ObjectId } from 'mongodb';
 
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -53,8 +52,6 @@ const ManageIngredients: React.FC = () => {
     const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
     const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
 
-    const [chefs, setChefs] = useState<any[]>([]); // To store chefs
-
     const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
         resolver: yupResolver(schema),
     });
@@ -65,11 +62,7 @@ const ManageIngredients: React.FC = () => {
                 const ingredientsResponse = await axios.get(`${API_URL}/api/data/getingredients`);
                 setRows(ingredientsResponse.data);
 
-                const chefsResponse = await axios.get(`${API_URL}/api/auth/getChefs`);
-                setChefs(chefsResponse.data);
-
                 console.log('Ingredients:', ingredientsResponse.data);
-                console.log('Chefs:', chefsResponse.data);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }

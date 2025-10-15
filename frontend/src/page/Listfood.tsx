@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   TextField, Typography, Grid, Card, CardContent, CardMedia, 
-  Tabs, Tab, Box 
+  Tabs, Tab
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';

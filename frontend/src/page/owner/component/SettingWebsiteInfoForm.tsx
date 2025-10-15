@@ -21,10 +21,9 @@ interface WebsiteFormData {
 }
 
 const WebsiteInfoForm: React.FC = () => {
-  const { control, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm<WebsiteFormData>();
+  const { control, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<WebsiteFormData>();
   const [submitSuccess, setSubmitSuccess] = useState<boolean | null>(null);
   const [submitError, setSubmitError] = useState<any>(null);
-  const [rows, setRows] = useState<any>([]);
 
   const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
   const fetchWebsiteInfo = async () => {

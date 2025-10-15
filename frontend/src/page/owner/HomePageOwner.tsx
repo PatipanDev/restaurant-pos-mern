@@ -1,5 +1,5 @@
 const API_URL = import.meta.env.VITE_API_URL;
-import { Box, AppBar, Toolbar, Typography, Divider } from '@mui/material';
+import { Box, Divider } from '@mui/material';
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { BarChart } from '@mui/x-charts/BarChart';

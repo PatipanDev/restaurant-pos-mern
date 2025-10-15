@@ -28,7 +28,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 export default function ProfileAdmin() {
   const [openCollapse, setOpenCollapse] = React.useState(true); // เปลี่ยนชื่อให้แตกต่างจาก Dialog
   const navigate = useNavigate();
-  const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
+  const [alertMessage, _] = useState<React.ReactNode | null>(null);
   const [succesMessage, setSuccAlertMessage] = useState<React.ReactNode | null>(null);
   const [openDialog, setOpenDialog] = React.useState(false);
 

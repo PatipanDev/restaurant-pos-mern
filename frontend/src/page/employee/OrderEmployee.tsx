@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Box, CssBaseline, Paper, Typography, Grid, Card, CardContent, Button, Tabs, Tab } from '@mui/material';
+import React, {  useState } from 'react';
+import { Typography,  Tabs, Tab } from '@mui/material';
 
 
 import EmOrderDetails from './componentEmployee/EmOrderDetails';
@@ -10,7 +9,6 @@ import EmOrderCancelled from './componentEmployee/EmOrderCancelled';
 
 const OrderEmployee = () => {
   const [tabIndex, setTabIndex] = useState(0); // แท็บที่เลือก
-  const navigate = useNavigate();
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);

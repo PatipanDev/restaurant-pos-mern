@@ -1,12 +1,12 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
 import React, { useState, useEffect } from 'react';
-import { DataGrid, GridColDef, GridRowsProp, GridRowId, GridCellParams } from '@mui/x-data-grid';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import { DataGrid, GridColDef, GridRowsProp, GridRowId } from '@mui/x-data-grid';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, MenuItem} from '@mui/material';
 import { HistoryEdu } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
-import { ObjectId } from 'mongodb';
+
 
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -53,9 +53,7 @@ const ManageFoodsChef: React.FC = () => {
 
 
   const [categories, setCategories] = useState<any[]>([]); // To store categories
-  const [chefs, setChefs] = useState<any[]>([]); // To store chefs
-  const [owners, setOwners] = useState<any[]>([]); // To store owners
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const [_, setChefs] = useState<any[]>([]); // To store chefs
 
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
     resolver: yupResolver(schema),

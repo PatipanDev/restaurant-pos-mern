@@ -2,7 +2,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId } from '@mui/x-data-grid';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField,  MenuItem} from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -10,8 +10,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import * as yup from 'yup';
 import axios from 'axios';
-import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
+
 
 import SuccessAlert from '../../components/AlertSuccess';
 import WarningAlert from '../../components/AlertDivWarn';
@@ -49,7 +48,7 @@ const AddListProductDetail: React.FC<OrderProductDetailsProps> = ({ id, onClose 
     const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
     const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
     const [products, setProducts] = useState<any[]>([]);
-    const [orderProducts, setOrderProducts] = useState<any[]>([]);
+
 
     const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
         resolver: yupResolver(schema),

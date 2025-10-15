@@ -2,10 +2,10 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId } from '@mui/x-data-grid';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, MenuItem } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
-import { HistoryEdu, Receipt } from '@mui/icons-material';
+import { HistoryEdu} from '@mui/icons-material';
 
 
 import { useForm, Controller } from 'react-hook-form';
@@ -75,7 +75,6 @@ const ManageDoce = () => {
   const [open, setOpen] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<GridRowId | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
-  const [chefs, setChefs] = useState<any[]>([]);
 
   const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
   const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);

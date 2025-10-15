@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Slide, Typography, Card, CardContent, CardMedia, Button, IconButton, Box, TextField } from '@mui/material';
 import { Add, Remove, ShoppingCart, Close } from '@mui/icons-material';
 import axios from 'axios';
-import { toast } from 'react-toastify'; // ถ้าต้องการใช้ Toast
 
 import { useForm, Controller } from 'react-hook-form';
 
@@ -38,7 +36,7 @@ const DrinkDetail: React.FC<DrinkDetailProps> = ({ _id, onClose }) => {
   const [slideIn, setSlideIn] = useState(true); // State to control the slide animation
   const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
 
-  const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormDetail>({
+  const { control, handleSubmit,  formState: { errors } } = useForm<FormDetail>({
     resolver: yupResolver(schema),
   });
 

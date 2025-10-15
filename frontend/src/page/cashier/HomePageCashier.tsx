@@ -1,29 +1,14 @@
 const API_URL = import.meta.env.VITE_API_URL;
-import { Box, AppBar, Toolbar, Typography, Divider } from '@mui/material';
+import { Box, Divider } from '@mui/material';
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { BarChart } from '@mui/x-charts/BarChart';
 
-interface ProductData {
-  product_Name: string;
-  product_Stock: number;
-  product_Quantity: number;
-}
-interface Food {
-  food_Name: string;
-  food_Stock: number;
-}
-interface Drink {
-  drink_Name: string;
-  drink_Stock_quantity: number;
-}
+
 
 const HomePageCashier: React.FC = () => {
   const [chartData, setChartData] = useState<{ date: string; totalPaid: number }[]>([]);
   const [buyData, setBuyData] = useState<{date: string; totalPaid: number }[]>([]);
-  const [productData, setProductData] = useState<ProductData[]>([]);
-  const [foodData, setFoodData] = useState<Food[]>([]);
-  const [drinkData, setDrinkData] = useState<Drink[]>([]);
 
 
   useEffect(() => {
@@ -33,9 +18,6 @@ const HomePageCashier: React.FC = () => {
       const oldData = (JSON.parse(graphData));
       setChartData(oldData.sorted)
       setBuyData(oldData.buyproduct)
-      setProductData(oldData.product)
-      setFoodData(oldData.food)
-      setDrinkData(oldData.drink)
       return; // ✅ หยุดการทำงานหลังใช้ข้อมูลจาก sessionStorage แล้ว
     }
   
@@ -61,20 +43,16 @@ const HomePageCashier: React.FC = () => {
           product_Stock: item.product_Stock,
           product_Quantity: item.product_Quantity,
         }));
-        setProductData(product);
   
         const food = res.data.foodData.map((item: any) => ({
           food_Name: item.food_Name,
           food_Stock: item.food_Stock,
         }));
-        setFoodData(food);
   
         const drink = res.data.drinkData.map((item: any) => ({
           drink_Name: item.drink_Name,
           drink_Stock_quantity: item.drink_Stock_quantity,
         }));
-        setDrinkData(drink);
-
         const graphData ={
           sorted,
           buyproduct,
@@ -95,17 +73,7 @@ const HomePageCashier: React.FC = () => {
   const buyLabels = buyData.map(item => item.date); // วันที่
   const buyDatas = buyData.map(item => item.totalPaid); // ยอดเงิน
 
-  //product
-  const productLabels = productData.map(item => item.product_Name); // ใช้ชื่อสินค้าเป็น X-axis
-  const stockData = productData.map(item => item.product_Stock); // ใช้ stock สำหรับแสดงในกราฟ
-  const quantityData = productData.map(item => item.product_Quantity); // ใช้ quantity สำหรับแสดงในกราฟ
 
-  //food
-  const foodLabels = foodData.map(item => item.food_Name);
-  const foodStock = foodData.map(item => item.food_Stock)
-
-  const drinkLabels = drinkData.map(item =>item.drink_Name);
-  const drinkStock = drinkData.map(item => item.drink_Stock_quantity);
 
 
   return (

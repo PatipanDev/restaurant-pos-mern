@@ -1,7 +1,7 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
-import React, { Suspense, useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import  { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import {
   Box,
@@ -16,9 +16,8 @@ import {
   BottomNavigation,
   BottomNavigationAction,
   useMediaQuery,
-  Typography,
 } from "@mui/material";
-import { Home, ManageAccounts, ListAlt, RamenDining, FactCheck, TableBar } from "@mui/icons-material";
+import { ManageAccounts, ListAlt, RamenDining, FactCheck, TableBar } from "@mui/icons-material";
 import axios from "axios";
 
 // นำเข้าหน้า
@@ -27,18 +26,9 @@ import ProfileEmployee from './ProfileEmployee';
 import Listfood from '../Listfood';
 import LoginReminder from '../../components/LoginReminder';
 import ServFood from './ServFood';
-// ใช้ไลบรารีต่าง ๆ
-import Cookies from "js-cookie";  // ใช้ js-cookie
-import { jwtDecode } from 'jwt-decode';
 import OrderCheck from './OrderCheck';
 
-interface DecodedToken {
-  customer_Id: string;
-  customer_Name: string;
-  role: string;  // เพิ่มการกำหนดชนิดข้อมูล role
-  iat: number;
-  exp: number;
-}
+
 
 interface User {
   user_Id: string;
@@ -163,7 +153,7 @@ export default function DashboardEmployee() {
           <BottomNavigation
             showLabels
             value={value}
-            onChange={(event, newValue) => {
+            onChange={(_, newValue) => {
               setValue(newValue);
             }}
           >

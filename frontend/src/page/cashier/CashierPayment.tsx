@@ -16,19 +16,15 @@ import {
   FormControlLabel,
   Button,
   List,
-  ListItem,
   ListItemText,
   ListItemButton,
   Divider, IconButton,
-  dividerClasses
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL;
-import { number } from 'yup';
 import { formatDateTime } from "../../utils/formatDateTime";
-import { error } from "console";
 
 import Receipt from "./component/Receipt";
 import { getEmployeeId } from "../../utils/userUtils";
@@ -40,8 +36,6 @@ const CashierPayment: React.FC = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [orderFoodDetails, setOrderFoodDetails] = useState<any[]>([]);
   const [orderDrinkDetails, setOrderDrinkDetails] = useState<any[]>([]);
-  const [payment, setPayment] = useState<any[]>([])
-  const [datarecipt, setDatarecipt] = useState<any>()
   const [idrecipt, setIdrecipt] = useState<string>("")
 
   const [paymentMethod, setPaymentMethod] = useState("cash");
@@ -63,11 +57,9 @@ const CashierPayment: React.FC = () => {
   const fetchListOrder = async () => {
     try {
       const response = await axios.get(`${API_URL}/api/food/getpaymentorderByCashier`);
-      setDatarecipt(response.data)
       setOrders(response.data.orders);
       setOrderFoodDetails(response.data.orderFoodDetails);
       setOrderDrinkDetails(response.data.orderDrinkDetails);
-      setPayment(response.data.payment)
       if (response.data.payment) {
       }
       console.log(response.data);
@@ -349,7 +341,7 @@ const CashierPayment: React.FC = () => {
             <TableContainer component={Paper} sx={{ maxHeight: "60%", overflowY: "auto" }}>
               {orders
                 .filter((item) => item._id === selectedOrder)
-                .map((item, index) => {
+                .map((item) => {
                   const { formattedDate, formattedTime } = formatDateTime(item.createdAt);
                   return (
                     <Box key={item._id}>
@@ -501,7 +493,7 @@ const CashierPayment: React.FC = () => {
             {/* Confirm Button */}
             {orders
               .filter((item) => item._id === selectedOrder)
-              .map((item, index) => (
+              .map((item) => (
                 <Box sx={{ display: "flex", gap: 2, mt: 2 }} key={item._id}>
 
                   {/* Confirm Button */}

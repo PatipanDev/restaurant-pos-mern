@@ -1,6 +1,5 @@
-const API_URL = import.meta.env.VITE_API_URL;
-import React, { Suspense, useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import React, { Suspense, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Box } from '@mui/material';
 import { SyncLoader } from 'react-spinners';
 
@@ -8,15 +7,13 @@ import { SyncLoader } from 'react-spinners';
 import HomeIndex from './page/Homeindex';
 import Listfood from './page/Listfood';
 // import FoodDetail from './page/FoodDetail';
-import DrinkDetail from './page/DrinkDetail';
-import Order from './page/user/Order';
+
 import Login from './page/Login';
 import Register from './page/Register';
-import axios from 'axios';
+
 
 
 import ProtectedRoute from './ProtectedRoute';
-import ErrorBoundary from './page/ErrorBoundary';
 import LoginEmployee from './page/LoginEmployee';
 
 // หน้าเจ้าของร้าน
@@ -38,7 +35,6 @@ import ManageFoods2 from './page/owner/ManageFoods2';
 // หน้าเชฟ
 import DashboardChef from './page/chef/DashboardChef';
 import ProductChef from './page/chef/ManageProductsChef';
-import ManageFoodRecipe from './page/chef/ManageFoodrecipe';
 import ManageFoodsChef from './page/chef/ManageFoodsChef';
 import HomePage from './page/Homepage';
 
@@ -52,7 +48,7 @@ import DashboardCashier from './page/cashier/DashboardCashier';
 
 
 const App: React.FC = () => {
-  const [isAuthenticated, setAuth] = useState<boolean>(false);
+  const [_, setAuth] = useState<boolean>(false);
 
   return (
     <Router>
@@ -79,8 +75,6 @@ const App: React.FC = () => {
         }
       >
         <Routes>
-          {/* ส่วนของหน้าโชว์ตอนไม่มีการล็อกอิน */}
-          {/* <Route path="/loginreminder" element={<LoginReminder />} /> */}
 
           {/* ล็อกอินและสมัครสมาชิก */}
           <Route path="/login" element={<Login setAuth={setAuth} />} />

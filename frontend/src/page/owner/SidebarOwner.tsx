@@ -2,7 +2,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 import React, { useState } from 'react';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Dialog, DialogActions, DialogTitle, DialogContent, Button, Collapse } from '@mui/material';
-import { Home, People, Settings, Receipt, MonetizationOn,Storefront,ShoppingBasket, SettingsApplications, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory, Inventory2} from '@mui/icons-material';
+import { Home, People,  Receipt, MonetizationOn,Storefront,ShoppingBasket, SettingsApplications, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory, Inventory2} from '@mui/icons-material';
 
 import HomePageOwner from './HomePageOwner';
 import ManageEmployee from './ManageEmployee';
@@ -18,7 +18,6 @@ import ManageChefs from './ManageChef';
 import ManageFoods from './ManageFoods';
 import ManageFoodCategories from './ManageFoodCategories';
 import ManageShopOwners from './ManageOwner';
-import ManageFoods2 from './ManageFoods2';
 import ManageSupplier from './ManageSupplier';
 import ManageDoce from './ManageDoce';
 import AddListProductOwner from './AddOrderProductOwner';

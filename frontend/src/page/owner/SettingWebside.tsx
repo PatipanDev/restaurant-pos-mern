@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Box, Typography, Divider } from "@mui/material";
+import React, { useState } from 'react';
+import { Box, Typography, Divider } from "@mui/material";
 import UploadIconWeb from './component/SettingUploadIconWeb';
 import UploadBanner from './component/SettingUploadBanner';
 import WebsiteInfoForm from './component/SettingWebsiteInfoForm';
@@ -7,36 +7,12 @@ import MultiImageUpload from './component/SettingMultiImageUpload';
 
 
 const SettingWebside: React.FC = () => {
-    const [images, setImages] = useState<File[]>([]);
+    const [_, setImages] = useState<File[]>([]);
 
-    const handleSubmit = () => {
-        console.log("Images to upload:", images);
-        // คุณสามารถใช้ FormData เพื่อส่งไฟล์ไป backend ได้
-        const formData = new FormData();
-        images.forEach((img) => formData.append("images", img));
-
-        // ตัวอย่าง axios:
-        // axios.post("/api/upload", formData);
-    };
-
-    const initialData = {
-        websiteName: "My Website",
-        websiteDetails: "This is the description of my website.",
-        contactMethod: "Email, Facebook",
-        phoneNumber: "0987654321",
-        address: "123 Some Street, City, Country",
-        primaryColor: "#3300FF",
-        secondaryColor: "#33FF33"
-    };
 
     const handleFileChange = (file: File) => {
         console.log("ไฟล์ที่อัพโหลด:", file);
         // ทำการส่งไฟล์ไปยังเซิร์ฟเวอร์ หรือเก็บไฟล์ไว้ใน state
-    };
-
-    const handleFormSubmit = (data: any) => {
-        console.log("ข้อมูลที่ส่ง:", data);
-        // ส่งข้อมูลไปยังเซิร์ฟเวอร์หรือทำงานอื่นๆ
     };
 
 

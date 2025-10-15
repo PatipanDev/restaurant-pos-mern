@@ -2,7 +2,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId } from '@mui/x-data-grid';
-import { MenuItem, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Box } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import { useForm, Controller } from 'react-hook-form';
@@ -151,7 +151,7 @@ const ShopSupplier: React.FC = () => {
         };
 
         await axios.put(`${API_URL}/api/data/updateSupplier/${selectedRowId}`, updatedData) // Replace with API for updating supplier
-          .then((response) => {
+          .then((_) => {
             setAlertSuccess(<div>อัปเดตข้อมูลสำเร็จ</div>);
             const updatedRows = rows.map((row) =>
               row._id === selectedRowId ? { ...row, ...updatedData } : row

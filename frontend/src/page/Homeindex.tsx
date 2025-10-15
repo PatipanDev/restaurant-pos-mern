@@ -1,23 +1,14 @@
-import { Button, Container, Grid, Typography, Card, CardContent, CardMedia, Box } from "@mui/material";
+import { Button, Container, Grid, Typography, Card,  CardMedia, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-import Login from "./Login";
-import Register from "./Register";
 import LoginIcon from '@mui/icons-material/Login';
 const API_URL = import.meta.env.VITE_API_URL;
 
-import React, { Suspense, useState, useEffect } from 'react';
+import {  useState, useEffect } from 'react';
 import axios from "axios";
 import { getUserId } from "../utils/userUtils";
 import Footer from "./owner/component/Footer";
 
-const bannerImage = "/images/banner.jpg";
-
-const foods = [
-  { name: "ข้าวมันไก่", image: "/images/food1.jpg" },
-  { name: "ผัดไทย", image: "/images/food2.jpg" },
-  { name: "ต้มยำกุ้ง", image: "/images/food3.jpg" },
-];
 
 interface WebsiteData {
   _id: string;
@@ -39,7 +30,6 @@ interface WebsiteData {
 
 const HomeIndex = () => {
   const navigate = useNavigate();
-  const [userId, setUserId] = useState<string>("");
   const [dataweb, setDataweb] = useState<WebsiteData | null>(null);
 
   const id = getUserId();
@@ -54,7 +44,7 @@ const HomeIndex = () => {
 
   }, []); // ใช้ location ใน useEffect เพื่อให้ค่า tabIndex อัพเดตตาม URL
 
-  const [websiteName, setWebsiteName] = useState<string>('Food Shop');
+  const [_, setWebsiteName] = useState<string>('Food Shop');
 
   useEffect(() => {
     // ดึงข้อมูลการตั้งค่าจาก API

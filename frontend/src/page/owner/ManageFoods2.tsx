@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { DataGrid, GridColDef, GridRowsProp, GridRowId, GridCellParams } from '@mui/x-data-grid';
-import { Button, Dialog, DialogActions, Typography, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
-import { HistoryEdu } from '@mui/icons-material';
+import { DataGrid, GridColDef, GridRowsProp, GridRowId} from '@mui/x-data-grid';
+import { Button, Dialog, DialogActions, Typography, DialogContent, DialogTitle, TextField,  MenuItem } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
-import { ObjectId } from 'mongodb';
 
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -47,15 +45,9 @@ const ManageFoods2: React.FC = () => {
   const [selectedRowId, setSelectedRowId] = useState<GridRowId | null>(null);
   const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
   const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
-  const [selectedFood, setselectedFood] = useState<{ id: string; name: string } | null>(null); //เก็บค่าไอดีกับชื่อเพื่อส่งไปที่คอมโพเนน
-  const [showModal, setShowModal] = useState(false); // โชว์หน้ารายละเอียด      
-  const [selectedImage, setSelectedImage] = useState<string | null>(null); // เพิ่ม state สำหรับเก็บ path ของรูปภาพ 
 
 
   const [categories, setCategories] = useState<any[]>([]); // To store categories
-  const [chefs, setChefs] = useState<any[]>([]); // To store chefs
-  const [owners, setOwners] = useState<any[]>([]); // To store owners
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
 
 
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
@@ -70,18 +62,9 @@ const ManageFoods2: React.FC = () => {
       const categoriesResponse = await axios.get('http://localhost:3000/api/data/getfoodcategory');
       setCategories(categoriesResponse.data);
 
-      const chefResponse = await axios.get('http://localhost:3000/api/auth/getChefs');
-      setChefs(chefResponse.data);
-
-      const ownerResponse = await axios.get('http://localhost:3000/api/data/getfoodcategory');
-      setChefs(ownerResponse.data);
 
       console.log('Foods:', foodsResponse.data);
       console.log('Categories:', categoriesResponse.data);
-      console.log('chef:', chefResponse.data);
-      console.log('owner:', chefResponse.data);
-
-
 
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -100,7 +83,6 @@ const ManageFoods2: React.FC = () => {
         setValue('food_Stock', selectedRow.food_Stock);
         setValue('food_Price', selectedRow.food_Price);
         setValue('product_Category_Id', selectedRow.product_Category_Id._id);
-        setSelectedImage(selectedRow.food_Image || null); // ตั้งค่า path ของรูปภาพใน state
       }
     }
   }, [selectedRowId, rows, setValue]);

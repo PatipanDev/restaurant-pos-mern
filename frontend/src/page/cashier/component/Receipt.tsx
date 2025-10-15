@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect} from "react";
 import axios from "axios";
 import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
 import {
     Box,
-    Container,
     Typography,
     Table,
     TableBody,
@@ -13,17 +12,10 @@ import {
     TableHead,
     TableRow,
     Paper,
-    TextField,
-    Radio,
-    RadioGroup,
-    FormControlLabel,
-    Button,
     Divider,
 } from "@mui/material";
-import Order from './../../user/Order';
 import { formatDateTime } from "../../../utils/formatDateTime";
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import ReceiptPDF from './ReceiptPDF';
+
 
 
 // กำหนดชนิดข้อมูลที่รับมาจาก API สำหรับใบเสร็จ
@@ -35,16 +27,13 @@ interface ReceiptProps {
 }
 
 const Receipt: React.FC<ReceiptProps> = ({ id, onClose }) => {
-    const [orderDetails, setOrderDetails] = useState<any[]>([]); // ข้อมูลใบเสร็จ
+    const [orderDetails, _] = useState<any[]>([]); // ข้อมูลใบเสร็จ
     const [loading, setLoading] = useState<boolean>(true); // สCถานะการโหลด
     const [error, setError] = useState<string | null>(null); // ข้อความแสดงเมื่อเกิดข้อผิดพลาด
 
     const [receipt, setReceipt] = useState<any[]>([]);
     const [orderFoodDetails, setOrderFoodDetails] = useState<any[]>([]);
     const [orderDrinkDetails, setOrderDrinkDetails] = useState<any[]>([]);
-    const [payment, setPayment] = useState<any[]>([])
-
-    const printRef = useRef<HTMLDivElement>(null);
 
     // ดึงข้อมูลใบเสร็จจาก API
     useEffect(() => {
@@ -72,17 +61,7 @@ const Receipt: React.FC<ReceiptProps> = ({ id, onClose }) => {
         console.log("receipt =>", receipt);
     }, [receipt]);
 
-    // ฟังก์ชันพิมพ์ใบเสร็จ
 
-
-    const handlePrint = () => {
-        if (printRef.current) {
-            const printWindow = window.open('', '', 'height=600,width=800');
-            printWindow?.document.write(printRef.current?.innerHTML);
-            printWindow?.document.close();
-            printWindow?.print();
-        }
-    };
     // เมื่อข้อมูลยังโหลด
     if (loading) return <div>กำลังโหลด...</div>;
 
@@ -99,7 +78,7 @@ const Receipt: React.FC<ReceiptProps> = ({ id, onClose }) => {
                     <TableContainer component={Paper} sx={{ maxHeight: "60%", overflowY: "auto" }}>
 
                         {receipt
-                            .map((item, index) => {
+                            .map((item) => {
                                 const { formattedDate, formattedTime } = formatDateTime(item?.createdAt);
                                 const receiptId = item?.Receipt_ID; // หรือ item?.order_Id?.Receipt_ID
                                 console.log("ค่าที่ได้", receiptId)
@@ -207,7 +186,7 @@ const Receipt: React.FC<ReceiptProps> = ({ id, onClose }) => {
                             </TableBody>
                         </Table>
 
-                        {receipt.map((item, index) => {
+                        {receipt.map((item) => {
                             return (
                                 <Box key={item._id}>
                                     <Typography variant="h6" sx={{ marginLeft: 2, fontSize: '0.75rem' }}> {/* ปรับขนาดตัวอักษรที่นี่ */}

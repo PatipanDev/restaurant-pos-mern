@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Dialog, DialogActions, DialogTitle, DialogContent, Button, Collapse } from '@mui/material';
-import { Home, People, Egg, Settings, MonetizationOn,Summarize, HistoryEdu, Inventory2, ShoppingCart, Category, TableRestaurant, AdminPanelSettings, LocalDining, LocalBar, Store, ExitToApp, ExpandLess, ExpandMore, AccountBox, Inventory,Kitchen } from '@mui/icons-material';
+import { Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Dialog, DialogActions, DialogTitle, DialogContent, Button } from '@mui/material';
+import { Home,  Egg, Summarize, HistoryEdu, Inventory2, ExitToApp,Kitchen } from '@mui/icons-material';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -19,10 +19,6 @@ const SidebarChef: React.FC = () => {
   const [selectedPage, setSelectedPage] = useState<string>('home');
   const [openDialog, setOpenDialog] = useState<boolean>(false); // เพิ่ม state สำหรับ Dialog
   const [succAlertMessage, setSuccAlertMessage] = useState<React.ReactNode | null>(null); // เพิ่ม state สำหรับ Alert
-  const [openEmployeeMenu, setOpenEmployeeMenu] = useState<boolean>(false); // สำหรับเปิด/ปิดเมนูย่อย
-  const [openProductMenu, setOpenProductMenu] = useState<boolean>(false); // สำหรับเปิด/ปิดเมนูย่อยสินค้า
-  const [openStoreMenu, setOpenStoreMenu] = useState<boolean>(false); //สำหรับเปิด/ปิดเมนูย่อยการขาย
-
 
   const navigate = useNavigate(); // เพิ่ม useNavigate
 
@@ -176,13 +172,7 @@ const menuStyle = (isSelected: boolean) => ({
   padding: '10px 20px',
 });
 
-// ✅ สไตล์เมนูย่อย
-const subMenuStyle = (isSelected: boolean) => ({
-  backgroundColor: isSelected ? '#4CAF50' : 'transparent',
-  color: isSelected ? '#FFF' : '#333',
-  paddingLeft: 4,
-  '&:hover': { backgroundColor: isSelected ? '#4CAF50' : '#e0e0e0' },
-});
+
 
 
 export default SidebarChef;

@@ -1,14 +1,10 @@
 const API_URL = import.meta.env.VITE_API_URL;
-import { Box, AppBar, Toolbar, Typography, Divider } from '@mui/material';
+import { Box,  Divider } from '@mui/material';
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { BarChart } from '@mui/x-charts/BarChart';
 
-interface ProductData {
-  product_Name: string;
-  product_Stock: number;
-  product_Quantity: number;
-}
+
 interface Food {
   food_Name: string;
   food_Stock: number;
@@ -19,9 +15,6 @@ interface Drink {
 }
 
 const HomePageChef: React.FC = () => {
-  const [chartData, setChartData] = useState<{ date: string; totalPaid: number }[]>([]);
-  const [buyData, setBuyData] = useState<{date: string; totalPaid: number }[]>([]);
-  const [productData, setProductData] = useState<ProductData[]>([]);
   const [foodData, setFoodData] = useState<Food[]>([]);
   const [drinkData, setDrinkData] = useState<Drink[]>([]);
 
@@ -31,9 +24,6 @@ const HomePageChef: React.FC = () => {
   
     if (graphData) {
       const oldData = (JSON.parse(graphData));
-      setChartData(oldData.sorted)
-      setBuyData(oldData.buyproduct)
-      setProductData(oldData.product)
       setFoodData(oldData.food)
       setDrinkData(oldData.drink)
       return; // ✅ หยุดการทำงานหลังใช้ข้อมูลจาก sessionStorage แล้ว
@@ -48,20 +38,17 @@ const HomePageChef: React.FC = () => {
           date: item._id.date,
           totalPaid: item.totalPaid,
         }));
-        setChartData(sorted);
 
         const buyproduct = res.data.buyData.map((item: any) => ({
           date: item._id,
           totalPaid: item.totalAmount,
         }));
-        setBuyData(buyproduct);
   
         const product = res.data.productData.map((item: any) => ({
           product_Name: item.product_Name,
           product_Stock: item.product_Stock,
           product_Quantity: item.product_Quantity,
         }));
-        setProductData(product);
   
         const food = res.data.foodData.map((item: any) => ({
           food_Name: item.food_Name,
@@ -87,18 +74,6 @@ const HomePageChef: React.FC = () => {
       })
       .catch((err) => console.error('Error fetching chart data:', err));
   }, []);
-
-
-  const xAxisLabels = chartData.map(item => item.date); // วันที่
-  const seriesData = chartData.map(item => item.totalPaid); // ยอดเงิน
-
-  const buyLabels = buyData.map(item => item.date); // วันที่
-  const buyDatas = buyData.map(item => item.totalPaid); // ยอดเงิน
-
-  //product
-  const productLabels = productData.map(item => item.product_Name); // ใช้ชื่อสินค้าเป็น X-axis
-  const stockData = productData.map(item => item.product_Stock); // ใช้ stock สำหรับแสดงในกราฟ
-  const quantityData = productData.map(item => item.product_Quantity); // ใช้ quantity สำหรับแสดงในกราฟ
 
   //food
   const foodLabels = foodData.map(item => item.food_Name);

@@ -2,7 +2,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridRowsProp, GridRowId } from '@mui/x-data-grid';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Button } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { HistoryEdu } from '@mui/icons-material';
 
@@ -37,9 +37,8 @@ const translateStatus = (status: string) => {
 
 const AddListProductOwner = () => {
   const [rows, setRows] = useState<GridRowsProp<OrderProduct>>([]);
-  const [open, setOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
-  const [chefs, setChefs] = useState<any[]>([]);
+  const [_, setChefs] = useState<any[]>([]);
 
   const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
   const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
@@ -224,7 +223,6 @@ const AddListProductOwner = () => {
       if (user.role === "chef") {
         const chef_Id = user._id
         console.log(chef_Id)
-        const response = await axios.post(`${API_URL}/api/data/createOrderProduct`, { chef_Id });
         fetchData();
         setAlertSuccess(<div>เพิ่มข้อมูลสำเร็จ</div>);
       }

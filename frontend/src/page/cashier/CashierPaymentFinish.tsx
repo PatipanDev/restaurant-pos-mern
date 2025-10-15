@@ -11,30 +11,24 @@ import {
   TableRow,
   Paper,
   TextField,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  Button,
   List,
-  ListItem,
   ListItemText,
   ListItemButton,
   Divider, IconButton,
-  dividerClasses
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL;
-import { number } from 'yup';
+
 import { formatDateTime } from "../../utils/formatDateTime";
-import { error } from "console";
+
 
 import Receipt from "./component/Receipt";
-import { getEmployeeId } from "../../utils/userUtils";
+
 import SuccessAlertCashier from "../../components/AlertSussessCashier";
 
-const cashier_Id = getEmployeeId()
+
 
 
 const translateStatus = (status: string) => {
@@ -79,15 +73,12 @@ const CashierPaymentFinish: React.FC = () => {
   const [orderFoodDetails, setOrderFoodDetails] = useState<any[]>([]);
   const [orderDrinkDetails, setOrderDrinkDetails] = useState<any[]>([]);
   const [payment, setPayment] = useState<any[]>([])
-  const [datarecipt, setDatarecipt] = useState<any>()
+
   const [idrecipt, setIdrecipt] = useState<string>("")
 
-  const [paymentMethod, setPaymentMethod] = useState("cash");
-  const [cashReceived, setCashReceived] = useState<number | "">("");
-  const [changeAmount, setchangeAmount] = useState<number>(0);
   const [paidAmount, setPaidAmount] = useState<number>(0);
 
-  const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
+  const [alertSuccess, _] = useState<React.ReactNode | null>(null);
 
 
   // เมื่อเลือกรายการอาหาร
@@ -101,7 +92,7 @@ const CashierPaymentFinish: React.FC = () => {
   const fetchListOrder = async () => {
     try {
       const response = await axios.get(`${API_URL}/api/food/getpaymentorderByCashierFinish`);
-      setDatarecipt(response.data)
+
       setOrders(response.data.orders);
       setOrderFoodDetails(response.data.orderFoodDetails);
       setOrderDrinkDetails(response.data.orderDrinkDetails);
@@ -149,21 +140,12 @@ const CashierPaymentFinish: React.FC = () => {
 
   // setPaidAmount(totalPrice); // ตรวจสอบค่า totalPrice ก่อนใช้
 
-  useEffect(() => {
-    const change = typeof cashReceived === "number" ? cashReceived - paidAmount : 0; // ตรวจสอบ cashReceived ว่าเป็น number
-    setchangeAmount(change)
-  }, [cashReceived])
   // setCashReceived(change);
 
-  // handlePaymentAndReceipt
-  const handlePaymentAndReceipt = async (id: string) => {
-      setIdrecipt(id);
-  }
   //เมื่อเลือกรายการ
   const handleClickSelect = (id: any) => {
     setSelectedOrder(id)
-    setchangeAmount(0)
-    setCashReceived("")
+
   }
 
   const handleRefresh = () => {
@@ -220,7 +202,7 @@ const CashierPaymentFinish: React.FC = () => {
             <TableContainer component={Paper} sx={{ maxHeight: "90%", overflowY: "auto" }}>
               {orders
                 .filter((item) => item._id === selectedOrder)
-                .map((item, index) => {
+                .map((item) => {
                   const { formattedDate, formattedTime } = formatDateTime(item.createdAt);
                   return (
                     <Box key={item._id}>
@@ -321,7 +303,7 @@ const CashierPaymentFinish: React.FC = () => {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
               {payment
                 .filter((item) => item.order_Id === selectedOrder)
-                .map((item, index) => (
+                .map((item) => (
                   <Box key={item?.payment_Method}>
                     <Typography variant="h6">วิธีการชำระเงิน {(item?.payment_Method === 'cash')?("เงินสด"):("เงินโอน")}</Typography>
                   </Box>

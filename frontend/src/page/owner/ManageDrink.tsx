@@ -1,8 +1,8 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
 import React, { useState, useEffect } from 'react';
-import { DataGrid, GridColDef, GridRowsProp, GridRowId, GridCellParams } from '@mui/x-data-grid';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl, Typography } from '@mui/material';
+import { DataGrid, GridColDef, GridRowsProp, GridRowId } from '@mui/x-data-grid';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField,  Typography } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 
@@ -67,7 +67,7 @@ const ManageDrinks: React.FC = () => {
   const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
   const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
 
-  const [selectedImage, setSelectedImage] = useState<string | null>(null); //เพิ่มที่เก็บรูปภาพ
+  const [_, setSelectedImage] = useState<string | null>(null); //เพิ่มที่เก็บรูปภาพ
 
 
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({
@@ -102,7 +102,6 @@ const ManageDrinks: React.FC = () => {
 
         setValue('drink_Manufacture_date', formattedDate);
         // setValue('drink_Manufacture_date', selectedRow.drink_Manufacture_date);
-        const rawDateEx = new Date(selectedRow.drink_Expiry_date);
         const formattedDateEx: any = rawDate.toISOString().split('T')[0]; // ได้รูปแบบ "2025-03-20"
 
         setValue('drink_Expiry_date', formattedDateEx);

@@ -1,5 +1,5 @@
-import React, { ReactNode, useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import  { useEffect, useState } from 'react';
+
 import axios from 'axios';
 import LoginReminder from './components/LoginReminder';
 
@@ -11,10 +11,6 @@ interface User {
   role: string;
 }
 
-interface ProtectedPageProps {
-  allowedRoles: string[];
-  children?: ReactNode;
-}
 
 const useProtectedPage = (allowedRoles: string[]) => {
   const [user, setUser] = useState<User | null>(null);

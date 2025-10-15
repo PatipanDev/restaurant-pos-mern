@@ -1,10 +1,8 @@
-import React, { Suspense, useState, useEffect } from 'react';
+import React, {  useState, useEffect } from 'react';
 import { Box, Grid, Card, CardContent, Typography, Button, Divider } from '@mui/material';
 import { getEmployeeId } from '../../../utils/userUtils';
 import { formatDateTime } from '../../../utils/formatDateTime';
 
-
-const userId = getEmployeeId();
 
 import socket from '../../../utils/socket';
 
@@ -114,7 +112,7 @@ const ServFoodList: React.FC = () => {
     <Box sx={{ padding: 2 }}>
       <Grid container spacing={2}>
         {foodready.map((order, index) => {
-          const { formattedDate, formattedTime } = formatDateTime(order.createdAt);
+          const { formattedTime } = formatDateTime(order.createdAt);
           return (
             <Grid item xs={12} key={index}>
               <Card>
@@ -155,7 +153,7 @@ const ServFoodList: React.FC = () => {
       </Grid>
       <Grid container spacing={2}>
         {drinkready.map((order, index) => {
-          const { formattedDate, formattedTime } = formatDateTime(order.createdAt);
+          const {  formattedTime } = formatDateTime(order.createdAt);
           return (
             <Grid item xs={12} key={index}>
               {order.order_Id?.table_Id?.number && (

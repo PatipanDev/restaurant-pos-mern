@@ -1,12 +1,12 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
 import React, { useState, useEffect } from 'react';
-import { DataGrid, GridColDef, GridRowsProp, GridRowId, GridCellParams } from '@mui/x-data-grid';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import { DataGrid, GridColDef, GridRowsProp, GridRowId} from '@mui/x-data-grid';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField,  MenuItem, } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
-import { ObjectId } from 'mongodb';
+
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -47,7 +47,6 @@ const Ingrediendetails: React.FC<IngrediendetailsProps> = ({ id, name, onClose }
   const [selectedRowId, setSelectedRowId] = useState<GridRowId | null>(null);
   const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
   const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
-  const [ingredients, setIngredients] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
 
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({

@@ -3,7 +3,6 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { Box, Container, CssBaseline, TextField, Button, Typography } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import Cookies from "js-cookie";
 import WarningAlert from "../components/AlertDivWarn";
 import SuccessAlert from "../components/AlertSuccess";
 

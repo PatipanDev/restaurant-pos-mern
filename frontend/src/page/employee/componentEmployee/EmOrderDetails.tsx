@@ -98,7 +98,7 @@ function EmOrderDetails() {
 
 
 
-    const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormOrder>({
+    const { control, handleSubmit, reset,  formState: { errors } } = useForm<FormOrder>({
         resolver: yupResolver(schema),
     });
 

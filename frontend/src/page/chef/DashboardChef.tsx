@@ -1,14 +1,11 @@
 import React from 'react';
-import { Box, AppBar, Toolbar, Typography } from '@mui/material';
+import { Box, AppBar} from '@mui/material';
 import SidebarChef from './SidebarChef';
 import { Outlet } from 'react-router-dom'; // ใช้ Outlet เพื่อแสดงหน้าใหม่ภายใน Dashboard
-import { useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
-
 
 
 const DashboardChef: React.FC = () => {
-    const navigate = useNavigate();
+    
   
 
 

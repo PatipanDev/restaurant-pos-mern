@@ -2,10 +2,9 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 
 import React, { useEffect, useState } from 'react';
-import { TextField, Button, Box, Grid } from '@mui/material';
-import { useForm, Controller } from 'react-hook-form';
-// import axios from 'axios';
-import { Fab, CssBaseline, Avatar } from "@mui/material";
+import { Button, Box, Fab} from '@mui/material';
+import { useForm } from 'react-hook-form';
+
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
 import WarningAlert from "../../components/AlertDivWarn";
@@ -29,14 +28,12 @@ interface IFormInput {
 }
 
 export default function ProfileEmployee() {
-  const [openCollapse, setOpenCollapse] = React.useState(true); // เปลี่ยนชื่อให้แตกต่างจาก Dialog
   const navigate = useNavigate();
-  const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
+  const [alertMessage, _] = useState<React.ReactNode | null>(null);
   const [succesMessage, setSuccAlertMessage] = useState<React.ReactNode | null>(null);
   const [openDialog, setOpenDialog] = React.useState(false);
 
-  const [customer, setCustomer] = useState<IFormInput | null>(null);
-  const { control, handleSubmit, setValue } = useForm<IFormInput>({
+  const { setValue } = useForm<IFormInput>({
     defaultValues: {
       customer_Name: '',
       customer_Email: '',
@@ -76,27 +73,6 @@ export default function ProfileEmployee() {
     }
   }, [user_id, setValue]);
 
-  const onSubmit = (data: IFormInput) => {
-    const isConfirmed = window.confirm("คุณต้องการอัพเดตข้อมูลใช่หรือไม่");
-    if (!isConfirmed) {
-      return; // ถ้าผู้ใช้ยกเลิก ก็จะไม่ทำอะไร
-    }
-    // ส่งข้อมูลที่แก้ไขไปที่ backend
-    axios
-      .put(`${API_URL}/api/auth/updateAccoutCustomeer/${user_id}`, data)
-      .then((response) => {
-        alert('ข้อมูลอัปเดตสำเร็จ!');
-        console.log(response.data)
-        const customer = response.data.customer;
-          console.log('ข้อมูลจาก API:', customer);
-          // เก็บข้อมูลลง localStorage
-          localStorage.setItem('customer', JSON.stringify(customer));
-      })
-      .catch((error) => {
-        console.error('ไม่สามารถอัปเดตข้อมูลได้:', error);
-        alert('การอัปเดตข้อมูลล้มเหลว');
-      });
-  };
 
   // ฟังก์ชันล็อกเอาท์
   const handleLogout = () => {

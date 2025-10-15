@@ -20,7 +20,7 @@ const MyPage: React.FC = () => {
       <BottomNavigation
         showLabels
         value={value}
-        onChange={(event, newValue) => {
+        onChange={(_, newValue) => {
           setValue(newValue);  // อัปเดตค่า value เมื่อมีการเปลี่ยนแปลง
         }}
         sx={{ width: '100%' }}  // สามารถใช้ sx เพื่อกำหนดขนาด

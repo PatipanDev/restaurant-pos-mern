@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { TextField, Button, Box, Grid } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 // import axios from 'axios';
-import { Fab, CssBaseline, Avatar } from "@mui/material";
+import { Fab} from "@mui/material";
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
 import WarningAlert from "../../components/AlertDivWarn";
@@ -29,13 +29,11 @@ interface IFormInput {
 }
 
 export default function Profile() {
-  const [openCollapse, setOpenCollapse] = React.useState(true); // เปลี่ยนชื่อให้แตกต่างจาก Dialog
   const navigate = useNavigate();
-  const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
+  const [alertMessage, _] = useState<React.ReactNode | null>(null);
   const [succesMessage, setSuccAlertMessage] = useState<React.ReactNode | null>(null);
   const [openDialog, setOpenDialog] = React.useState(false);
 
-  const [customer, setCustomer] = useState<IFormInput | null>(null);
   const { control, handleSubmit, setValue } = useForm<IFormInput>({
     defaultValues: {
       customer_Name: '',

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Slide, Typography, Card, CardContent, CardMedia, Button, IconButton, Box, TextField } from '@mui/material';
 import { Add, Remove, ShoppingCart, Close } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
@@ -32,7 +31,7 @@ const employee_id: string = getEmployeeId();
 
 
 const FoodDetail: React.FC<FoodDetailProps> = ({ _id, onClose }) => {
-  const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormDetail>({
+  const { control, handleSubmit, formState: { errors } } = useForm<FormDetail>({
     resolver: yupResolver(schema),
   });
   const [foodDetails, setFoodDetails] = useState<any>(null);

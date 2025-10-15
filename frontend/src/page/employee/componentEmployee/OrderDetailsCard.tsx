@@ -1,14 +1,12 @@
-import React, { Suspense, useState, useEffect } from 'react';
-import { Card, CardContent, Typography, Box, Button, Divider, Grid } from '@mui/material';
+import  {  useState, useEffect } from 'react';
+import { Card, CardContent, Typography, Box, Button,  Grid } from '@mui/material';
 import OrderDetailsCheck from './OrderDetailsCheck';
-import axios from 'axios';
+
 
 import socket from '../../../utils/socket';
 import { getEmployeeId } from '../../../utils/userUtils';
 // ฟังเหตุการณ์ที่ส่งจาก server
 import { formatDateTime } from '../../../utils/formatDateTime';
-import SuccessAlert from '../../../components/AlertSuccess';
-
 
 const OrderDetailsCard = () => {
   const [orders, setOrders] = useState<any[]>([]);

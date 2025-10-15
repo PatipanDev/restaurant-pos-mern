@@ -10,26 +10,14 @@ import {
     TableHead,
     TableRow,
     Divider,
-    MenuItem,
     Button,
     Box,
-    TextField,
-    Menu,
     Skeleton
 } from '@mui/material';
-
-import IconButton from '@mui/material/IconButton';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { useForm, Controller } from 'react-hook-form';
-
-import * as yup from 'yup';
-import { yupResolver } from '@hookform/resolvers/yup';
 
 import SuccessAlert from '../../../components/AlertSuccess';
 import { getEmployeeId } from '../../../utils/userUtils';
 import { formatDateTime } from '../../../utils/formatDateTime';
-
-import socket from '../../../utils/socket';
 
 
 
@@ -46,7 +34,6 @@ interface Order {
     _id: string;
 
 }
-
 
 
 
@@ -83,24 +70,13 @@ function EmOrderDetailsInprogress() {
     const [order, setOrders] = useState<Order[]>([]);
     const [orderFoodDetails, setOrderFoodDetails] = useState<any[]>([]);
     const [orderDrinkDetails, setOrderDrinkDetails] = useState<any[]>([]);
-    const [tables, setTables] = useState<any[]>([]);
+    const [_, setTables] = useState<any[]>([]);
     const [payments, setPayment] = useState<any[]>([]);
 
     const [loading, setLoading] = useState(true);
     const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
     const [isPaymentPending, setIsPaymentPending] = useState(false);
 
-    // const {formattedDate, formattedTime} = formatDateTime()
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const open = Boolean(anchorEl);
-
-    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
 
     const fetchPendingOrders = async () => {
         try {

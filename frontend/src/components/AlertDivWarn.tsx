@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, ReactNode } from "react";
 import Alert from "@mui/material/Alert";
-import beepSound from "../assets/sound/beep-warning.mp3";
+
 
 interface WarningAlertProps {
   messagealert?: ReactNode; // เปลี่ยนเป็น ReactNode เพื่อรองรับ JSX เช่น <div>...</div>
@@ -9,7 +9,6 @@ interface WarningAlertProps {
 
 const WarningAlert: React.FC<WarningAlertProps> = ({ messagealert, duration = 3000 }) => {
   const [show, setShow] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {

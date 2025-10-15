@@ -52,11 +52,6 @@ const translateEatStatus = (status: string) => {
     }
 };
 
-interface FormOrder {
-    order_Eating_status?: string | undefined;
-    table_Id: string;
-    order_Dec?: string | undefined;
-}
 
 interface DrinkDetailProps {
     _id: string | null;

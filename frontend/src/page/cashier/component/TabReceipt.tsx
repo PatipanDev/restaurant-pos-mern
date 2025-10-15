@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Box, CssBaseline, Paper, Typography, Grid, Card, CardContent, Button, Tabs, Tab, Divider } from '@mui/material';
+import React, {useState } from 'react';
+import { Box,Typography, Tabs, Tab } from '@mui/material';
 
 import CashierPayment from '../CashierPayment';
-import CashierPaymentFinish from '../CashierPaymentfinish';
+import CashierPaymentFinish from '../CashierPaymentFinish';
 
 const TabReceipt = () => {
   const [tabIndex, setTabIndex] = useState(0); // แท็บที่เลือก
-  const navigate = useNavigate();
+
 
   // const protection = useProtectedPage(getUserRole());  // เรียกใช้งานฟังก์ชัน
   // console.log('ระดับผู้ใช้',getUserRole())

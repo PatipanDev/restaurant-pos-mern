@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, ReactNode } from "react";
 import Alert from "@mui/material/Alert";
-import goodresult from "../assets/sound/cashier-quotka.mp3";
 
 interface WarningAlertProps {
   successalert?: ReactNode; // เปลี่ยนเป็น ReactNode เพื่อรองรับ JSX เช่น <div>...</div>
@@ -9,18 +8,11 @@ interface WarningAlertProps {
 
 const SuccessAlertCashier: React.FC<WarningAlertProps> = ({ successalert, duration = 3000 }) => {
   const [show, setShow] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (successalert) {
       setShow(true); // แสดง Alert เมื่อ messagealert มีค่า
-
-      // เล่นเสียงแจ้งเตือน
-      if (!audioRef.current) {
-        audioRef.current = new Audio(goodresult);
-      }
-      audioRef.current.play();
 
       // ตั้งเวลาปิด Alert หลังจาก 3 วินาที
       if (timerRef.current) clearTimeout(timerRef.current);

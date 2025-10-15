@@ -10,12 +10,10 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import axios from 'axios';
-import moment from 'moment'; // เพิ่ม import moment
 import SuccessAlert from '../../components/AlertSuccess';
 import WarningAlert from '../../components/AlertDivWarn';
 import ErrorBoundary from '../ErrorBoundary';
-import Skeleton from '@mui/material/Skeleton';
-import LoadingSpinner from './component/LoadingSpinner';
+
 
 
 interface Employee {
@@ -58,7 +56,7 @@ const ManageEmployee: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<GridRowId | null>(null);
   //ส่วนของการแจ้งเตือน
-  const [alertMessage, setAlertMessage] = useState<React.ReactNode | null>(null);
+  const [alertMessage, _] = useState<React.ReactNode | null>(null);
   const [alertSuccess, setAlertSuccess] = useState<React.ReactNode | null>(null);
 
   const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormData>({

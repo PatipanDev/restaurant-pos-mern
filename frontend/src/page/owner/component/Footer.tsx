@@ -7,17 +7,6 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import LineAxisIcon from '@mui/icons-material/Timeline'; // ใช้แทน Line
 
-// กำหนด interface สำหรับข้อมูลที่รับมา
-// interface WebsiteData {
-//   phoneNumber: string;
-//   eMail: string;
-//   facebookAccount: string;
-//   lineId: string;
-//   xAccount: string;
-//   instagramAccount: string;
-//   address: string;
-//   websiteName: string;
-// }
 
 interface FooterProps {
   dataweb: any;
